@@ -16,12 +16,11 @@ namespace BSLevelUpDiscordSystem1._2
             Console.WriteLine(l_Path);
             GetInfos(this, p_PlayerID); /// Get Full Player Info.
             CreateDirectoryAndFile(this, l_Path); /// Make the score file if it don't exist.
-            OpenSavedScore(this, l_Path); /// Null if no score.
-            CheckForScore(this, 12);
-            ReWriteScore(this, l_Path);
+            OpenSavedScore(this, l_Path); /// Make the player's instance retrieve all the data from the json file.
+            CheckForScore(this, 12); /// Check for New Scores on the recent score api.
+            ReWriteScore(this, l_Path); /// ReWrite the Current Json with the player's instance data.
         }
 
-        /// get the Player Info
         private void GetInfos(Player p_Player, string p_PlayerID)
         {
             using (WebClient l_WebClient = new WebClient())
@@ -31,7 +30,6 @@ namespace BSLevelUpDiscordSystem1._2
             }
         }
 
-        /// Create The directory And File if missing
         private void CreateDirectoryAndFile(Player p_Player, string p_Path)
         {
             if (!Directory.Exists(p_Path))
@@ -66,7 +64,6 @@ namespace BSLevelUpDiscordSystem1._2
             }
         }
 
-        /// Open Saved Score
         private void OpenSavedScore(Player p_Player, string p_Path)
         {
             using (StreamReader l_SR = new StreamReader(p_Path + @"\score.json"))
@@ -75,7 +72,6 @@ namespace BSLevelUpDiscordSystem1._2
             }
         }
 
-        /// Give a selected page from the player's recent score.
         private apiPlayerScore GetLatestScorePage(Player p_Player, int p_Page)
         {
             using (WebClient l_WebClient = new WebClient())
@@ -85,7 +81,6 @@ namespace BSLevelUpDiscordSystem1._2
             }
         }
 
-        /// Check a number of the player's recent score and add them to the data if they don't exist.
         private void CheckForScore(Player p_Player, int p_NumberOfRequest)
         {
             bool l_Skip = false;
@@ -123,7 +118,6 @@ namespace BSLevelUpDiscordSystem1._2
             }
         }
 
-        /// Write the Score Data from the current Player instance.
         private void ReWriteScore(Player p_Player, string p_Path)
         {
             File.WriteAllText(p_Path + @"\score.json",
