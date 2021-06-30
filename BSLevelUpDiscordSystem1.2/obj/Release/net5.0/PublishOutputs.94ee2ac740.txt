@@ -1,5 +1,0 @@
-C:\Users\jaune\Documents\RiderProjects\BSLevelUpDiscordSystem1.2\BSLevelUpDiscordSystem1.2\bin\Release\net5.0\publish\BSLevelUpDiscordSystem1.2.exe
-C:\Users\jaune\Documents\RiderProjects\BSLevelUpDiscordSystem1.2\BSLevelUpDiscordSystem1.2\bin\Release\net5.0\publish\BSLevelUpDiscordSystem1.2.dll
-C:\Users\jaune\Documents\RiderProjects\BSLevelUpDiscordSystem1.2\BSLevelUpDiscordSystem1.2\bin\Release\net5.0\publish\BSLevelUpDiscordSystem1.2.deps.json
-C:\Users\jaune\Documents\RiderProjects\BSLevelUpDiscordSystem1.2\BSLevelUpDiscordSystem1.2\bin\Release\net5.0\publish\BSLevelUpDiscordSystem1.2.runtimeconfig.json
-C:\Users\jaune\Documents\RiderProjects\BSLevelUpDiscordSystem1.2\BSLevelUpDiscordSystem1.2\bin\Release\net5.0\publish\BSLevelUpDiscordSystem1.2.pdb
