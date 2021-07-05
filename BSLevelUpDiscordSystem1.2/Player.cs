@@ -5,27 +5,25 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading;
-using System.Xml;
-using BSLevelUpDiscordSystem;
 
 namespace BSLevelUpDiscordSystem1._2
 {
     public class Player
     {
-        private apiPlayerFull m_PlayerFull;
-        private apiScores m_PlayerScore;
+        private ApiPlayerFull m_PlayerFull;
+        private ApiScores m_PlayerScore;
         private int m_NumberOfTry = 0;
         private bool m_HavePlayerInfo = false;
 
         public Player(string p_PlayerID)
         {
-            var l_Path = @$".\Player\{p_PlayerID}\";
+            var l_Path = @$".\Players\{p_PlayerID}\";
 
             Console.WriteLine(l_Path);
 
             GetInfos(p_PlayerID); /// Get Full Player Info.
 
-            CreateDirectoryAndFile(l_Path); /// Make the score file if it don't exist.
+            CreateDirectory(l_Path); /// Make the score file's directory.
 
             OpenSavedScore(l_Path); /// Make the player's instance retrieve all the data from the json file.
 
@@ -40,7 +38,7 @@ namespace BSLevelUpDiscordSystem1._2
             {
                 try
                 {
-                    m_PlayerFull = JsonSerializer.Deserialize<apiPlayerFull>(
+                    m_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>(
                         l_WebClient.DownloadString(@$"https://new.scoresaber.com/api/player/{p_PlayerID}/full"));
                     m_HavePlayerInfo = true;
                 }
@@ -56,23 +54,36 @@ namespace BSLevelUpDiscordSystem1._2
                             Thread.Sleep(45000);
                             GetInfos(p_PlayerID);
                         }
-                    }
-                    else // Internet Error, stop searching for Player's info after more than 5 try
-                    {
-                        if (m_NumberOfTry <= 5)
+
+                        if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
                         {
-                            Console.WriteLine("Internet Connection Error, Check your Internet Supplier");
-                            Console.WriteLine($"Retrying to get PLayer's Info in 30 sec : {m_NumberOfTry} out of 5 try");
-                            m_NumberOfTry++;
-                            Thread.Sleep(30000);
-                            GetInfos(p_PlayerID);
+                            Console.WriteLine("Wrong Profile ID, Please contact an administrator");
+                            m_NumberOfTry = 6;
+                        }
+                    }
+                    else /// Request Error => Internet or ScoreSaber API Down.
+                    {
+                        if (!CheckScoreSaberAPI_Response("Player Full")) /// Checking if ScoreSaber Api Return.
+                        {
+                            if (m_NumberOfTry <= 5)
+                            {
+                                Console.WriteLine(
+                                    $"Retrying to get PLayer's Info in 30 sec : {m_NumberOfTry} out of 5 try");
+                                m_NumberOfTry++;
+                                Thread.Sleep(30000);
+                                GetInfos(p_PlayerID);
+                            }
+                            else
+                            {
+                                Console.WriteLine("No try left, Canceling GetPLayerInfo()");
+                            }
                         }
                     }
                 }
             }
         }
 
-        private void CreateDirectoryAndFile(string p_Path)
+        private void CreateDirectory(string p_Path)
         {
             if (!Directory.Exists(p_Path))
                 Directory.CreateDirectory(p_Path ?? throw new InvalidOperationException());
@@ -84,14 +95,14 @@ namespace BSLevelUpDiscordSystem1._2
             {
                 using (StreamReader l_SR = new StreamReader(p_Path + @"\score.json"))
                 {
-                    m_PlayerScore = JsonSerializer.Deserialize<apiScores>(l_SR.ReadToEnd());
+                    m_PlayerScore = JsonSerializer.Deserialize<ApiScores>(l_SR.ReadToEnd());
                 }
             }
             catch (Exception l_Exception)
             {
-                m_PlayerScore = new apiScores()
+                m_PlayerScore = new ApiScores()
                 {
-                    scores = new List<apiScore>()
+                    scores = new List<ApiScore>()
                 };
             }
         }
@@ -100,10 +111,10 @@ namespace BSLevelUpDiscordSystem1._2
         {
             if (m_HavePlayerInfo) /// Check if Player have Player's Info
             {
-                apiScores l_Result; /// Result From Request but Serialized.
+                ApiScores l_Result; /// Result From Request but Serialized.
                 string l_URL;
                 int l_Page = 1;
-                int l_NumberOfAddedScore = 1;
+                int l_NumberOfAddedScore = 0;
                 bool l_Skip = false;
                 /// Avoid doing useless attempt, Check player's number of score (8 score per request).
                 while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
@@ -115,7 +126,7 @@ namespace BSLevelUpDiscordSystem1._2
                         try
                         {
                             Console.WriteLine(l_URL);
-                            l_Result = JsonSerializer.Deserialize<apiScores>(l_WebClient.DownloadString(l_URL));
+                            l_Result = JsonSerializer.Deserialize<ApiScores>(l_WebClient.DownloadString(l_URL));
                             l_Page++;
 
                             int l_Index = 0;
@@ -167,16 +178,25 @@ namespace BSLevelUpDiscordSystem1._2
                             }
                             else
                             {
-                                Console.WriteLine("Internet Connection Error, Check your Internet Supplier");
-                                Console.WriteLine($"But there is still {l_NumberOfAddedScore} new Score(s) Added");
-                                if (m_NumberOfTry > 5)
+                                if (!CheckScoreSaberAPI_Response("Player Score"))
                                 {
-                                    Console.WriteLine("OK Internet is Dead, Stopped Fetching Score.");
+                                    Console.WriteLine($"But {l_NumberOfAddedScore} new Score(s) will be Added");
+                                    if (m_NumberOfTry > 5)
+                                    {
+                                        Console.WriteLine("OK Internet is Dead, Stopped Fetching Score.");
+                                        break; /// End the While Loop.
+                                    }
+
+                                    Console.WriteLine(
+                                        $"Retrying to Fetch PLayer's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
+                                    m_NumberOfTry++;
+                                    Thread.Sleep(30000);
+                                }
+                                else
+                                {
+                                    m_NumberOfTry = 6;
                                     break;
                                 }
-                                Console.WriteLine($"Retrying to Fetch PLayer's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
-                                m_NumberOfTry++;
-                                Thread.Sleep(3000);
                             }
                         }
                     }
@@ -203,10 +223,32 @@ namespace BSLevelUpDiscordSystem1._2
             File.WriteAllText(p_Path + @"\score.json",
                 JsonSerializer.Serialize(m_PlayerScore));
         }
-        
+
         private void ClearScore(string p_Path)
         {
             File.Delete(p_Path + @"\score.json");
+        }
+
+        private bool CheckScoreSaberAPI_Response(string p_API_RequestType) /// Return True if ScoreSaber API is Up.
+        {
+            using (WebClient l_WebClient = new WebClient())
+            {
+                try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
+                {
+                    Console.WriteLine(
+                        l_WebClient.DownloadString("https://new.scoresaber.com/api/").Contains("hey")
+                            ? $"Internet OK, Score Saber {p_API_RequestType} API must have changed, please contact an administrator"
+                            : "Internet OK, Score Saber API response is Weird, something must have changed, please contact an administrator");
+                    m_NumberOfTry = 6;
+                    return true;
+                }
+                catch (WebException l_WebException) /// Score Saber Global API Down or Internet Error.
+                {
+                    Console.WriteLine($"{l_WebException.Message} (ScoreSaber API)");
+                    Console.WriteLine("Internet Connection Error, Check your Internet Supplier");
+                    return false;
+                }
+            }
         }
     }
 }

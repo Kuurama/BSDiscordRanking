@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 
-namespace BSLevelUpDiscordSystem
+namespace BSLevelUpDiscordSystem1._2
 {
-    public class apiPlayerFull
+    public class ApiPlayerFull
     {
-        public apiPlayerInfo playerInfo { get; set; }
-        public apiScoreStats scoreStats { get; set; }
+        public ApiPlayerInfo playerInfo { get; set; }
+        public ApiScoreStats scoreStats { get; set; }
     }
 
-    public class apiPlayerInfo
+    public class ApiPlayerInfo
     {
         public string playerId { get; set; }
         public string playerName { get; set; }
@@ -18,20 +18,20 @@ namespace BSLevelUpDiscordSystem
         public float pp { get; set; }
         public string country { get; set; }
         public string role { get; set; }
-        public apiPlayerBadge[] badges { get; set; }
+        public ApiPlayerBadge[] badges { get; set; }
         public string history { get; set; }
         public short permissions { get; set; }
         public short inactive { get; set; }
         public short banned { get; set; }
     }
 
-    public class apiPlayerBadge
+    public class ApiPlayerBadge
     {
         public string image { get; set; }
         public string description { get; set; }
     }
 
-    public class apiScoreStats
+    public class ApiScoreStats
     {
         public long totalScore { get; set; }
         public long totalRankedScore { get; set; }
@@ -40,12 +40,12 @@ namespace BSLevelUpDiscordSystem
         public int rankedPlayCount { get; set; }
     }
 
-    public class apiScores
+    public class ApiScores
     {
-        public List<apiScore> scores { get; set; }
+        public List<ApiScore> scores { get; set; }
     }
 
-    public class apiScore
+    public class ApiScore
     {
         public int rank { get; set; }
         public int scoreId { get; set; }
@@ -65,5 +65,4 @@ namespace BSLevelUpDiscordSystem
         public string difficultyRaw { get; set; }
         public int maxScore { get; set; }
     }
-
 }
