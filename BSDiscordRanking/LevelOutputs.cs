@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BSLevelUpDiscordSystem1._2
+namespace BSDiscordRanking
 {
     public class LevelFormat
     {

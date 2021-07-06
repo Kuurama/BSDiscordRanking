@@ -6,7 +6,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading;
 
-namespace BSLevelUpDiscordSystem1._2
+namespace BSDiscordRanking
 {
     public class Player
     {

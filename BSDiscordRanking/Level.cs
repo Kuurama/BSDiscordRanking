@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
-namespace BSLevelUpDiscordSystem1._2
+namespace BSDiscordRanking
 {
     public class Level
     {

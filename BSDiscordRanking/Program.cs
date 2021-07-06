@@ -1,4 +1,4 @@
-﻿namespace BSLevelUpDiscordSystem1._2
+﻿namespace BSDiscordRanking
 {
     static class Program
     {
