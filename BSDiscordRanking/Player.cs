@@ -27,26 +27,23 @@ namespace BSDiscordRanking
             
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
-            GetInfos(); /// Get Full Player Info.
+            GetInfos(); ///< Get Full Player Info.
 
-            CreateDirectory(); /// Make the score file's directory.
+            CreateDirectory(); ///< Make the score file's directory.
 
-            OpenSavedScore(); /// Make the player's instance retrieve all the data from the json file.
+            OpenSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
 
             ///////////////////////////////////////////////////////////////////////////////////////
         }
 
         private void GetInfos()
         {
-            /// <summary>
             /// This Method Get the Player's Info from the api, then Deserialize it to m_PlayerFull for later usage.
-            /// This method is smart and know the api rate limit work and all the exception it can have to avoid them.
+            /// It handle most of the exceptions possible
             ///
             /// If it fail to load the Player's Info, m_NumberOfTry = 6 => the program will stop trying. (limit is 5)
             /// and it mean the Score Saber ID is wrong.
-            /// 
-            /// </summary>
-            
+
             if (m_ErrorNumber < ERROR_LIMIT)
             {
                 using (WebClient l_WebClient = new WebClient())
@@ -61,7 +58,7 @@ namespace BSDiscordRanking
                     {
                         if (
                             l_Exception.Response is HttpWebResponse
-                                l_HttpWebResponse) // If the request succeeded (internet OK) but you got an error code.
+                                l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
                         {
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                             {
@@ -77,9 +74,9 @@ namespace BSDiscordRanking
                                 m_ErrorNumber = 6;
                             }
                         }
-                        else /// Request Error => Internet or ScoreSaber API Down.
+                        else ///< Request Error => Internet or ScoreSaber API Down.
                         {
-                            if (!CheckScoreSaberAPI_Response("Player Full")) /// Checking if ScoreSaber Api Return.
+                            if (!CheckScoreSaberAPI_Response("Player Full")) ///< Checking if ScoreSaber Api Return.
                             {
                                 if (m_NumberOfTry <= 5)
                                 {
@@ -108,14 +105,8 @@ namespace BSDiscordRanking
 
         private void CreateDirectory()
         {
-            /// <summary>
             /// This Method Create the Directory needed to save and load the Player's score cache file from it's Path parameter.
-            ///
-            /// This method increase m_ErrorNumber on fail.
-            /// 
-            /// This method will be locked if m_RetryNumber < m_RetryLimit to avoid any loop error.
-            /// 
-            /// </summary>
+            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
             if (m_ErrorNumber < ERROR_LIMIT)
             {
@@ -143,15 +134,13 @@ namespace BSDiscordRanking
 
         private void OpenSavedScore()
         {
-            /// <summary>
             /// If First Launch* : Assign a Scores Sample to m_PlayerScore. (mean there isn't any cache file yet)
             /// This Method Load a cache file from its path. (The player's scores)
             /// then Deserialise it to m_PlayerScore.
             /// * => If the Scores's file failed to load (or don't exist), it will still load an empty scores format to m_PlayerScore.
             ///
-            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
-            /// 
-            /// </summary>
+            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
+
             
             if (m_ErrorNumber < ERROR_LIMIT)
             {
@@ -187,9 +176,8 @@ namespace BSDiscordRanking
             }
         }
 
-        public void CheckScore()
+        public void FetchScores()
         {
-            /// <summary>
             /// If First Launch : It get ALL the player's score from the api then cache it to a score file. (mean there isn't any cache file yet)
             /// This Method Get the Player's Scores from the api, then call ReWriteScore() to Serialize them into a cache's file.
             /// This method is smart and know the api rate limit work and all the exception it can have to avoid them.
@@ -204,8 +192,6 @@ namespace BSDiscordRanking
             ///
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
-            /// 
-            /// </summary>
             
             if (m_ErrorNumber < ERROR_LIMIT)
             {
@@ -213,7 +199,7 @@ namespace BSDiscordRanking
                 {
                     if (m_PlayerScore != null)
                     {
-                        ApiScores l_Result; /// Result From Request but Serialized.
+                        ApiScores l_Result; ///< Result From Request but Serialized.
                         string l_URL;
                         int l_Page = 1;
                         int l_NumberOfAddedScore = 0;
@@ -236,13 +222,13 @@ namespace BSDiscordRanking
                                     for (int i = 0; i < m_PlayerScore.scores.Count; i++)
                                     {
                                         if (l_Skip)
-                                            break; /// break the for and l_Skip will cause the end of the While Loop.
+                                            break; ///< break the for and l_Skip will cause the end of the While Loop.
                                         if (l_Result != null)
                                             for (l_Index = 0; l_Index < l_Result.scores.Count; l_Index++)
                                             {
                                                 if (l_Result.scores[l_Index].timeSet == m_PlayerScore.scores[i].timeSet)
                                                 {
-                                                    l_Skip = true; /// One score already exist (will end the While Loop)
+                                                    l_Skip = true; ///< One score already exist (will end the While Loop)
                                                     break;
                                                 }
                                             }
@@ -254,9 +240,8 @@ namespace BSDiscordRanking
                                         {
                                             if (m_PlayerScore.scores.RemoveAll(x =>
                                                     x.leaderboardId == l_NewScore.leaderboardId &&
-                                                    x.score != l_NewScore.score) > 0
-                                                || !m_PlayerScore.scores.Any(x =>
-                                                    x.leaderboardId == l_NewScore.leaderboardId))
+                                                    x.score != l_NewScore.score) > 0 ||
+                                                    !(m_PlayerScore.scores.Any(x => x.leaderboardId == l_NewScore.leaderboardId)))
                                             {
                                                 m_PlayerScore.scores.Add(l_NewScore);
                                                 l_NumberOfAddedScore++;
@@ -291,8 +276,7 @@ namespace BSDiscordRanking
                                                 break; /// End the While Loop.
                                             }
 
-                                            Console.WriteLine(
-                                                $"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
+                                            Console.WriteLine($"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
                                             m_NumberOfTry++;
                                             Thread.Sleep(30000);
                                         }
@@ -317,7 +301,7 @@ namespace BSDiscordRanking
                     {
                         Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
                         OpenSavedScore();
-                        CheckScore();
+                        FetchScores();
                     }
                 }
                 else /// If Player don't have player's info => Trying to get Player's Info
@@ -325,7 +309,7 @@ namespace BSDiscordRanking
                     if (m_NumberOfTry <= 5)
                     {
                         GetInfos();
-                        CheckScore();
+                        FetchScores();
                     }
                     else
                     {
@@ -336,24 +320,18 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine(
-                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
 
         private void ReWriteScore()
         {
-            /// <summary>
             /// This Method Serialise the data from m_PlayerScore and cache it to a file depending on the path parameter
             /// Be Aware that it will replace the current cache file (if there is any), it shouldn't be an issue
             /// as you needed to Deserialised that cache (or set an empty format) to m_PlayerScore by using OpenSavedScore();
             ///
-            /// This method increase m_ErrorNumber on fail.
-            /// 
-            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
-            /// 
-            /// </summary>
+            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
             if (m_ErrorNumber < ERROR_LIMIT)
             {
