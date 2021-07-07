@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 
 namespace BSDiscordRanking
 {
@@ -11,8 +12,8 @@ namespace BSDiscordRanking
         private LevelFormat m_Level;
         private string m_SuffixName;
         private string m_Path;
-        private int m_RetryLimit = 3;
-        private int m_RetryNumber = 0;
+        private int m_ErrorLimit = 3;
+        private int m_ErrorNumber = 0;
 
         public Level(int p_LevelID)
         {
@@ -20,7 +21,7 @@ namespace BSDiscordRanking
             m_Path = @".\Levels\";
             m_SuffixName = "_Level";
 
-            /////////////////////////////// Needed Setup Method //////////////////////////////////
+            /////////////////////////////// Needed Setup Method ///////////////////////////////////
             
             CreateDirectory(); /// Make the Level file's directory.
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
@@ -28,25 +29,24 @@ namespace BSDiscordRanking
             ///////////////////////////////////////////////////////////////////////////////////////
 
 
-            AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
-            AddMap("B76F546A682122155BE11739438FCAE6CFE2C2CF", "Standard", "Easy");
-            CreateDirectory();
+            //AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
+            //AddMap("B76F546A682122155BE11739438FCAE6CFE2C2CF", "Standard", "Easy");
 
         }
 
         private void LoadLevel()
         {
             /// <summary>
-            /// If First Launch* : Assign a Playlist Sample to m_Level.
-            /// This Method Load a Playlist from his path and Prefix Name
+            /// If First Launch* : Assign a Playlist Sample to m_Level. (mean there isn't any cache file yet)
+            /// This Method Load a Playlist from its path and Prefix Name
             /// then Deserialise it to m_Level.
-            /// * => If the playlist file failed to load (or don't exist), it will still load an empty format to m_Level.
+            /// * => If the playlist's file failed to load (or don't exist), it will still load an empty format to m_Level.
             ///
-            /// This method will be locked if m_RetryNumber < m_RetryLimit to avoid any loop error.
+            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
             /// 
             /// </summary>
 
-            if (m_RetryNumber < m_RetryLimit)
+            if (m_ErrorNumber < m_ErrorLimit)
             {
                 if (!Directory.Exists(m_Path))
                 {
@@ -105,11 +105,13 @@ namespace BSDiscordRanking
             /// <summary>
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
             ///
-            /// This method will be locked if m_RetryNumber < m_RetryLimit to avoid any loop error.
+            /// This method increase m_ErrorNumber on fail.
+            /// 
+            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
             /// 
             /// </summary>
 
-            if (m_RetryNumber < m_RetryLimit)
+            if (m_ErrorNumber < m_ErrorLimit)
             {
                 if (!Directory.Exists(m_Path))
                 {
@@ -118,10 +120,10 @@ namespace BSDiscordRanking
                         Directory.CreateDirectory(m_Path);
                         Console.WriteLine($"Directory {m_Path} Created");
                     }
-                    catch (Exception e)
+                    catch (Exception l_Exception)
                     {
-                        Console.WriteLine($"[Error] Couldn't Create Directory : {e.Message}");
-                        m_RetryNumber++;
+                        Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
+                        m_ErrorNumber++;
                     }
                 }
             }
@@ -140,11 +142,13 @@ namespace BSDiscordRanking
             /// Be Aware that it will replace the current Playlist file (if there is any), it shouldn't be an issue
             /// if you Deserialised that playlist to m_Level by using OpenSavedLevel();
             ///
-            /// This method will be locked if m_RetryNumber < m_RetryLimit to avoid any loop error.
+            /// This method increase m_ErrorNumber on fail.
+            /// 
+            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
             /// 
             /// </summary>
 
-            if (m_RetryNumber < m_RetryLimit)
+            if (m_ErrorNumber < m_ErrorLimit)
             {
                 try
                 {
@@ -166,7 +170,10 @@ namespace BSDiscordRanking
                     Console.WriteLine(
                         "An error occured While attempting to Write the Playlist file. (missing directory?)");
                     Console.WriteLine("Attempting to create the directory..");
-                    CreateDirectory(); /// m_RetryNumber will increase if the directory creation fail.
+                    m_ErrorNumber++;
+                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                    Thread.Sleep(200);
+                    ReWritePlaylist();
                 }
             }
             else
@@ -176,18 +183,18 @@ namespace BSDiscordRanking
             }
         }
 
-        private void AddMap(string p_Hash, string p_SelectedCharacteristic, string p_SelectedDifficultyName)
+        public void AddMap(string p_Hash, string p_SelectedCharacteristic, string p_SelectedDifficultyName)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist() Method to update the file.
             /// It use the Hash, the Selected Characteristic (Standard, Lawless, etc)
             /// and the choosed Difficulty Name (Easy, Normal, Hard, Expert, ExpertPlus);
             ///
-            /// This method will be locked if m_RetryNumber < m_RetryLimit to avoid any loop error.
+            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
             /// 
             /// </summary>
 
-            if (m_RetryNumber < m_RetryLimit)
+            if (m_ErrorNumber < m_ErrorLimit)
             {
                 if (m_Level != null)
                 {
@@ -234,7 +241,7 @@ namespace BSDiscordRanking
                 else
                 {
                     Console.WriteLine("Seems like you forgot to Load the Level, Attempting to load the Level Cache..");
-                    m_RetryNumber++;
+                    m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Hash}");
                     AddMap(p_Hash, p_SelectedCharacteristic, p_SelectedDifficultyName);
@@ -248,13 +255,13 @@ namespace BSDiscordRanking
             }
         }
 
-        private void ResetRetryNumber()
+        private void ResetRetryNumber() /// Concidering the instance is pretty much created for each command, this is useless.
         {
             /// <summary>
-            /// This Method Reset m_RetryNumber to 0, because if that number exceed m_RetryLimit, all the "dangerous" method will be locked.
+            /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.
             /// </summary>
 
-            m_RetryNumber = 0;
+            m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
         }
     }
