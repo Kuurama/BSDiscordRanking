@@ -36,15 +36,13 @@ namespace BSDiscordRanking
 
         private void LoadLevel()
         {
-            /// <summary>
             /// If First Launch* : Assign a Playlist Sample to m_Level. (mean there isn't any cache file yet)
             /// This Method Load a Playlist from its path and Prefix Name
             /// then Deserialise it to m_Level.
             /// * => If the playlist's file failed to load (or don't exist), it will still load an empty format to m_Level.
             ///
             /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
-            /// 
-            /// </summary>
+
 
             if (m_ErrorNumber < m_ErrorLimit)
             {
@@ -102,15 +100,10 @@ namespace BSDiscordRanking
 
         private void CreateDirectory()
         {
-            /// <summary>
-            /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
-            ///
-            /// This method increase m_ErrorNumber on fail.
-            /// 
-            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
-            /// 
-            /// </summary>
 
+            /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
+            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
+            
             if (m_ErrorNumber < m_ErrorLimit)
             {
                 if (!Directory.Exists(m_Path))
@@ -136,17 +129,12 @@ namespace BSDiscordRanking
 
         private void ReWritePlaylist()
         {
-            /// <summary>
             /// This Method Serialise the data from m_Level and create a playlist file depending on the path parameter
             /// and it's PrefixName parameter (Prefix is usefull to sort playlist in the game).
             /// Be Aware that it will replace the current Playlist file (if there is any), it shouldn't be an issue
             /// if you Deserialised that playlist to m_Level by using OpenSavedLevel();
             ///
-            /// This method increase m_ErrorNumber on fail.
-            /// 
-            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
-            /// 
-            /// </summary>
+            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
             if (m_ErrorNumber < m_ErrorLimit)
             {
@@ -191,8 +179,6 @@ namespace BSDiscordRanking
             /// and the choosed Difficulty Name (Easy, Normal, Hard, Expert, ExpertPlus);
             ///
             /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
-            /// 
-            /// </summary>
 
             if (m_ErrorNumber < m_ErrorLimit)
             {
@@ -255,12 +241,9 @@ namespace BSDiscordRanking
             }
         }
 
-        private void ResetRetryNumber() /// Concidering the instance is pretty much created for each command, this is useless.
+        private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
         {
-            /// <summary>
             /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.
-            /// </summary>
-
             m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
         }
