@@ -8,8 +8,8 @@ namespace BSDiscordRanking
 {
     public class Level
     {
+        public LevelFormat m_Level;
         private int m_LevelID;
-        private LevelFormat m_Level;
         private string m_SuffixName;
         private string m_Path;
         private int m_ErrorLimit = 3;
@@ -143,7 +143,7 @@ namespace BSDiscordRanking
                     if (m_Level != null)
                     {
                         File.WriteAllText($"{m_Path}{m_LevelID}{m_SuffixName}.json", JsonSerializer.Serialize(m_Level));
-                                            Console.WriteLine($"{m_LevelID}{m_SuffixName} Updated ({m_Level.songs.Count} maps in Playlist)");
+                        Console.WriteLine($"{m_LevelID}{m_SuffixName} Updated ({m_Level.songs.Count} maps in Playlist)");
                     }
                     else
                     {
@@ -243,7 +243,7 @@ namespace BSDiscordRanking
 
         private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
         {
-            /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.
+            /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.    
             m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
         }
