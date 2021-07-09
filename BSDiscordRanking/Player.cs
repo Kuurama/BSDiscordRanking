@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 
 namespace BSDiscordRanking
@@ -24,7 +25,7 @@ namespace BSDiscordRanking
             m_PlayerID = p_PlayerID;
             m_Path = @$".\Players\{m_PlayerID}\";
             Console.WriteLine($"Selected Path is {m_Path}");
-            
+
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
             GetInfos(); ///< Get Full Player Info.
@@ -141,7 +142,7 @@ namespace BSDiscordRanking
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
-            
+
             if (m_ErrorNumber < ERROR_LIMIT)
             {
                 if (!Directory.Exists(m_Path))
@@ -192,7 +193,7 @@ namespace BSDiscordRanking
             ///
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
-            
+
             if (m_ErrorNumber < ERROR_LIMIT)
             {
                 if (m_HavePlayerInfo) /// Check if Player have Player's Info
@@ -228,7 +229,8 @@ namespace BSDiscordRanking
                                             {
                                                 if (l_Result.scores[l_Index].timeSet == m_PlayerScore.scores[i].timeSet)
                                                 {
-                                                    l_Skip = true; ///< One score already exist (will end the While Loop)
+                                                    l_Skip =
+                                                        true; ///< One score already exist (will end the While Loop)
                                                     break;
                                                 }
                                             }
@@ -241,7 +243,8 @@ namespace BSDiscordRanking
                                             if (m_PlayerScore.scores.RemoveAll(x =>
                                                     x.leaderboardId == l_NewScore.leaderboardId &&
                                                     x.score != l_NewScore.score) > 0 ||
-                                                    !(m_PlayerScore.scores.Any(x => x.leaderboardId == l_NewScore.leaderboardId)))
+                                                !(m_PlayerScore.scores.Any(x =>
+                                                    x.leaderboardId == l_NewScore.leaderboardId)))
                                             {
                                                 m_PlayerScore.scores.Add(l_NewScore);
                                                 l_NumberOfAddedScore++;
@@ -276,7 +279,8 @@ namespace BSDiscordRanking
                                                 break; /// End the While Loop.
                                             }
 
-                                            Console.WriteLine($"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
+                                            Console.WriteLine(
+                                                $"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
                                             m_NumberOfTry++;
                                             Thread.Sleep(30000);
                                         }
@@ -320,7 +324,8 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine(
+                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
@@ -385,7 +390,7 @@ namespace BSDiscordRanking
             /// <summary>
             /// This Method Delete the player's scores's cache file.
             /// </summary>
-            
+
             try
             {
                 File.Delete(m_Path + @"\score.json");
@@ -408,7 +413,7 @@ namespace BSDiscordRanking
             /// if it's down => internet is prob dead (or API total shutdown).
             /// 
             /// </summary>
-            
+
             using (WebClient l_WebClient = new WebClient())
             {
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
@@ -429,7 +434,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private void ResetRetryNumber() /// Concidering the instance is pretty much created for each command, this is useless.
+        private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless.
         {
             /// <summary>
             /// This Method Reset m_RetryNumber to 0, because if that number exceed m_RetryLimit, all the "dangerous" method will be locked.
@@ -437,6 +442,31 @@ namespace BSDiscordRanking
 
             m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
+        }
+
+        public void FetchPass()
+        {
+            List<Level> l_levels = Controllers.LevelController.FetchLevels();
+            ApiScores l_scores = JsonSerializer.Deserialize<ApiScores>(new StreamReader($"./Players/{m_PlayerID}/score.json").ReadToEnd());
+            List<ApiScore> l_pass = new();
+            for (int i = 0; i < l_levels.Count; i++)
+            {
+                foreach (var l_song in l_levels[i].m_Level.songs)
+                {
+                    foreach (var l_score in l_scores.scores)
+                    {
+                        if (!l_score.mods.Contains("NF") || !l_score.mods.Contains("NA") || !l_score.mods.Contains("SS"))
+                        {
+                            if (l_song.hash == l_score.songHash); ///< TODO: Checking if diff is correct
+                            { 
+                                l_pass.Add(l_score);
+                                Console.WriteLine($"Added {l_score.songName}");
+                            }
+                            
+                        }
+                    }
+                }
+            }
         }
     }
 }

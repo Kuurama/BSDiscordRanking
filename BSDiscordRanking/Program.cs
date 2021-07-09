@@ -7,6 +7,8 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
+            new Player("76561198410694791").FetchPass();
+            
             /// Fetch all levels in the Levels's folder and put them in a list
             List<Level> l_levels = Controllers.LevelController.FetchLevels();
             
