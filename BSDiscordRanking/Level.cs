@@ -22,7 +22,7 @@ namespace BSDiscordRanking
             m_SuffixName = "_Level";
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
-            
+
             CreateDirectory(); /// Make the Level file's directory.
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
 
@@ -31,7 +31,6 @@ namespace BSDiscordRanking
 
             //AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
             //AddMap("B76F546A682122155BE11739438FCAE6CFE2C2CF", "Standard", "Easy");
-
         }
 
         private void LoadLevel()
@@ -100,10 +99,9 @@ namespace BSDiscordRanking
 
         private void CreateDirectory()
         {
-
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-            
+
             if (m_ErrorNumber < m_ErrorLimit)
             {
                 if (!Directory.Exists(m_Path))
@@ -151,7 +149,6 @@ namespace BSDiscordRanking
                         LoadLevel();
                         ReWritePlaylist();
                     }
-                    
                 }
                 catch
                 {
@@ -185,6 +182,7 @@ namespace BSDiscordRanking
                 if (m_Level != null)
                 {
                     bool l_SongAlreadyExist = false;
+                    bool l_DifficultyAlreadyExist = false;
                     SongFormat l_SongFormat = new SongFormat {hash = p_Hash};
                     InSongFormat l_InSongFormat = new InSongFormat
                     {
@@ -195,11 +193,12 @@ namespace BSDiscordRanking
 
                     if (m_Level.songs.Count != 0)
                     {
-                        for (int i = 0;
-                            i < m_Level.songs.Count;
-                            i++) /// check if the map already exist in the playlist.
+                        int l_I;
+                        for (l_I = 0;
+                            l_I < m_Level.songs.Count;
+                            l_I++) /// check if the map already exist in the playlist.
                         {
-                            if (m_Level.songs[i].hash == p_Hash)
+                            if (m_Level.songs[l_I].hash == p_Hash)
                             {
                                 l_SongAlreadyExist = true;
                                 break;
@@ -208,19 +207,34 @@ namespace BSDiscordRanking
 
                         if (l_SongAlreadyExist)
                         {
-                            Console.WriteLine($"Map {p_Hash} Already Exist In that Playlist");
+                            foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
+                            {
+                                if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                    l_DifficultyAlreadyExist = true;
+                            }
+
+                            if (l_DifficultyAlreadyExist)
+                            {
+                                Console.WriteLine($"Map {p_Hash} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
+                            }
+                            else
+                            {
+                                m_Level.songs[l_I].difficulties.Add(l_InSongFormat);
+                                Console.WriteLine($"Map {p_Hash} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Added");
+                                ReWritePlaylist();
+                            }
                         }
                         else
                         {
                             m_Level.songs.Add(l_SongFormat);
-                            Console.WriteLine($"Map {p_Hash} Added");
+                            Console.WriteLine($"Map {p_Hash} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Added");
                             ReWritePlaylist();
                         }
                     }
                     else
                     {
                         m_Level.songs.Add(l_SongFormat);
-                        Console.WriteLine($"Map {p_Hash} Added");
+                        Console.WriteLine($"Map {p_Hash} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Added");
                         ReWritePlaylist();
                     }
                 }
@@ -231,7 +245,6 @@ namespace BSDiscordRanking
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Hash}");
                     AddMap(p_Hash, p_SelectedCharacteristic, p_SelectedDifficultyName);
-                    
                 }
             }
             else
@@ -246,6 +259,11 @@ namespace BSDiscordRanking
             /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.    
             m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
+        }
+
+        public string GetPath()
+        {
+            return m_Path;
         }
     }
 }

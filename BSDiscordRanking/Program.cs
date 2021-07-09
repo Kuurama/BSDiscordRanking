@@ -7,14 +7,18 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
-            new Player("76561198410694791").FetchPass();
+            ///new Player("76561198410694791").FetchPass();
             
             /// Fetch all levels in the Levels's folder and put them in a list
-            List<Level> l_levels = Controllers.LevelController.FetchLevels();
-            
+            ///List<Level> l_levels = Controllers.LevelController.FetchLevels();
+
+            Level l_Level = new Level(1);
+            l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
+            l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "Expert");
+
             /// Command name: !addmap(myHash, Standard, MyDiff)
             /// Create a Level instance and add a map and it's infos to the level's playlist
-            l_levels[0].AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
+            ///l_levels[0].AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
            
             
             /// Command name: !checkscore
