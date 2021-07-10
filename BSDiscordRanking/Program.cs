@@ -8,6 +8,9 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
+            Discord.BotHandler.StartBot(ConfigController.ReadConfig());
+            
+            
             ///new Player("76561198410694791").FetchPass();
             
             /// Old stuff (code commented, List of level was useless):
