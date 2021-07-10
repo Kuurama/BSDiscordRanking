@@ -444,7 +444,13 @@ namespace BSDiscordRanking
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public void FetchPass()
+        
+        /// The New FetchPass will read the LevelController.json located at LevelController.GetPath()
+        /// Then Instanciate quickly each level from their levelID found in the controller file and get their maps info from their Instance.
+        /// Then comparing the Hash's from the maps on the Levels with the Hash on the player's scores (checking for negative modifiers)
+        /// And then storing those maps into a cache file made of 'Levels[].maps' format (make a new Format OR easy way : use LevelOutputs's format, the 'playlist' created will be useless tho, will only be used as cache.)
+        /// If you don't don't understand it, ask kuurama or leave the task to him. Thanks
+        /*public void FetchPass()
         {
             List<Level> l_levels = Controllers.LevelController.FetchLevels();
             ApiScores l_scores = JsonSerializer.Deserialize<ApiScores>(new StreamReader($"./Players/{m_PlayerID}/score.json").ReadToEnd());
@@ -467,6 +473,6 @@ namespace BSDiscordRanking
                     }
                 }
             }
-        }
+        }*/
     }
 }

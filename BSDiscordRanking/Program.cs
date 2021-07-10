@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BSDiscordRanking.Controllers;
 
 namespace BSDiscordRanking
 {
@@ -9,9 +10,14 @@ namespace BSDiscordRanking
         {
             ///new Player("76561198410694791").FetchPass();
             
+            /// Old stuff (code commented, List of level was useless):
             /// Fetch all levels in the Levels's folder and put them in a list
             ///List<Level> l_levels = Controllers.LevelController.FetchLevels();
 
+            /// New stuff :
+            /// Fetch all levels in the Level's folder and put them into a cache file named LevelController.json (LevelID of the levels : {"LevelID":[12,1,2,4]}) 
+            new LevelController().FetchLevel();
+            
             Level l_Level = new Level(1);
             l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
             l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "Expert");

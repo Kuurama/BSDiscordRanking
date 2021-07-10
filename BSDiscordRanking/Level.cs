@@ -10,16 +10,14 @@ namespace BSDiscordRanking
     {
         public LevelFormat m_Level;
         private int m_LevelID;
-        private string m_SuffixName;
-        private string m_Path;
-        private int m_ErrorLimit = 3;
+        private const string SUFFIX_NAME = "_Level"; /// Keep the underscore at the beginning to avoid issue with the controller.
+        private const string PATH = @".\Levels\";
+        private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
 
         public Level(int p_LevelID)
         {
             m_LevelID = p_LevelID;
-            m_Path = @".\Levels\";
-            m_SuffixName = "_Level";
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
@@ -43,9 +41,9 @@ namespace BSDiscordRanking
             /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
 
 
-            if (m_ErrorNumber < m_ErrorLimit)
+            if (m_ErrorNumber < ERROR_LIMIT)
             {
-                if (!Directory.Exists(m_Path))
+                if (!Directory.Exists(PATH))
                 {
                     Console.WriteLine("Seems like you forgot to Create the Level Directory, attempting creation..");
                     CreateDirectory();
@@ -54,7 +52,7 @@ namespace BSDiscordRanking
 
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($"{m_Path}{m_LevelID}{m_SuffixName}.json"))
+                    using (StreamReader l_SR = new StreamReader($"{PATH}{m_LevelID}{SUFFIX_NAME}.json"))
                     {
                         m_Level = JsonSerializer.Deserialize<LevelFormat>(l_SR.ReadToEnd());
                         if (m_Level == null) /// json contain "null"
@@ -87,7 +85,7 @@ namespace BSDiscordRanking
                         syncURL = null,
                         image = new string("")
                     };
-                    Console.WriteLine($"{m_LevelID}{m_SuffixName} Created (Empty Format)");
+                    Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Created (Empty Format)");
                 }
             }
             else
@@ -102,14 +100,14 @@ namespace BSDiscordRanking
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
-            if (m_ErrorNumber < m_ErrorLimit)
+            if (m_ErrorNumber < ERROR_LIMIT)
             {
-                if (!Directory.Exists(m_Path))
+                if (!Directory.Exists(PATH))
                 {
                     try
                     {
-                        Directory.CreateDirectory(m_Path);
-                        Console.WriteLine($"Directory {m_Path} Created");
+                        Directory.CreateDirectory(PATH);
+                        Console.WriteLine($"Directory {PATH} Created");
                     }
                     catch (Exception l_Exception)
                     {
@@ -134,14 +132,14 @@ namespace BSDiscordRanking
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
-            if (m_ErrorNumber < m_ErrorLimit)
+            if (m_ErrorNumber < ERROR_LIMIT)
             {
                 try
                 {
                     if (m_Level != null)
                     {
-                        File.WriteAllText($"{m_Path}{m_LevelID}{m_SuffixName}.json", JsonSerializer.Serialize(m_Level));
-                        Console.WriteLine($"{m_LevelID}{m_SuffixName} Updated ({m_Level.songs.Count} maps in Playlist)");
+                        File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.json", JsonSerializer.Serialize(m_Level));
+                        Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
                     }
                     else
                     {
@@ -177,7 +175,7 @@ namespace BSDiscordRanking
             ///
             /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
 
-            if (m_ErrorNumber < m_ErrorLimit)
+            if (m_ErrorNumber < ERROR_LIMIT)
             {
                 if (m_Level != null)
                 {
@@ -261,9 +259,9 @@ namespace BSDiscordRanking
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public string GetPath()
+        public static string GetPath()
         {
-            return m_Path;
+            return PATH;
         }
     }
 }
