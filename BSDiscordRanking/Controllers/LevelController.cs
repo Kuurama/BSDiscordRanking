@@ -8,7 +8,7 @@ namespace BSDiscordRanking.Controllers
 {
     public class LevelController
     {
-        private LevelControllerFormat m_LevelControllerFormat;
+        private LevelControllerFormat m_LevelController;
         private const string PATH = @".\";
         private const string FILENAME = "LevelController";
         private const int ERROR_LIMIT = 3;
@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Controllers
             try
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
-                m_LevelControllerFormat = new LevelControllerFormat {LevelID = new List<int>()};
+                m_LevelController = new LevelControllerFormat {LevelID = new List<int>()};
                 string l_StringLevelID = "";
                 int l_MyInt;
 
@@ -36,7 +36,7 @@ namespace BSDiscordRanking.Controllers
 
                     try
                     {
-                        m_LevelControllerFormat.LevelID.Add(l_MyInt);
+                        m_LevelController.LevelID.Add(l_MyInt);
                     }
                     catch (Exception l_Exception)
                     {
@@ -49,7 +49,7 @@ namespace BSDiscordRanking.Controllers
             catch (Exception)
             {
                 Console.WriteLine($"Don't forget to add Levels before Fetching, creating an Empty LevelController's config file..");
-                m_LevelControllerFormat = new LevelControllerFormat()
+                m_LevelController = new LevelControllerFormat()
                 {
                     LevelID = new List<int>()
                 };
@@ -59,7 +59,7 @@ namespace BSDiscordRanking.Controllers
 
         private void ReWriteController()
         {
-            /// This Method Serialise the data from m_LevelControllerFormat and create a cache file depending on the path parameter
+            /// This Method Serialise the data from m_LevelController and create a cache file depending on the path parameter
             /// and it's PrefixName parameter (Prefix is usefull to sort playlist in the game).
             /// Be Aware that it will replace the current Playlist file (if there is any), it shouldn't be an issue
             /// if you Deserialised that playlist to m_Level by using OpenSavedLevel();
@@ -69,10 +69,10 @@ namespace BSDiscordRanking.Controllers
             {
                 try
                 {
-                    if (m_LevelControllerFormat != null)
+                    if (m_LevelController != null)
                     {
-                        File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(m_LevelControllerFormat));
-                        Console.WriteLine($"Updated LevelController Config File at {PATH}{FILENAME}.json ({m_LevelControllerFormat.LevelID.Count} Level)");
+                        File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(m_LevelController));
+                        Console.WriteLine($"Updated LevelController Config File at {PATH}{FILENAME}.json ({m_LevelController.LevelID.Count} Level)");
                     }
                     else
                     {
@@ -101,6 +101,11 @@ namespace BSDiscordRanking.Controllers
         public static string GetPath()
         {
             return PATH;
+        }
+        
+        public static string GetFileName()
+        {
+            return FILENAME;
         }
 
         private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.

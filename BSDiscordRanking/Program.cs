@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using BSDiscordRanking.Controllers;
 
 namespace BSDiscordRanking
@@ -8,22 +9,25 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
-            Discord.BotHandler.StartBot(ConfigController.ReadConfig());
+            //Discord.BotHandler.StartBot(ConfigController.ReadConfig());
             
-            
-            ///new Player("76561198410694791").FetchPass();
-            
-            /// Old stuff (code commented, List of level was useless):
-            /// Fetch all levels in the Levels's folder and put them in a list
-            ///List<Level> l_levels = Controllers.LevelController.FetchLevels();
-
             /// New stuff :
             /// Fetch all levels in the Level's folder and put them into a cache file named LevelController.json (LevelID of the levels : {"LevelID":[12,1,2,4]}) 
             new LevelController().FetchLevel();
             
-            Level l_Level = new Level(1);
-            l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
-            l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "Expert");
+            Player l_Player = new Player("76561198410694791");
+            l_Player.FetchScores();
+            l_Player.FetchPass();
+
+            /// Old stuff (code commented, List of level was useless):
+            /// Fetch all levels in the Levels's folder and put them in a list
+            ///List<Level> l_levels = Controllers.LevelController.FetchLevels();
+
+            
+            
+            /// Level l_Level = new Level(1);
+            /// l_Level.AddMap("E6E02417E730AD6408FBE6363E99EFD462083070", "Standard", "ExpertPlus");
+            /// l_Level.AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "Expert");
 
             /// Command name: !addmap(myHash, Standard, MyDiff)
             /// Create a Level instance and add a map and it's infos to the level's playlist

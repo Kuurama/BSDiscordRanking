@@ -23,7 +23,6 @@ namespace BSDiscordRanking
 
             CreateDirectory(); /// Make the Level file's directory.
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
-
             ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -71,6 +70,10 @@ namespace BSDiscordRanking
                         else
                         {
                             Console.WriteLine($"Level {m_LevelID} Loaded");
+                            foreach (var l_Songs in m_Level.songs)
+                            {
+                                l_Songs.hash = l_Songs.hash.ToUpper();
+                            }
                         }
                     }
                 }

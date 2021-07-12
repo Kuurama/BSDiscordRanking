@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
+using BSDiscordRanking.Controllers;
 
 namespace BSDiscordRanking
 {
@@ -15,6 +16,8 @@ namespace BSDiscordRanking
         private string m_Path;
         private ApiPlayerFull m_PlayerFull;
         private ApiScores m_PlayerScore;
+        private PlayerPassFormat m_PlayerPass;
+        private LevelControllerFormat m_LevelController;
         private int m_NumberOfTry = 0;
         private bool m_HavePlayerInfo = false;
         private const int ERROR_LIMIT = 3;
@@ -149,7 +152,7 @@ namespace BSDiscordRanking
                 {
                     Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
                     CreateDirectory();
-                    Console.WriteLine("Directory Created, continuing Loading Levels");
+                    Console.WriteLine("Continuing Loading Player's Score(s)");
                 }
 
                 try
@@ -344,8 +347,7 @@ namespace BSDiscordRanking
                 {
                     if (m_PlayerScore != null)
                     {
-                        File.WriteAllText(m_Path + @"\score.json",
-                            JsonSerializer.Serialize(m_PlayerScore));
+                        File.WriteAllText(m_Path + @"\score.json", JsonSerializer.Serialize(m_PlayerScore));
                         try
                         {
                             Console.WriteLine(
@@ -445,34 +447,151 @@ namespace BSDiscordRanking
         }
 
         
-        /// The New FetchPass will read the LevelController.json located at LevelController.GetPath()
-        /// Then Instanciate quickly each level from their levelID found in the controller file and get their maps info from their Instance.
-        /// Then comparing the Hash's from the maps on the Levels with the Hash on the player's scores (checking for negative modifiers)
-        /// And then storing those maps into a cache file made of 'Levels[].maps' format (make a new Format OR easy way : use LevelOutputs's format, the 'playlist' created will be useless tho, will only be used as cache.)
-        /// If you don't don't understand it, ask kuurama or leave the task to him. Thanks
-        /*public void FetchPass()
+        public void FetchPass()
         {
-            List<Level> l_levels = Controllers.LevelController.FetchLevels();
-            ApiScores l_scores = JsonSerializer.Deserialize<ApiScores>(new StreamReader($"./Players/{m_PlayerID}/score.json").ReadToEnd());
-            List<ApiScore> l_pass = new();
-            for (int i = 0; i < l_levels.Count; i++)
+            /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
+
+            LoadLevelControllerCache();
+
+            m_PlayerPass = new PlayerPassFormat()
             {
-                foreach (var l_song in l_levels[i].m_Level.songs)
+                songs = new List<SongFormat>()
+            };
+            List<Level> l_Levels = new List<Level>();
+            foreach (var l_LevelID in m_LevelController.LevelID)
+            {
+                l_Levels.Add(new Level(l_LevelID));
+            }
+
+            SongFormat l_PassedSong = new SongFormat();
+
+            for (int i = 0; i < l_Levels.Count; i++)
+            {
+                foreach (var l_Song in l_Levels[i].m_Level.songs)
                 {
-                    foreach (var l_score in l_scores.scores)
+                    foreach (var l_Score in m_PlayerScore.scores)
                     {
-                        if (!l_score.mods.Contains("NF") || !l_score.mods.Contains("NA") || !l_score.mods.Contains("SS"))
+                        if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
                         {
-                            if (l_song.hash == l_score.songHash); ///< TODO: Checking if diff is correct
-                            { 
-                                l_pass.Add(l_score);
-                                Console.WriteLine($"Added {l_score.songName}");
+                            if (l_Song.hash == l_Score.songHash) ///< TODO: Checking if diff is correct
+                            {
+                                l_PassedSong.hash = l_Song.hash;
+                                l_PassedSong.difficulties = l_Song.difficulties;
+                                m_PlayerPass.songs.Add(l_PassedSong);
+                                Console.WriteLine($"Added {l_Score.songName}");
                             }
-                            
                         }
                     }
                 }
             }
-        }*/
+            ReWritePass();
+        }
+
+        private void LoadPass()
+        {
+            if (!Directory.Exists(m_Path))
+            {
+                Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
+                CreateDirectory();
+                Console.WriteLine("Continuing Loading Player's Pass");
+            }
+            else
+            {
+                try
+                {
+                    using (StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json"))
+                    {
+                        m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                        if (m_PlayerPass == null) /// json contain "null"
+                        {
+                            m_PlayerPass = new PlayerPassFormat()
+                            {
+                                songs = new List<SongFormat>()
+                            };
+                            Console.WriteLine($"PlayerPass Created (Empty Format), file contained null");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"pass.json of {m_PlayerID} loaded");
+                        }
+                    }
+
+                    ReWritePass();
+                }
+                catch (Exception) /// file format is wrong / there isn't any file.
+                {
+                    m_PlayerPass = new PlayerPassFormat()
+                    {
+                        songs = new List<SongFormat>()
+                    };
+                    ReWritePass();
+                    Console.WriteLine($@"{m_Path}pass.json Created (Empty Format)");
+                }
+            }
+        }
+
+        private void LoadLevelControllerCache()
+        {
+            if (!Directory.Exists(LevelController.GetPath()))
+            {
+                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command : LevelController's directory is missing");
+            }
+            else
+            {
+                try
+                {
+                    using (StreamReader l_SR = new StreamReader($@"{LevelController.GetPath()}\{LevelController.GetFileName()}.json"))
+                    {
+                        m_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
+                        if (m_LevelController == null) /// json contain "null"
+                            Console.WriteLine("Error LevelControllerCache contain null");
+                        else
+                            Console.WriteLine($"LevelControllerCache Loaded with {m_LevelController.LevelID.Count} Level saved");
+                    }
+                }
+                catch (Exception) /// file format is wrong / there isn't any file.
+                {
+                    Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
+                }
+            }
+        }
+
+        private void ReWritePass()
+        {
+            try
+            {
+                if (m_PlayerPass != null)
+                {
+                    File.WriteAllText($@"{m_Path}\pass.json", JsonSerializer.Serialize(m_PlayerPass));
+                    try
+                    {
+                        Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.songs.Count} song(s) are stored (song number <= number of scores : multiple diff)");
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Seems Like you forgot to Get Player Info, Attempting to get player's info");
+                        GetInfos();
+                        ReWritePass();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Seems like you forgot to load the Player's Passes, Attempting to load..");
+                    LoadPass();
+                    ReWritePass();
+                }
+            }
+            catch
+            {
+                Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory?)");
+                Console.WriteLine("Attempting to create the directory..");
+                m_ErrorNumber++;
+                CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                Thread.Sleep(200);
+                ReWritePass();
+            }
+        }
+        
+        
     }
 }
