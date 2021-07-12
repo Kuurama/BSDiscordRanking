@@ -9,15 +9,16 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
+            UserController.ReadDB();
             Discord.BotHandler.StartBot(ConfigController.ReadConfig());
             
             /// New stuff :
             /// Fetch all levels in the Level's folder and put them into a cache file named LevelController.json (LevelID of the levels : {"LevelID":[12,1,2,4]}) 
-            new LevelController().FetchLevel();
+            //new LevelController().FetchLevel();
             
-            Player l_Player = new Player("76561198410694791");
-            l_Player.FetchScores();
-            l_Player.FetchPass();
+            //Player l_Player = new Player("discord id","76561198410694791");
+            //l_Player.FetchScores();
+            //l_Player.FetchPass();
 
             /// Old stuff (code commented, List of level was useless):
             /// Fetch all levels in the Levels's folder and put them in a list
