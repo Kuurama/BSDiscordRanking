@@ -8,19 +8,25 @@ namespace BSDiscordRanking.Discord.Modules
 {
     public class Commands : ModuleBase<SocketCommandContext>
     {
-
+        [Command("scan")]
+        public async Task Scan_Scores()
+        {
+            
+        }
+        
+        
         [Command("unlink")]
         public async Task UnLinkUser()
         {
             /// TODO: HANDLE UNLINK SPECIFIC USERS IF ADMIN
             if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
             {
-                ReplyAsync($"Sorry, you doesn't have any account linked. Please use **{BotHandler.m_Prefix}link** instead.");
+                ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             }
             else
             {
                 UserController.RemovePlayer(Context.User.Id.ToString());
-                ReplyAsync("Your account was successfully unlinked!");
+                ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
             }
 
         }
@@ -32,12 +38,12 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 /// TODO: VERIFY SCORESABER ACCOUNT
                 UserController.AddPlayer(Context.User.Id.ToString(), p_scoreSaberArg);
-                await ReplyAsync("Your account has been successfully linked.");
+                await ReplyAsync($"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
             }
             else if(p_scoreSaberArg.Length != 17)
-                await ReplyAsync("Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
+                await ReplyAsync("> :x: Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
             else
-                await ReplyAsync($"Sorry, but your account already has been linked. Please use **{BotHandler.m_Prefix}unlink**.");
+                await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
         }
         
         
@@ -46,7 +52,7 @@ namespace BSDiscordRanking.Discord.Modules
         [RequireOwner]
         public async Task Reset_config()
         {
-            await ReplyAsync("After the bot finished to reset the config, it will stops.");
+            await ReplyAsync("> :white_check_mark: After the bot finished to reset the config, it will stops.");
             ConfigController.CreateConfig();
         }
 
@@ -55,12 +61,12 @@ namespace BSDiscordRanking.Discord.Modules
         {
             EmbedBuilder l_Builder = new EmbedBuilder();
             l_Builder.WithTitle("User Commands");
-            l_Builder.AddField(BotHandler.m_Prefix + "help", "This message <:flushed:864139721067462697>", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "link **[id]**", "Links your ScoreSaber account", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level", true);
-            l_Builder.AddField("oui oui", "baguette", true);
-            l_Builder.AddField("ranked", "bad", true);
-            l_Builder.AddField("umby", "when will multiplayer be out?", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "link **[id]**", "Links your ScoreSaber account.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "unlink", "Unlinks your ScoreSaber account", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "", "do something", true);
             l_Builder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
             
