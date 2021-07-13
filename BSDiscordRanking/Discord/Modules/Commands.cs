@@ -12,7 +12,8 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("unlink")]
         public async Task UnLinkUser()
         {
-            if (!string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+            /// TODO: HANDLE UNLINK SPECIFIC USERS IF ADMIN
+            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
             {
                 ReplyAsync($"Sorry, you doesn't have any account linked. Please use **{BotHandler.m_Prefix}link** instead.");
             }
@@ -27,17 +28,16 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("link")]
         public async Task LinkUser(string p_scoreSaberArg)
         {
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_scoreSaberArg.Length != 17) ///< check if id is in a correct length
-            {   
-                /// TODO: HANDLE SCORESABER LINKS
+            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_scoreSaberArg.Length == 17) ///< check if id is in a correct length
+            {
                 /// TODO: VERIFY SCORESABER ACCOUNT
                 UserController.AddPlayer(Context.User.Id.ToString(), p_scoreSaberArg);
                 await ReplyAsync("Your account has been successfully linked.");
             }
+            else if(p_scoreSaberArg.Length != 17)
+                await ReplyAsync("Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
             else
-            {
                 await ReplyAsync($"Sorry, but your account already has been linked. Please use **{BotHandler.m_Prefix}unlink**.");
-            }
         }
         
         
