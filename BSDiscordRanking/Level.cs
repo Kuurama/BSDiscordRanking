@@ -182,6 +182,7 @@ namespace BSDiscordRanking
             {
                 if (m_Level != null)
                 {
+                    p_Hash = p_Hash.ToUpper();
                     bool l_SongAlreadyExist = false;
                     bool l_DifficultyAlreadyExist = false;
                     SongFormat l_SongFormat = new SongFormat {hash = p_Hash};

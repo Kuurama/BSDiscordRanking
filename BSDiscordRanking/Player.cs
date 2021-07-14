@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using BSDiscordRanking.Controllers;
 
@@ -446,12 +445,13 @@ namespace BSDiscordRanking
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        
+
         public void FetchPass()
         {
             /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
 
             LoadLevelControllerCache();
+            PlayerPassFormat l_OldPlayerPass = ReturnPass();
 
             m_PlayerPass = new PlayerPassFormat()
             {
@@ -463,8 +463,6 @@ namespace BSDiscordRanking
                 l_Levels.Add(new Level(l_LevelID));
             }
 
-            SongFormat l_PassedSong = new SongFormat();
-
             for (int i = 0; i < l_Levels.Count; i++)
             {
                 foreach (var l_Song in l_Levels[i].m_Level.songs)
@@ -473,22 +471,96 @@ namespace BSDiscordRanking
                     {
                         if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
                         {
-                            if (l_Song.hash == l_Score.songHash) ///< TODO: Checking if diff is correct
+                            if (l_Song.hash.ToUpper() == l_Score.songHash.ToUpper()) ///< TODO: Checking if diff is correct
                             {
-                                l_PassedSong.hash = l_Song.hash;
-                                l_PassedSong.difficulties = l_Song.difficulties;
-                                m_PlayerPass.songs.Add(l_PassedSong);
-                                Console.WriteLine($"Added {l_Score.songName}");
+                                bool l_MapStored = false;
+                                if (l_Song.difficulties is not null)
+                                {
+                                    foreach (var l_Difficulty in l_Song.difficulties)
+                                    {
+                                        if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
+                                        {
+                                            foreach (var l_CachedPassedSong in m_PlayerPass.songs)
+                                            {
+                                                bool l_DiffExist = false;
+                                                bool l_OldDiffExist = false;
+                                                if (l_CachedPassedSong.difficulties != null && String.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                {
+                                                    l_MapStored = true;
+                                                    foreach (var l_CachedDifficulty in l_CachedPassedSong.difficulties)
+                                                    {
+                                                        foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
+                                                        {
+                                                            if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
+                                                            {
+                                                                foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
+                                                                {
+                                                                    if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name)
+                                                                    {
+                                                                        l_OldDiffExist = true;
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
+                                                        {
+                                                            l_DiffExist = true;
+                                                            break;
+                                                        }
+                                                        
+                                                    }
+
+                                                    if (!l_DiffExist)
+                                                    {
+                                                        l_CachedPassedSong.difficulties.Add(l_Difficulty);
+                                                        if (!l_OldDiffExist)
+                                                        {
+                                                            Console.WriteLine($"Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass (new diff passed while there was already a passed diff) 1/2
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if (!l_MapStored)
+                                            {
+                                                bool l_WasStored = false;
+                                                SongFormat l_PassedSong = new SongFormat();
+                                                l_PassedSong.difficulties = new List<InSongFormat>();
+                                                l_PassedSong.hash = l_Song.hash.ToUpper();
+                                                l_PassedSong.difficulties.Add(l_Difficulty);
+                                                m_PlayerPass.songs.Add(l_PassedSong);
+
+                                                foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
+                                                {
+                                                    if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                    {
+                                                        l_WasStored = true;
+                                                        break;
+                                                    }
+                                                }
+
+                                                if (!l_WasStored)
+                                                {
+                                                    Console.WriteLine($"Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass 2/2
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
+
             ReWritePass();
         }
 
-        private void LoadPass()
+        private PlayerPassFormat ReturnPass()
         {
+            /// This method return the Serialised version of the current saved Player's pass, ruturn an empty on if none.
+            PlayerPassFormat l_PlayerPass = new PlayerPassFormat();
             if (!Directory.Exists(m_Path))
             {
                 Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
@@ -501,10 +573,10 @@ namespace BSDiscordRanking
                 {
                     using (StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json"))
                     {
-                        m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
-                        if (m_PlayerPass == null) /// json contain "null"
+                        l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                        if (l_PlayerPass == null) /// json contain "null"
                         {
-                            m_PlayerPass = new PlayerPassFormat()
+                            l_PlayerPass = new PlayerPassFormat()
                             {
                                 songs = new List<SongFormat>()
                             };
@@ -515,19 +587,18 @@ namespace BSDiscordRanking
                             Console.WriteLine($"pass.json of {m_PlayerID} loaded");
                         }
                     }
-
-                    ReWritePass();
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {
-                    m_PlayerPass = new PlayerPassFormat()
+                    l_PlayerPass = new PlayerPassFormat()
                     {
                         songs = new List<SongFormat>()
                     };
-                    ReWritePass();
                     Console.WriteLine($@"{m_Path}pass.json Created (Empty Format)");
                 }
             }
+
+            return l_PlayerPass;
         }
 
         private void LoadLevelControllerCache()
@@ -576,9 +647,8 @@ namespace BSDiscordRanking
                 }
                 else
                 {
-                    Console.WriteLine("Seems like you forgot to load the Player's Passes, Attempting to load..");
-                    LoadPass();
-                    ReWritePass();
+                    Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");
+                    FetchScores();
                 }
             }
             catch
@@ -591,7 +661,5 @@ namespace BSDiscordRanking
                 ReWritePass();
             }
         }
-        
-        
     }
 }
