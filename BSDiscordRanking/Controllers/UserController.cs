@@ -9,10 +9,18 @@ namespace BSDiscordRanking.Controllers
     {
         static List<UserFormat> m_Users = new List<UserFormat>();
 
-        public static void AddPlayer(string disID, string scoID)
+        public static bool UserExist(string p_disID)
         {
-            m_Users.Add(new UserFormat{DiscordID = disID, ScoreSaberID = scoID});
-            Console.WriteLine($"Player {disID} was added with scoresaber: {scoID}");
+            if (string.IsNullOrEmpty(GetPlayer(p_disID)))
+                return false;
+            else
+                return true;
+        }
+
+        public static void AddPlayer(string p_disID, string p_scoID)
+        {
+            m_Users.Add(new UserFormat{DiscordID = p_disID, ScoreSaberID = p_scoID});
+            Console.WriteLine($"Player {p_disID} was added with scoresaber: {p_scoID}");
             GenerateDB();
         }
 

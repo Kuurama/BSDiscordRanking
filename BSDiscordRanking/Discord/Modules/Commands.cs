@@ -11,7 +11,14 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("scan")]
         public async Task Scan_Scores()
         {
-            
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+                ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+            else
+            {
+                Player l_player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                l_player.FetchScores();
+                l_player.FetchPass();
+            }
         }
         
         
