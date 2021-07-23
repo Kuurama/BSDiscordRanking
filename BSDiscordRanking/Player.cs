@@ -6,6 +6,8 @@ using System.Net;
 using System.Text.Json;
 using System.Threading;
 using BSDiscordRanking.Controllers;
+using Discord.Commands;
+using Discord.WebSocket;
 
 namespace BSDiscordRanking
 {
@@ -179,7 +181,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void FetchScores()
+        public void FetchScores(SocketCommandContext p_context = null)
         {
             /// If First Launch : It get ALL the player's score from the api then cache it to a score file. (mean there isn't any cache file yet)
             /// This Method Get the Player's Scores from the api, then call ReWriteScore() to Serialize them into a cache's file.
@@ -196,6 +198,9 @@ namespace BSDiscordRanking
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
 
+            p_context.Channel.SendMessageAsync(
+                "> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
+            
             if (m_ErrorNumber < ERROR_LIMIT)
             {
                 if (m_HavePlayerInfo) /// Check if Player have Player's Info
@@ -266,7 +271,8 @@ namespace BSDiscordRanking
 
                                         if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
                                         {
-                                            Console.WriteLine("RateLimited, Trying again in 45sec");
+                                            p_context.Channel.SendMessageAsync(
+                                                "> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s.");
                                             Thread.Sleep(45000);
                                         }
                                     }
@@ -446,10 +452,10 @@ namespace BSDiscordRanking
         }
 
 
-        public void FetchPass()
+        public int FetchPass(SocketCommandContext p_context = null)
         {
             /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
-
+            int l_passes = 0;
             LoadLevelControllerCache();
             PlayerPassFormat l_OldPlayerPass = ReturnPass();
 
@@ -516,7 +522,9 @@ namespace BSDiscordRanking
                                                         l_CachedPassedSong.difficulties.Add(l_Difficulty);
                                                         if (!l_OldDiffExist)
                                                         {
-                                                            Console.WriteLine($"Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass (new diff passed while there was already a passed diff) 1/2
+                                                            /// Display new pass (new diff passed while there was already a passed diff) 1/2
+                                                            p_context.Channel.SendMessageAsync($"> <:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}");
+                                                            l_passes++;
                                                         }
                                                     }
                                                 }
@@ -542,7 +550,8 @@ namespace BSDiscordRanking
 
                                                 if (!l_WasStored)
                                                 {
-                                                    Console.WriteLine($"Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass 2/2
+                                                    p_context.Channel.SendMessageAsync($"> <:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass 2/2
+                                                    l_passes++;
                                                 }
                                             }
                                         }
@@ -555,6 +564,7 @@ namespace BSDiscordRanking
             }
 
             ReWritePass();
+            return l_passes;
         }
 
         private PlayerPassFormat ReturnPass()

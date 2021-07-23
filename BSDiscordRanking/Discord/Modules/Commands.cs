@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using System.Timers;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
@@ -16,12 +20,27 @@ namespace BSDiscordRanking.Discord.Modules
             else
             {
                 Player l_player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-                l_player.FetchScores();
-                l_player.FetchPass();
+                l_player.FetchScores(Context);
+                int l_fetchPass = l_player.FetchPass(Context);
+                if (l_fetchPass >= 1)
+                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_fetchPass} new maps!");
+                else
+                    await ReplyAsync($"> :x: Sorry, you didn't passed any new map.");
             }
         }
-        
-        
+
+        [Command("ping")]
+        public async Task Ping()
+        {
+            EmbedBuilder l_embedBuilder = new EmbedBuilder();
+            l_embedBuilder.AddField("Discord: ", new Ping().Send("discord.com").RoundtripTime + "ms");
+            l_embedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
+            l_embedBuilder.WithFooter("#LoveArche",
+                "https://images.genius.com/d4b8905048993e652aba3d8e105b5dbf.1000x1000x1.jpg");
+            l_embedBuilder.WithColor(Color.Blue);
+            await Context.Channel.SendMessageAsync("", false, l_embedBuilder.Build());
+        }
+
         [Command("unlink")]
         public async Task UnLinkUser()
         {
