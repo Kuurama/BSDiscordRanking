@@ -30,6 +30,7 @@ namespace BSDiscordRanking
     {
         public string hash { get; set; }
         public List<InSongFormat> difficulties { get; set; }
+        public string name { get; set; }
     }
 
     public class InSongFormat
@@ -37,4 +38,5 @@ namespace BSDiscordRanking
         public string characteristic { get; set; }
         public string name { get; set; }
     }
+    
 }

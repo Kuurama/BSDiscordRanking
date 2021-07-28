@@ -623,7 +623,7 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($@"{LevelController.GetPath()}\{LevelController.GetFileName()}.json"))
+                    using (StreamReader l_SR = new StreamReader($@"{LevelController.GetPath()}\{LevelController.GetFileName()}.bplist"))
                     {
                         m_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
                         if (m_LevelController == null) /// json contain "null"

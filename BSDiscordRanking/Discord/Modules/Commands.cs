@@ -7,11 +7,77 @@ using System.Timers;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
+using BeatSaverSharp;
 
 namespace BSDiscordRanking.Discord.Modules
 {
     public class Commands : ModuleBase<SocketCommandContext>
     {
+        [Command("ggp")]
+        public async Task GetGrindPool(int p_level)
+        {
+            if (p_level >= 0)
+            {
+                Level l_level = new Level(p_level);
+                EmbedBuilder l_embedBuilder = new EmbedBuilder();
+                l_embedBuilder.WithTitle($"Maps for Level {p_level}");
+                foreach (var l_song in l_level.m_Level.songs)
+                {
+                    foreach (var l_difficulty in l_song.difficulties)
+                    {
+                        l_embedBuilder.AddField(l_song.name,$"{l_difficulty.name} - {l_difficulty.characteristic}", true);
+                    }
+                }
+                await Context.Channel.SendMessageAsync("", false, l_embedBuilder.Build());
+                await Context.Channel.SendFileAsync(Level.GetPath() + $"/{p_level}{Level.SUFFIX_NAME}.bplist");
+            }
+            else
+            {
+                await ReplyAsync("> :x: Please enter a correct level number.");
+            }
+        }
+
+        [Command("addmap")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task AddMap(int p_level = 0, string p_key = "", string p_characteristic = "", string p_difficultyName = "")
+        {
+            if (p_level <= 0 || string.IsNullOrEmpty(p_key) || string.IsNullOrEmpty(p_characteristic) || string.IsNullOrEmpty(p_difficultyName))
+            {
+                ReplyAsync($"> :x: Seems like you didn't use the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
+            }
+            else
+            {
+                if (p_characteristic == "Lawless" || p_characteristic == "Standard" || p_characteristic == "90Degree" || p_characteristic == "360Degree")
+                {
+                    if (p_difficultyName == "Easy" || p_difficultyName == "Normal" ||
+                        p_difficultyName == "Hard" || p_difficultyName == "Expert" ||
+                        p_difficultyName == "ExpertPlus")
+                    {
+                        HttpOptions l_options = new HttpOptions("BSRanking", new Version(1, 0, 0));
+                        string l_hash = null;
+                        try
+                        {
+                            l_hash = new BeatSaver(l_options).Key(p_key).Result.Hash;
+                        }
+                        catch (Exception l_e)
+                        {
+                            await ReplyAsync($"> :x: Seems like BeatSaver didn't responded, the **key** might be wrong?");
+                        }
+                        if (!string.IsNullOrEmpty(l_hash))
+                            new Level(p_level).AddMap(l_hash, p_characteristic, p_difficultyName, Context);
+                    }
+
+                    else
+                        await ReplyAsync(
+                            $"> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                }
+                else
+                    await ReplyAsync(
+                        $"> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+
+            }
+        }
+        
         [Command("scan")]
         public async Task Scan_Scores()
         {
@@ -90,7 +156,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "link **[id]**", "Links your ScoreSaber account.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "unlink", "Unlinks your ScoreSaber account", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "TODO: Shows you the maps of your level.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "", "do something", true);
             l_Builder.WithColor(Color.Blue);
@@ -98,10 +164,11 @@ namespace BSDiscordRanking.Discord.Modules
             
             EmbedBuilder l_ModBuilder = new EmbedBuilder();
             l_ModBuilder.WithTitle("Admins Commands");
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap", "TODO: Add a map the the level", true);
+            l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..]", "Add a map to a level", true);
             l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Owner only: Reset the config file, **the bot will stop!**", true);
             l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "TODO: Unlinks the ScoreSaber account of a player", true);
             l_ModBuilder.WithColor(Color.Red);
+            l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
             await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
         }
         
