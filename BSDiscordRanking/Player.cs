@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -452,10 +453,11 @@ namespace BSDiscordRanking
         }
 
 
-        public int FetchPass(SocketCommandContext p_context = null)
+        public async Task<int> FetchPass(SocketCommandContext p_context = null)
         {
             /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
             int l_passes = 0;
+            new LevelController().FetchLevel();
             LoadLevelControllerCache();
             PlayerPassFormat l_OldPlayerPass = ReturnPass();
 
@@ -477,7 +479,7 @@ namespace BSDiscordRanking
                     {
                         if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
                         {
-                            if (l_Song.hash.ToUpper() == l_Score.songHash.ToUpper()) ///< TODO: Checking if diff is correct
+                            if (l_Song.hash.ToUpper() == l_Score.songHash.ToUpper())
                             {
                                 bool l_MapStored = false;
                                 if (l_Song.difficulties is not null)
@@ -523,7 +525,7 @@ namespace BSDiscordRanking
                                                         if (!l_OldDiffExist)
                                                         {
                                                             /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                            p_context.Channel.SendMessageAsync($"> <:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}");
+                                                            await p_context.Channel.SendMessageAsync($"> <:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}");
                                                             l_passes++;
                                                         }
                                                     }
@@ -550,7 +552,7 @@ namespace BSDiscordRanking
 
                                                 if (!l_WasStored)
                                                 {
-                                                    p_context.Channel.SendMessageAsync($"> <:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass 2/2
+                                                    await p_context.Channel.SendMessageAsync($"> <:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}"); /// Display new pass 2/2
                                                     l_passes++;
                                                 }
                                             }

@@ -16,12 +16,12 @@ namespace BSDiscordRanking.Discord.Modules
         public async Task Scan_Scores()
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
-                ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             else
             {
                 Player l_player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 l_player.FetchScores(Context);
-                int l_fetchPass = l_player.FetchPass(Context);
+                int l_fetchPass = await l_player.FetchPass(Context);
                 if (l_fetchPass >= 1)
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_fetchPass} new maps!");
                 else
@@ -90,7 +90,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "link **[id]**", "Links your ScoreSaber account.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "unlink", "Unlinks your ScoreSaber account", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "TODO: Shows you the maps of your level.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "", "do something", true);
             l_Builder.WithColor(Color.Blue);
@@ -98,9 +98,9 @@ namespace BSDiscordRanking.Discord.Modules
             
             EmbedBuilder l_ModBuilder = new EmbedBuilder();
             l_ModBuilder.WithTitle("Admins Commands");
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap", "Add a map the the level", true);
+            l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap", "TODO: Add a map the the level", true);
             l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Owner only: Reset the config file, **the bot will stop!**", true);
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "Unlinks the ScoreSaber account of a player", true);
+            l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "TODO: Unlinks the ScoreSaber account of a player", true);
             l_ModBuilder.WithColor(Color.Red);
             await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
         }
