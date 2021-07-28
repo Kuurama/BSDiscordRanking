@@ -6,12 +6,13 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
+            new LevelController().FetchLevel();
             UserController.ReadDB();
             Discord.BotHandler.StartBot(ConfigController.ReadConfig());
 
             /// New stuff :
             /// Fetch all levels in the Level's folder and put them into a cache file named LevelController.json (LevelID of the levels : {"LevelID":[12,1,2,4]}) 
-            new LevelController().FetchLevel();
+            
 
             Player l_Player = new Player("76561198410694791"); /// Use Kuurama "76561198126131670" for complete level 1 wdg pass with multiple diff
             l_Player.FetchScores();

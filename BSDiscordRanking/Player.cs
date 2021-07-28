@@ -457,20 +457,21 @@ namespace BSDiscordRanking
         {
             /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
             int l_passes = 0;
-            new LevelController().FetchLevel();
             LoadLevelControllerCache();
             PlayerPassFormat l_OldPlayerPass = ReturnPass();
-
             m_PlayerPass = new PlayerPassFormat()
             {
                 songs = new List<SongFormat>()
             };
             List<Level> l_Levels = new List<Level>();
+            // CETTE MERDE LA
+            Console.WriteLine(m_LevelController.ToString() + " dsq");
             foreach (var l_LevelID in m_LevelController.LevelID)
             {
                 l_Levels.Add(new Level(l_LevelID));
             }
-
+            
+            
             for (int i = 0; i < l_Levels.Count; i++)
             {
                 foreach (var l_Song in l_Levels[i].m_Level.songs)
@@ -623,7 +624,7 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($@"{LevelController.GetPath()}\{LevelController.GetFileName()}.bplist"))
+                    using (StreamReader l_SR = new StreamReader($@"{LevelController.GetPath()}\{LevelController.GetFileName()}.json "))
                     {
                         m_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
                         if (m_LevelController == null) /// json contain "null"
