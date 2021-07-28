@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using BeatSaverSharp;
+using BSDiscordRanking.Controllers;
 using Discord.Commands;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -146,6 +147,7 @@ namespace BSDiscordRanking
                     {
                         File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(m_Level));
                         Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
+                        new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
                     }
                     else
                     {
@@ -261,7 +263,6 @@ namespace BSDiscordRanking
                         m_ErrorNumber++;
                         p_socketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                     }
-                    
                 }
                 else
                 {

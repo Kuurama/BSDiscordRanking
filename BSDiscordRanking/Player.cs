@@ -199,9 +199,8 @@ namespace BSDiscordRanking
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
 
-            p_context.Channel.SendMessageAsync(
-                "> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
-            
+            p_context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
+
             if (m_ErrorNumber < ERROR_LIMIT)
             {
                 if (m_HavePlayerInfo) /// Check if Player have Player's Info
@@ -216,8 +215,7 @@ namespace BSDiscordRanking
                         /// Avoid doing useless attempt, Check player's number of score (8 score per request).
                         while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
                         {
-                            l_URL =
-                                @$"https://new.scoresaber.com/api/player/{m_PlayerFull.playerInfo.playerId}/scores/recent/{l_Page.ToString()}";
+                            l_URL = @$"https://new.scoresaber.com/api/player/{m_PlayerFull.playerInfo.playerId}/scores/recent/{l_Page.ToString()}";
                             using (WebClient l_WebClient = new WebClient())
                             {
                                 try
@@ -237,16 +235,14 @@ namespace BSDiscordRanking
                                             {
                                                 if (l_Result.scores[l_Index].timeSet == m_PlayerScore.scores[i].timeSet)
                                                 {
-                                                    l_Skip =
-                                                        true; ///< One score already exist (will end the While Loop)
+                                                    l_Skip = true; ///< One score already exist (will end the While Loop)
                                                     break;
                                                 }
                                             }
                                     }
 
                                     if (l_Result != null)
-                                        foreach (var l_NewScore in
-                                            l_Result.scores) /// Remove old score and add new score.
+                                        foreach (var l_NewScore in l_Result.scores) /// Remove old score and add new score.
                                         {
                                             if (m_PlayerScore.scores.RemoveAll(x =>
                                                     x.leaderboardId == l_NewScore.leaderboardId &&
@@ -266,14 +262,13 @@ namespace BSDiscordRanking
                                         Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
                                         if (l_Response.StatusCode == HttpStatusCode.NotFound)
                                         {
-                                            Console.WriteLine("No more Page to download");
+                                            Console.WriteLine($"No more Page to download, Downloaded {l_Page} Page(s)");
                                             break;
                                         }
 
                                         if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
                                         {
-                                            p_context.Channel.SendMessageAsync(
-                                                "> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s.");
+                                            p_context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
                                             Thread.Sleep(45000);
                                         }
                                     }
@@ -464,14 +459,12 @@ namespace BSDiscordRanking
                 songs = new List<SongFormat>()
             };
             List<Level> l_Levels = new List<Level>();
-            // CETTE MERDE LA
-            Console.WriteLine(m_LevelController.ToString() + " dsq");
             foreach (var l_LevelID in m_LevelController.LevelID)
             {
                 l_Levels.Add(new Level(l_LevelID));
             }
-            
-            
+
+
             for (int i = 0; i < l_Levels.Count; i++)
             {
                 foreach (var l_Song in l_Levels[i].m_Level.songs)
@@ -512,12 +505,12 @@ namespace BSDiscordRanking
                                                                 }
                                                             }
                                                         }
+
                                                         if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
                                                         {
                                                             l_DiffExist = true;
                                                             break;
                                                         }
-                                                        
                                                     }
 
                                                     if (!l_DiffExist)
