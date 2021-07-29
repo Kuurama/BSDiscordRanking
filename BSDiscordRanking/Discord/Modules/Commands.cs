@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
@@ -27,11 +29,10 @@ namespace BSDiscordRanking.Discord.Modules
             }
             else if (p_level == "all")
             {
-                foreach (var l_levelID in new LevelController().m_LevelController.LevelID)
-                {
-                    
-                }
-                await Context.Channel.SendFileAsync("", "> :white_check_mark: Here's your playlist folder!");
+                if (File.Exists("levels.zip"))
+                    File.Delete("levels.zip");
+                ZipFile.CreateFromDirectory("./Levels/", "levels.zip");
+                await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
             }
             else
             {
