@@ -2,17 +2,45 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
 using BeatSaverSharp;
+using Newtonsoft.Json.Serialization;
 
 namespace BSDiscordRanking.Discord.Modules
 {
     public class Commands : ModuleBase<SocketCommandContext>
     {
+        [Command("getplaylist")]
+        [Alias("gpl")]
+        public async Task GetPlaylist(string p_level)
+        {
+            int p_levelID;
+            if (int.TryParse(p_level, out p_levelID))
+            {
+                // TODO: check if playlist exist
+                await Context.Channel.SendFileAsync(Level.GetPath() + $"/{p_level}{Level.SUFFIX_NAME}.bplist", "> :white_check_mark: Here's your playlist!");
+            }
+            else if (p_level == "all")
+            {
+                foreach (var l_levelID in new LevelController().m_LevelController.LevelID)
+                {
+                    
+                }
+                await Context.Channel.SendFileAsync("", "> :white_check_mark: Here's your playlist folder!");
+            }
+            else
+            {
+                await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
+            }
+
+
+        }
+        
         [Command("ggp")]
         public async Task GetGrindPool(int p_level)
         {
@@ -28,8 +56,9 @@ namespace BSDiscordRanking.Discord.Modules
                         l_embedBuilder.AddField(l_song.name,$"{l_difficulty.name} - {l_difficulty.characteristic}", true);
                     }
                 }
+                l_embedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_level}");
                 await Context.Channel.SendMessageAsync("", false, l_embedBuilder.Build());
-                await Context.Channel.SendFileAsync(Level.GetPath() + $"/{p_level}{Level.SUFFIX_NAME}.bplist");
+                
             }
             else
             {

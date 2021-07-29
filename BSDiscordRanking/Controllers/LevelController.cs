@@ -8,7 +8,7 @@ namespace BSDiscordRanking.Controllers
 {
     public class LevelController
     {
-        private LevelControllerFormat m_LevelController;
+        public LevelControllerFormat m_LevelController;
         private const string PATH = @".\";
         private const string FILENAME = "LevelController";
         private const int ERROR_LIMIT = 3;
