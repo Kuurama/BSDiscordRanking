@@ -14,6 +14,10 @@ namespace BSDiscordRanking.Controllers
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
 
+        public LevelController()
+        {
+            FetchLevel(); /// Force the Fetch to instanciate m_LevelController.
+        }
         public void FetchLevel()
         {
             try
