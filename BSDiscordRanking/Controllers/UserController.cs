@@ -9,36 +9,37 @@ namespace BSDiscordRanking.Controllers
     {
         static List<UserFormat> m_Users = new List<UserFormat>();
 
-        public static bool UserExist(string p_disID)
+        public static bool UserExist(string p_DisID)
         {
-            if (string.IsNullOrEmpty(GetPlayer(p_disID)))
+            if (string.IsNullOrEmpty(GetPlayer(p_DisID)))
                 return false;
             else
                 return true;
         }
 
-        public static void AddPlayer(string p_disID, string p_scoID)
+        public static void AddPlayer(string p_DisID, string p_ScoID)
         {
-            m_Users.Add(new UserFormat{DiscordID = p_disID, ScoreSaberID = p_scoID});
-            Console.WriteLine($"Player {p_disID} was added with scoresaber: {p_scoID}");
+            m_Users.Add(new UserFormat {DiscordID = p_DisID, ScoreSaberID = p_ScoID});
+            Console.WriteLine($"Player {p_DisID} was added with scoresaber: {p_ScoID}");
             GenerateDB();
         }
 
-        public static bool RemovePlayer(string p_disID)
+        public static bool RemovePlayer(string p_DisID)
         {
-            foreach (var l_user in m_Users)
+            foreach (var l_User in m_Users)
             {
-                if (p_disID == l_user.DiscordID)
+                if (p_DisID == l_User.DiscordID)
                 {
-                    m_Users.Remove(l_user);
-                    Console.WriteLine($"Player {l_user.DiscordID} was removed");
+                    m_Users.Remove(l_User);
+                    Console.WriteLine($"Player {l_User.DiscordID} was removed");
                     GenerateDB();
                     return true;
                 }
             }
+
             return false;
         }
-        
+
 
         public static void GenerateDB()
         {
@@ -59,15 +60,16 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        public static string GetPlayer(string p_disID)
+        public static string GetPlayer(string p_DisID)
         {
-            foreach (var l_user in m_Users)
+            foreach (var l_User in m_Users)
             {
-                if (p_disID == l_user.DiscordID)
+                if (p_DisID == l_User.DiscordID)
                 {
-                    return l_user.ScoreSaberID;
+                    return l_User.ScoreSaberID;
                 }
             }
+
             return null;
         }
     }

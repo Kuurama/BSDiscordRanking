@@ -8,7 +8,7 @@ namespace BSDiscordRanking.Controllers
 {
     public class LevelController
     {
-        public LevelControllerFormat m_LevelController;
+        private LevelControllerFormat m_LevelController;
         private const string PATH = @".\";
         private const string FILENAME = "LevelController";
         private const int ERROR_LIMIT = 3;
@@ -18,6 +18,7 @@ namespace BSDiscordRanking.Controllers
         {
             FetchLevel(); /// Force the Fetch to instanciate m_LevelController.
         }
+
         public void FetchLevel()
         {
             try
@@ -102,11 +103,42 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
+        public static LevelControllerFormat GetLevelControllerCache()
+        {
+            if (!Directory.Exists(PATH))
+            {
+                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command : LevelController's directory is missing");
+                return null;
+            }
+            else
+            {
+                try
+                {
+                    using (StreamReader l_SR = new StreamReader($@"{PATH}\{FILENAME}.json "))
+                    {
+                        LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
+                        if (l_LevelController == null) /// json contain "null"
+                        {
+                            Console.WriteLine("Error LevelControllerCache contain null");
+                            return null;
+                        }
+                        else
+                            return l_LevelController;
+                    }
+                }
+                catch (Exception) /// file format is wrong / there isn't any file.
+                {
+                    Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
+                    return null;
+                }
+            }
+        }
+
         public static string GetPath()
         {
             return PATH;
         }
-        
+
         public static string GetFileName()
         {
             return FILENAME;
@@ -119,19 +151,4 @@ namespace BSDiscordRanking.Controllers
             Console.WriteLine("RetryNumber set to 0");
         }
     }
-
-    /*public static List<Level> FetchLevels()
-{
-  int l_i = 1;
-  List<Level> l_list = new List<Level>();
-  string[] l_files = Directory.GetFiles(@".\Levels\");
-  foreach (var l_file in l_files)
-  {
-      Level l_level = new Level(l_i);
-      l_level.m_Level = JsonSerializer.Deserialize<LevelFormat>(new StreamReader(l_file).ReadToEnd());
-      l_list.Add(l_level);
-      l_i++;
-  }
-  return l_list;
-}*/
 }

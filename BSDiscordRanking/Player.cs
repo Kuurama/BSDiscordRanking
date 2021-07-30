@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
-using Discord.WebSocket;
+// ReSharper disable FieldCanBeMadeReadOnly.Local
 
 namespace BSDiscordRanking
 {
@@ -182,7 +182,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void FetchScores(SocketCommandContext p_context = null)
+        public void FetchScores(SocketCommandContext p_Context = null)
         {
             /// If First Launch : It get ALL the player's score from the api then cache it to a score file. (mean there isn't any cache file yet)
             /// This Method Get the Player's Scores from the api, then call ReWriteScore() to Serialize them into a cache's file.
@@ -199,7 +199,7 @@ namespace BSDiscordRanking
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
 
-            p_context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
+            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
 
             if (m_ErrorNumber < ERROR_LIMIT)
             {
@@ -268,7 +268,7 @@ namespace BSDiscordRanking
 
                                         if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
                                         {
-                                            p_context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
+                                            p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
                                             Thread.Sleep(45000);
                                         }
                                     }
@@ -464,7 +464,7 @@ namespace BSDiscordRanking
             {
                 l_Levels.Add(new Level(l_LevelID));
             }
-    
+
 
             for (int i = 0; i < l_Levels.Count; i++)
             {
@@ -559,7 +559,7 @@ namespace BSDiscordRanking
                     }
                 }
             }
-            
+
             ReWritePass();
             if (l_passes >= 1)
                 await p_context.Channel.SendMessageAsync(">>> " + l_message);

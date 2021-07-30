@@ -20,10 +20,10 @@ namespace BSDiscordRanking.Controllers
             {
                 try
                 {   
-                    using (StreamReader l_streamReader = new StreamReader("./config.json"))
+                    using (StreamReader l_StreamReader = new StreamReader("./config.json"))
                     {
-                        ConfigFormat l_configFormat = JsonConvert.DeserializeObject<ConfigFormat>(l_streamReader.ReadToEnd());
-                        return l_configFormat;
+                        ConfigFormat l_ConfigFormat = JsonConvert.DeserializeObject<ConfigFormat>(l_StreamReader.ReadToEnd());
+                        return l_ConfigFormat;
                     }
                 }
                 catch (Exception e)

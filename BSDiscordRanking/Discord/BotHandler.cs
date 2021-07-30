@@ -10,51 +10,53 @@ namespace BSDiscordRanking.Discord
 {
     public class BotHandler
     {
-        public static void StartBot(ConfigFormat p_config) => new BotHandler().RunBotAsync(p_config).GetAwaiter().GetResult();
+        public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
 
         public static string m_Prefix;
-        private DiscordSocketClient m_client;
-        private CommandService m_commands;
+        private DiscordSocketClient m_Client;
+        private CommandService m_Commands;
 
-        public async Task RunBotAsync(ConfigFormat p_config)
+        private async Task RunBotAsync(ConfigFormat p_Config)
         {
-            m_Prefix = p_config.CommandPrefix;
-            m_client = new DiscordSocketClient();
-            m_commands = new CommandService();
+            m_Prefix = p_Config.CommandPrefix;
+            m_Client = new DiscordSocketClient();
+            m_Commands = new CommandService();
 
-            await m_client.SetGameAsync(p_config.DiscordStatus);
-            m_client.Log += _client_Log;
+            await m_Client.SetGameAsync(p_Config.DiscordStatus);
+            m_Client.Log += _client_Log;
             await RegisterCommandsAsync();
-            await m_client.LoginAsync(TokenType.Bot, p_config.DiscordToken);
-            await m_client.StartAsync();
+            await m_Client.LoginAsync(TokenType.Bot, p_Config.DiscordToken);
+            await m_Client.StartAsync();
             await Task.Delay(-1);
         }
 
-        private Task _client_Log(LogMessage p_arg)
+        private static Task _client_Log(LogMessage p_Arg)
         {
-            Console.WriteLine(p_arg);
+            Console.WriteLine(p_Arg);
             return Task.CompletedTask;
         }
 
         public async Task RegisterCommandsAsync()
         {
-            m_client.MessageReceived += HandleCommandAsync;
-            await m_commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            m_Client.MessageReceived += HandleCommandAsync;
+            await m_Commands.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         }
 
-        private async Task HandleCommandAsync(SocketMessage p_arg)
+        private async Task HandleCommandAsync(SocketMessage p_Arg)
         {
-            var l_message = p_arg as SocketUserMessage;
-            var context = new SocketCommandContext(m_client, l_message);
-            if (l_message.Author.IsBot) return;
+            var l_Message = p_Arg as SocketUserMessage;
+            var l_Context = new SocketCommandContext(m_Client, l_Message);
+            if (l_Message != null && l_Message.Author.IsBot) return;
             
-            int l_argPos = 0;
+            int l_ArgPos = 0;
         
-            if (l_message.HasStringPrefix(m_Prefix, ref l_argPos))
+            if (l_Message.HasStringPrefix(m_Prefix, ref l_ArgPos))
             {
-                var l_result = await m_commands.ExecuteAsync(context, l_argPos, null);
-                if (!l_result.IsSuccess) Console.WriteLine(l_result.ErrorReason);
-                if (l_result.Error.Equals(CommandError.UnmetPrecondition)) await l_message.Channel.SendMessageAsync(l_result.ErrorReason);
+                var l_Result = await m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
+                if (!l_Result.IsSuccess) Console.WriteLine(l_Result.ErrorReason);
+                if (l_Result.Error.Equals(CommandError.UnmetPrecondition))
+                    if (l_Message != null)
+                        await l_Message.Channel.SendMessageAsync(l_Result.ErrorReason);
             }
         }
     }

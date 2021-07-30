@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
@@ -7,7 +9,6 @@ using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
 using BeatSaverSharp;
-using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
@@ -16,15 +17,16 @@ namespace BSDiscordRanking.Discord.Modules
     {
         [Command("getplaylist")]
         [Alias("gpl")]
-        public async Task GetPlaylist(string p_level)
+        public async Task GetPlaylist(string p_Level)
         {
-            int p_levelID;
-            if (int.TryParse(p_level, out p_levelID))
+            // ReSharper disable once NotAccessedVariable
+            int l_LevelID;
+            if (int.TryParse(p_Level, out l_LevelID))
             {
                 // TODO: check if playlist exist
-                await Context.Channel.SendFileAsync(Level.GetPath() + $"/{p_level}{Level.SUFFIX_NAME}.bplist", "> :white_check_mark: Here's your playlist!");
+                await Context.Channel.SendFileAsync(Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist", "> :white_check_mark: Here's your playlist!");
             }
-            else if (p_level == "all")
+            else if (p_Level == "all")
             {
                 if (File.Exists("levels.zip"))
                     File.Delete("levels.zip");
@@ -34,89 +36,123 @@ namespace BSDiscordRanking.Discord.Modules
             else
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
         }
-        
+
         [Command("ggp")]
         [Alias("getgrindpool")]
-        public async Task GetGrindPool(int p_level)
+        public async Task GetGrindPool(int p_Level)
         {
-            if (p_level >= 0)
+            bool l_IDExist = false;
+            foreach (var l_ID in LevelController.GetLevelControllerCache().LevelID)
             {
-                Level l_level = new Level(p_level);
-                EmbedBuilder l_embedBuilder = new EmbedBuilder();
-                l_embedBuilder.WithTitle($"Maps for Level {p_level}");
-                foreach (var l_song in l_level.m_Level.songs)
+                if (l_ID == p_Level)
+                    l_IDExist = true;
+            }
+
+            if (l_IDExist)
+            {
+                Level l_Level = new Level(p_Level);
+                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                l_EmbedBuilder.WithTitle($"Maps for Level {p_Level}");
+                try
                 {
-                    foreach (var l_difficulty in l_song.difficulties)
+                    List<bool> l_Passed = new List<bool>();
+                    var l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(File.ReadAllText("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+                    int l_I = 0;
+                    foreach (var l_Song in l_Level.m_Level.songs)
                     {
-                        bool l_passed = false;
-                        PlayerPassFormat l_playerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(File.ReadAllText("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
-                        foreach (var l_playerPass in (l_playerPasses.songs))
-                        {
-                            if (l_song.hash == l_playerPass.hash)
+                        if (l_PlayerPasses != null)
+                            foreach (var l_PlayerPass in l_PlayerPasses.songs)
                             {
-                                Console.WriteLine("Same hash");
-                                foreach (var l_passDifficulty in l_playerPass.difficulties)
+                                if (l_Song.hash == l_PlayerPass.hash)
                                 {
-                                    foreach (var l_songDifficulty in l_song.difficulties)
+                                    foreach (var l_SongDifficulty in l_Song.difficulties)
                                     {
-                                        if (l_songDifficulty.characteristic == l_passDifficulty.characteristic)
+                                        foreach (var l_PlayerPassDifficulty in l_PlayerPass.difficulties)
                                         {
-                                            if (l_songDifficulty.name == l_passDifficulty.name)
+                                            if (l_SongDifficulty.characteristic == l_PlayerPassDifficulty.characteristic && l_SongDifficulty.name == l_PlayerPassDifficulty.name)
                                             {
-                                                Console.WriteLine(l_song.name + " " + l_songDifficulty.name);
-                                                l_passed = true;
+                                                Console.WriteLine($"Pass detected on {l_Song.name} {l_SongDifficulty.name}");
+                                                l_Passed.Insert(l_I, true);
+                                                break;
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        if (!l_passed)
-                            l_embedBuilder.AddField(l_song.name,$"{l_difficulty.name} - {l_difficulty.characteristic}", true);
-                        else
-                            l_embedBuilder.AddField($"~~{l_song.name}~~",$"~~{l_difficulty.name} - {l_difficulty.characteristic}~~", true);
-                        
+                        for (int l_N = 0; l_N < l_Song.difficulties.Count; l_N++)
+                        {
+                            if (l_Passed.Count <= l_I)
+                            {
+                                l_Passed.Insert(l_I, false);
+                            }
+
+                            l_I++;
+                        }
                     }
+
+                    int l_Y = 0;
+                    foreach (var l_Song in l_Level.m_Level.songs)
+                    {
+                        foreach (var l_SongDifficulty in l_Song.difficulties)
+                        {
+                            if (!l_Passed[l_Y])
+                            {
+                                l_EmbedBuilder.AddField(l_Song.name, $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}", true);
+                            }
+                            else
+                            {
+                                l_EmbedBuilder.AddField($"~~{l_Song.name}~~", $"~~{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}~~", true);
+                            }
+
+                            l_Y++;
+                        }
+                    }
+
+                    l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
+                    await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
                 }
-                l_embedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_level}");
-                await Context.Channel.SendMessageAsync("", false, l_embedBuilder.Build());
-                
+                catch (Exception l_Exception)
+                {
+                    await ReplyAsync($"> :x: Please scan first? Error occured : {l_Exception.Message}");
+                }
             }
             else
             {
-                await ReplyAsync("> :x: Please enter a correct level number.");
+                await ReplyAsync("> :x: This level does not exist.");
             }
         }
 
         [Command("addmap")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task AddMap(int p_level = 0, string p_key = "", string p_characteristic = "", string p_difficultyName = "")
+        public async Task AddMap(int p_Level = 0, string p_Key = "", string p_Characteristic = "", string p_DifficultyName = "")
         {
-            if (p_level <= 0 || string.IsNullOrEmpty(p_key) || string.IsNullOrEmpty(p_characteristic) || string.IsNullOrEmpty(p_difficultyName))
+            if (p_Level <= 0 || string.IsNullOrEmpty(p_Key) || string.IsNullOrEmpty(p_Characteristic) || string.IsNullOrEmpty(p_DifficultyName))
             {
-                ReplyAsync($"> :x: Seems like you didn't use the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
+                await ReplyAsync($"> :x: Seems like you didn't use the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
             }
             else
             {
-                if (p_characteristic == "Lawless" || p_characteristic == "Standard" || p_characteristic == "90Degree" || p_characteristic == "360Degree")
+                if (p_Characteristic == "Lawless" || p_Characteristic == "Standard" || p_Characteristic == "90Degree" || p_Characteristic == "360Degree")
                 {
-                    if (p_difficultyName == "Easy" || p_difficultyName == "Normal" ||
-                        p_difficultyName == "Hard" || p_difficultyName == "Expert" ||
-                        p_difficultyName == "ExpertPlus")
+                    if (p_DifficultyName == "Easy" || p_DifficultyName == "Normal" ||
+                        p_DifficultyName == "Hard" || p_DifficultyName == "Expert" ||
+                        p_DifficultyName == "ExpertPlus")
                     {
-                        HttpOptions l_options = new HttpOptions("BSRanking", new Version(1, 0, 0));
-                        string l_hash = null;
+                        HttpOptions l_Options = new HttpOptions("BSRanking", new Version(1, 0, 0));
+                        string l_Hash = null;
                         try
                         {
-                            l_hash = new BeatSaver(l_options).Key(p_key).Result.Hash;
+                            var l_Beatmap = new BeatSaver(l_Options).Key(p_Key).Result;
+                            if (l_Beatmap is not null) l_Hash = l_Beatmap.Hash;
                         }
-                        catch (Exception l_e)
+                        catch (Exception l_E)
                         {
-                            await ReplyAsync($"> :x: Seems like BeatSaver didn't responded, the **key** might be wrong?");
+                            await ReplyAsync($"> :x: Seems like BeatSaver didn't responded, the **key** might be wrong? : {l_E.Message}");
                         }
-                        if (!string.IsNullOrEmpty(l_hash))
-                            new Level(p_level).AddMap(l_hash, p_characteristic, p_difficultyName, Context);
+
+                        if (!string.IsNullOrEmpty(l_Hash))
+                            new Level(p_Level).AddMap(l_Hash, p_Characteristic, p_DifficultyName, Context);
                     }
 
                     else
@@ -126,10 +162,9 @@ namespace BSDiscordRanking.Discord.Modules
                 else
                     await ReplyAsync(
                         $"> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
-
             }
         }
-        
+
         [Command("scan")]
         public async Task Scan_Scores()
         {
@@ -137,11 +172,11 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             else
             {
-                Player l_player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-                l_player.FetchScores(Context);
-                int l_fetchPass = await l_player.FetchPass(Context);
-                if (l_fetchPass >= 1)
-                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_fetchPass} new maps!");
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                l_Player.FetchScores(Context);
+                int l_FetchPass = await l_Player.FetchPass(Context);
+                if (l_FetchPass >= 1)
+                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't passed any new map.");
             }
@@ -150,13 +185,13 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("ping")]
         public async Task Ping()
         {
-            EmbedBuilder l_embedBuilder = new EmbedBuilder();
-            l_embedBuilder.AddField("Discord: ", new Ping().Send("discord.com").RoundtripTime + "ms");
-            l_embedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
-            l_embedBuilder.WithFooter("#LoveArche",
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            l_EmbedBuilder.AddField("Discord: ", new Ping().Send("discord.com").RoundtripTime + "ms");
+            l_EmbedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
+            l_EmbedBuilder.WithFooter("#LoveArche",
                 "https://images.genius.com/d4b8905048993e652aba3d8e105b5dbf.1000x1000x1.jpg");
-            l_embedBuilder.WithColor(Color.Blue);
-            await Context.Channel.SendMessageAsync("", false, l_embedBuilder.Build());
+            l_EmbedBuilder.WithColor(Color.Blue);
+            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
 
         [Command("unlink")]
@@ -165,33 +200,31 @@ namespace BSDiscordRanking.Discord.Modules
             /// TODO: HANDLE UNLINK SPECIFIC USERS IF ADMIN
             if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
             {
-                ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             }
             else
             {
                 UserController.RemovePlayer(Context.User.Id.ToString());
-                ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
+                await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
             }
-
         }
-        
+
         [Command("link")]
-        public async Task LinkUser(string p_scoreSaberArg)
+        public async Task LinkUser(string p_ScoreSaberArg)
         {
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_scoreSaberArg.Length == 17) ///< check if id is in a correct length
+            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_ScoreSaberArg.Length == 17) ///< check if id is in a correct length
             {
                 /// TODO: VERIFY SCORESABER ACCOUNT
-                UserController.AddPlayer(Context.User.Id.ToString(), p_scoreSaberArg);
+                UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
                 await ReplyAsync($"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
             }
-            else if(p_scoreSaberArg.Length != 17)
+            else if (p_ScoreSaberArg.Length != 17)
                 await ReplyAsync("> :x: Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
             else
                 await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
         }
-        
-        
-        
+
+
         [Command("reset-config")]
         [RequireOwner]
         public async Task Reset_config()
@@ -213,7 +246,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_Builder.AddField(BotHandler.m_Prefix + "gpl *[level]*", "Send the playlist file. Use \"all\" to get playlist folder.", true);
             l_Builder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
-            
+
             EmbedBuilder l_ModBuilder = new EmbedBuilder();
             l_ModBuilder.WithTitle("Admins Commands");
             l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..]", "Add a map to a level", true);
@@ -223,6 +256,5 @@ namespace BSDiscordRanking.Discord.Modules
             l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
             await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
         }
-        
     }
 }
