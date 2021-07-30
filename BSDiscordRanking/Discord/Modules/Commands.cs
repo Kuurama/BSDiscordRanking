@@ -1,17 +1,14 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
-using System.Net.Http;
 using System.Net.NetworkInformation;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
 using BeatSaverSharp;
-using Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
 {
@@ -35,14 +32,11 @@ namespace BSDiscordRanking.Discord.Modules
                 await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
             }
             else
-            {
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
-            }
-
-
         }
         
         [Command("ggp")]
+        [Alias("getgrindpool")]
         public async Task GetGrindPool(int p_level)
         {
             if (p_level >= 0)
@@ -54,7 +48,35 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     foreach (var l_difficulty in l_song.difficulties)
                     {
-                        l_embedBuilder.AddField(l_song.name,$"{l_difficulty.name} - {l_difficulty.characteristic}", true);
+                        bool l_passed = false;
+                        PlayerPassFormat l_playerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(File.ReadAllText("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+                        foreach (var l_playerPass in (l_playerPasses.songs))
+                        {
+                            if (l_song.hash == l_playerPass.hash)
+                            {
+                                Console.WriteLine("Same hash");
+                                foreach (var l_passDifficulty in l_playerPass.difficulties)
+                                {
+                                    foreach (var l_songDifficulty in l_song.difficulties)
+                                    {
+                                        if (l_songDifficulty.characteristic == l_passDifficulty.characteristic)
+                                        {
+                                            if (l_songDifficulty.name == l_passDifficulty.name)
+                                            {
+                                                Console.WriteLine(l_song.name + " " + l_songDifficulty.name);
+                                                l_passed = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!l_passed)
+                            l_embedBuilder.AddField(l_song.name,$"{l_difficulty.name} - {l_difficulty.characteristic}", true);
+                        else
+                            l_embedBuilder.AddField($"~~{l_song.name}~~",$"~~{l_difficulty.name} - {l_difficulty.characteristic}~~", true);
+                        
                     }
                 }
                 l_embedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_level}");
@@ -188,7 +210,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_Builder.AddField(BotHandler.m_Prefix + "unlink", "Unlinks your ScoreSaber account", true);
             l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "", "do something", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "gpl *[level]*", "Send the playlist file. Use \"all\" to get playlist folder.", true);
             l_Builder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
             
