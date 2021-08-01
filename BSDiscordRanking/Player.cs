@@ -16,7 +16,7 @@ namespace BSDiscordRanking
     {
         private string m_PlayerID;
         private string m_Path;
-        private ApiPlayerFull m_PlayerFull;
+        public ApiPlayerFull m_PlayerFull;
         private ApiScores m_PlayerScore;
         private PlayerPassFormat m_PlayerPass;
         private LevelControllerFormat m_LevelController;
