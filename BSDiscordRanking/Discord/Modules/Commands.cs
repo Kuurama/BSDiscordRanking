@@ -19,12 +19,14 @@ namespace BSDiscordRanking.Discord.Modules
         [Alias("gpl")]
         public async Task GetPlaylist(string p_Level)
         {
-            // ReSharper disable once NotAccessedVariable
-            int l_LevelID;
-            if (int.TryParse(p_Level, out l_LevelID))
+            if (int.TryParse(p_Level, out _))
             {
-                // TODO: check if playlist exist
-                await Context.Channel.SendFileAsync(Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist", "> :white_check_mark: Here's your playlist!");
+                string l_path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
+                if (File.Exists(l_path))
+                    await Context.Channel.SendFileAsync(l_path, "> :white_check_mark: Here's your playlist!");
+                else
+                    await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
+                
             }
             else if (p_Level == "all")
             {
