@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net.NetworkInformation;
@@ -19,7 +18,20 @@ namespace BSDiscordRanking.Discord.Modules
         public async Task Profile()
         {
             ApiPlayerFull l_PlayerFull = new Player(UserController.GetPlayer(Context.User.Id.ToString())).m_PlayerFull;
-            var l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(File.ReadAllText("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+            PlayerPassFormat l_PlayerPasses;
+            try
+            {
+                l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+            }
+            catch (Exception l_Exception)
+            {
+                l_PlayerPasses = new PlayerPassFormat()
+                {
+                    songs = new List<SongFormat>()
+                };
+                Console.WriteLine($"This player don't have any pass yet");
+            }
+            
             EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle(l_PlayerFull.playerInfo.playerName);
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_PlayerFull.playerInfo.playerId);
@@ -48,8 +60,16 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (File.Exists("levels.zip"))
                     File.Delete("levels.zip");
-                ZipFile.CreateFromDirectory("./Levels/", "levels.zip");
-                await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
+                try
+                {
+                    ZipFile.CreateFromDirectory("./Levels/", "levels.zip");
+                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
+                }
+                catch
+                {
+                    await ReplyAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
+                }
+                
             }
             else
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
@@ -74,7 +94,20 @@ namespace BSDiscordRanking.Discord.Modules
                 try
                 {
                     List<bool> l_Passed = new List<bool>();
-                    var l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(File.ReadAllText("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+                    PlayerPassFormat l_PlayerPasses;
+                    try
+                    {
+                        l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+                    }
+                    catch
+                    {
+                        l_PlayerPasses = new PlayerPassFormat()
+                        {
+                            songs = new List<SongFormat>()
+                        };
+                        Console.WriteLine($"This player don't have any pass yet");
+                    }
+                    
                     int l_I = 0;
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
@@ -132,7 +165,7 @@ namespace BSDiscordRanking.Discord.Modules
                 }
                 catch (Exception l_Exception)
                 {
-                    await ReplyAsync($"> :x: Please scan first? Error occured : {l_Exception.Message}");
+                    await ReplyAsync($"> :x: Error occured : {l_Exception.Message}");
                 }
             }
             else
