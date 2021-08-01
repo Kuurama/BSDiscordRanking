@@ -21,9 +21,9 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (int.TryParse(p_Level, out _))
             {
-                string l_path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
-                if (File.Exists(l_path))
-                    await Context.Channel.SendFileAsync(l_path, "> :white_check_mark: Here's your playlist!");
+                string l_Path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
+                if (File.Exists(l_Path))
+                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
                 else
                     await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
                 
