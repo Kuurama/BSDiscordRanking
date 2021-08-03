@@ -9,7 +9,9 @@ namespace BSDiscordRanking
             new LevelController().FetchLevel();
             UserController.ReadDB();
             Discord.BotHandler.StartBot(ConfigController.ReadConfig());
-
+            
+            ///Level l_Level = new Level(5);
+            ///l_Level.AddMap("2","Standard","ExpertPlus", null);
             /// New stuff :
             /// Fetch all levels in the Level's folder and put them into a cache file named LevelController.json (LevelID of the levels : {"LevelID":[12,1,2,4]}) 
 

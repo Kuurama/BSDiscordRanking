@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading;
-using BeatSaverSharp;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 
 namespace BSDiscordRanking
@@ -13,9 +14,13 @@ namespace BSDiscordRanking
     public class Level
     {
         public LevelFormat m_Level;
+        private BeatMapsIOFormat m_BeatMapsIo;
         private int m_LevelID;
-        public const string SUFFIX_NAME = "_Level"; /// Keep the underscore at the beginning to avoid issue with the controller.
+        public const string SUFFIX_NAME = "_Level";
+
+        /// Keep the underscore at the beginning to avoid issue with the controller.
         private const string PATH = @".\Levels\";
+
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
 
@@ -174,7 +179,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(string p_Hash, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
+        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
             SocketCommandContext p_SocketCommandContext)
         {
             /// <summary>
@@ -188,51 +193,63 @@ namespace BSDiscordRanking
             {
                 if (m_Level != null)
                 {
-                    HttpOptions l_Options = new HttpOptions(name: "BS-Ranking", version: new Version(1, 0, 0));
-                    p_Hash = p_Hash.ToUpper();
-                    bool l_SongAlreadyExist = false;
-                    bool l_DifficultyAlreadyExist = false;
-                    try
+                    p_Code = p_Code.ToUpper();
+                    m_BeatMapsIo = FetchBeatMap(p_Code, p_SocketCommandContext);
+                    if (m_BeatMapsIo is not null)
                     {
-                        SongFormat l_SongFormat = new SongFormat {hash = p_Hash, name = new BeatSaver(l_Options).Hash(p_Hash).Result.Name};
-
-                        InSongFormat l_InSongFormat = new InSongFormat
+                        bool l_SongAlreadyExist = false;
+                        bool l_DifficultyAlreadyExist = false;
+                        try
                         {
-                            name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic
-                        };
-                        l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatMapsIo.versions[0].hash, name = m_BeatMapsIo.name};
 
-                        if (!string.IsNullOrEmpty(l_SongFormat.name))
-                        {
-                            if (m_Level.songs.Count != 0)
+                            InSongFormat l_InSongFormat = new InSongFormat
                             {
-                                int l_I;
-                                for (l_I = 0;
-                                    l_I < m_Level.songs.Count;
-                                    l_I++) /// check if the map already exist in the playlist.
-                                {
-                                    if (m_Level.songs[l_I].hash == p_Hash)
-                                    {
-                                        l_SongAlreadyExist = true;
-                                        break;
-                                    }
-                                }
+                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic
+                            };
+                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
 
-                                if (l_SongAlreadyExist)
+                            if (!string.IsNullOrEmpty(l_SongFormat.name))
+                            {
+                                if (m_Level.songs.Count != 0)
                                 {
-                                    foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
+                                    int l_I;
+                                    for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
                                     {
-                                        if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
-                                            l_DifficultyAlreadyExist = true;
+                                        foreach (var l_BeatMapVersion in m_BeatMapsIo.versions)
+                                        {
+                                            if (String.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase))
+                                            {
+                                                l_SongAlreadyExist = true;
+                                                break;
+                                            }
+                                        }
+                                        if (l_SongAlreadyExist)
+                                            break;
                                     }
 
-                                    if (l_DifficultyAlreadyExist)
+                                    if (l_SongAlreadyExist)
                                     {
-                                        p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
+                                        foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
+                                        {
+                                            if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                                l_DifficultyAlreadyExist = true;
+                                        }
+
+                                        if (l_DifficultyAlreadyExist)
+                                        {
+                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
+                                        }
+                                        else
+                                        {
+                                            m_Level.songs[l_I].difficulties.Add(l_InSongFormat);
+                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                            ReWritePlaylist();
+                                        }
                                     }
                                     else
                                     {
-                                        m_Level.songs[l_I].difficulties.Add(l_InSongFormat);
+                                        m_Level.songs.Add(l_SongFormat);
                                         p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                         ReWritePlaylist();
                                     }
@@ -246,21 +263,15 @@ namespace BSDiscordRanking
                             }
                             else
                             {
-                                m_Level.songs.Add(l_SongFormat);
-                                p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
-                                ReWritePlaylist();
+                                m_ErrorNumber++;
+                                p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                             }
                         }
-                        else
+                        catch
                         {
                             m_ErrorNumber++;
                             p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        m_ErrorNumber++;
-                        p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                     }
                 }
                 else
@@ -268,8 +279,8 @@ namespace BSDiscordRanking
                     Console.WriteLine("Seems like you forgot to Load the Level, Attempting to load the Level Cache..");
                     m_ErrorNumber++;
                     LoadLevel();
-                    Console.WriteLine($"Trying to AddMap {p_Hash}");
-                    AddMap(p_Hash, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
+                    Console.WriteLine($"Trying to AddMap {p_Code}");
+                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
                 }
             }
             else
@@ -279,7 +290,6 @@ namespace BSDiscordRanking
             }
         }
 
-        
 
         private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
         {
@@ -291,6 +301,59 @@ namespace BSDiscordRanking
         public static string GetPath()
         {
             return PATH;
+        }
+
+        private static BeatMapsIOFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext)
+        {
+            string l_URL = @$"https://api.beatmaps.io/maps/id/{p_Code}";
+            using WebClient l_WebClient = new WebClient();
+            try
+            {
+                Console.WriteLine(l_URL);
+                return JsonSerializer.Deserialize<BeatMapsIOFormat>(l_WebClient.DownloadString(l_URL));
+            }
+            catch (WebException l_Exception)
+            {
+                if (l_Exception.Response is HttpWebResponse l_Response)
+                {
+                    Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
+                    if (l_Response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        Console.WriteLine($"The Map do not exist");
+                        p_SocketCommandContext.Channel.SendMessageAsync("The Map do not exist");
+                        return null;
+                    }
+
+                    if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        Console.WriteLine($"The bot got rate-limited on BeatMapsIO, Try later");
+                        p_SocketCommandContext.Channel.SendMessageAsync("The bot got rate-limited on BeatMapsIO, Try later");
+                        return null;
+                    }
+
+                    if (l_Response.StatusCode == HttpStatusCode.BadGateway)
+                    {
+                        p_SocketCommandContext.Channel.SendMessageAsync("BeatMapsIO Server BadGateway");
+                        Console.WriteLine($"Server BadGateway");
+                        return null;
+                    }
+
+                    if (l_Response.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        p_SocketCommandContext.Channel.SendMessageAsync("BeatMapsIO InternalServerError");
+                        Console.WriteLine($"InternalServerError");
+                        return null;
+                    }
+
+                    return null;
+                }
+                else
+                {
+                    p_SocketCommandContext.Channel.SendMessageAsync("Internet dead? Something went wrong");
+                    Console.WriteLine("OK Internet is Dead?");
+                    return null;
+                }
+            }
         }
     }
 }

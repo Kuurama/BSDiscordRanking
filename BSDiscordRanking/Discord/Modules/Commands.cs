@@ -31,18 +31,18 @@ namespace BSDiscordRanking.Discord.Modules
                 };
                 Console.WriteLine($"This player don't have any pass yet");
             }
-            
+
             EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle(l_PlayerFull.playerInfo.playerName);
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_PlayerFull.playerInfo.playerId);
             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_PlayerFull.playerInfo.avatar);
             l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_PlayerFull.playerInfo.rank);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerPasses.songs.Count);
-            l_EmbedBuilder.AddField("Level", ":trophy: "+ "TODO");
+            l_EmbedBuilder.AddField("Level", ":trophy: " + "TODO");
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
-        
-        
+
+
         [Command("getplaylist")]
         [Alias("gpl")]
         public async Task GetPlaylist(string p_Level)
@@ -54,7 +54,6 @@ namespace BSDiscordRanking.Discord.Modules
                     await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
                 else
                     await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
-                
             }
             else if (p_Level == "all")
             {
@@ -69,7 +68,6 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     await ReplyAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
                 }
-                
             }
             else
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
@@ -107,7 +105,7 @@ namespace BSDiscordRanking.Discord.Modules
                         };
                         Console.WriteLine($"This player don't have any pass yet");
                     }
-                    
+
                     int l_I = 0;
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
@@ -176,9 +174,9 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("addmap")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task AddMap(int p_Level = 0, string p_Key = "", string p_Characteristic = "", string p_DifficultyName = "")
+        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_Characteristic = "", string p_DifficultyName = "")
         {
-            if (p_Level <= 0 || string.IsNullOrEmpty(p_Key) || string.IsNullOrEmpty(p_Characteristic) || string.IsNullOrEmpty(p_DifficultyName))
+            if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) || string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync($"> :x: Seems like you didn't use the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
             }
@@ -190,22 +188,8 @@ namespace BSDiscordRanking.Discord.Modules
                         p_DifficultyName == "Hard" || p_DifficultyName == "Expert" ||
                         p_DifficultyName == "ExpertPlus")
                     {
-                        HttpOptions l_Options = new HttpOptions("BSRanking", new Version(1, 0, 0));
-                        string l_Hash = null;
-                        try
-                        {
-                            var l_Beatmap = new BeatSaver(l_Options).Key(p_Key).Result;
-                            if (l_Beatmap is not null) l_Hash = l_Beatmap.Hash;
-                        }
-                        catch (Exception l_E)
-                        {
-                            await ReplyAsync($"> :x: Seems like BeatSaver didn't responded, the **key** might be wrong? : {l_E.Message}");
-                        }
-
-                        if (!string.IsNullOrEmpty(l_Hash))
-                            new Level(p_Level).AddMap(l_Hash, p_Characteristic, p_DifficultyName, Context);
+                        new Level(p_Level).AddMap(p_Code, p_Characteristic, p_DifficultyName, Context);
                     }
-
                     else
                         await ReplyAsync(
                             $"> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
