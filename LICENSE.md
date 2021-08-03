@@ -30,3 +30,7 @@ Copyright (c) 2019-2021 Jack Baron DEV
 ## Json.NET
 MIT License
 Copyright (c) 2007 James Newton-King
+
+## Discord.NET
+MIT License
+Copyright (c) 2015-2019 Discord.Net Contributors
