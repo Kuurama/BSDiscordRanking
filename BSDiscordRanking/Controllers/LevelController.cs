@@ -105,15 +105,19 @@ namespace BSDiscordRanking.Controllers
 
         public static LevelControllerFormat GetLevelControllerCache()
         {
-            if (!Directory.Exists(PATH))
+            if (!File.Exists($"{PATH}{FILENAME}.json"))
             {
-                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command : LevelController's directory is missing");
+                Console.WriteLine($"{PATH}{FILENAME}.json");
+                Console.WriteLine("Seems like you forgot Fetch Levels (LevelController), please Fetch Them before using this command : LevelController's Cache is missing");
+                Console.WriteLine("Attempting a Fetch..");
+                new LevelController().FetchLevel();
                 return null;
             }
             else
             {
                 try
                 {
+                    new LevelController().FetchLevel();
                     using (StreamReader l_SR = new StreamReader($@"{PATH}\{FILENAME}.json "))
                     {
                         LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
