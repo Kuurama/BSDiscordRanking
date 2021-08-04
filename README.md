@@ -2,13 +2,15 @@
 
 ## Customisation
 
-The config file is in the same folder as the executable and is named "config.json".
+The config file is in the same folder as the binaries and is named "config.json".
+It is created on the first start and can be reset with the command "reset-config".
 
 | Input | Type |
 | --- | --- |
 | Discord Token | string |
 | Command prefix | string |
 | Discord Status | string |
+| BotManagement RoleID | ulong |
 
 ## Commands
 
@@ -33,6 +35,6 @@ The config file is in the same folder as the executable and is named "config.jso
 - [Kuurama](https://github.com/Kuurama)
 - [Julien "Jupilian" ROPERS](https://github.com/ASPJulien)
 
-## Licence
+## Licence & Dependencys
 
 The MIT License (MIT). Please see [Licence File](https://github.com/Kuurama/BSDiscordRanking/blob/master/LICENSE.md) for more information.

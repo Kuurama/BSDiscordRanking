@@ -23,10 +23,6 @@ SOFTWARE.
 
 # Dependencys
 
-## BeatSaberSharp
-MIT License
-Copyright (c) 2019-2021 Jack Baron DEV
-
 ## Json.NET
 MIT License
 Copyright (c) 2007 James Newton-King

@@ -35,9 +35,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         l_StringLevelID += Path.GetFileName(l_FileName)[l_I];
                     }
-
                     l_MyInt = int.Parse(l_StringLevelID);
-                    Console.WriteLine(l_StringLevelID);
 
                     try
                     {

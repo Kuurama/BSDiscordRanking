@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
-using BeatSaverSharp;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
