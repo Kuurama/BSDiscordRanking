@@ -12,7 +12,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
 {
-    public class Commands : ModuleBase<SocketCommandContext>
+    public class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("profile")]
         public async Task Profile()
@@ -171,34 +171,7 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: This level does not exist.");
             }
         }
-
-        [Command("addmap")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_Characteristic = "", string p_DifficultyName = "")
-        {
-            if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) || string.IsNullOrEmpty(p_DifficultyName))
-            {
-                await ReplyAsync($"> :x: Seems like you didn't use the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
-            }
-            else
-            {
-                if (p_Characteristic == "Lawless" || p_Characteristic == "Standard" || p_Characteristic == "90Degree" || p_Characteristic == "360Degree")
-                {
-                    if (p_DifficultyName == "Easy" || p_DifficultyName == "Normal" ||
-                        p_DifficultyName == "Hard" || p_DifficultyName == "Expert" ||
-                        p_DifficultyName == "ExpertPlus")
-                    {
-                        new Level(p_Level).AddMap(p_Code, p_Characteristic, p_DifficultyName, Context);
-                    }
-                    else
-                        await ReplyAsync(
-                            $"> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
-                }
-                else
-                    await ReplyAsync(
-                        $"> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
-            }
-        }
+        
 
         [Command("scan")]
         public async Task Scan_Scores()
@@ -258,15 +231,7 @@ namespace BSDiscordRanking.Discord.Modules
             else
                 await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
         }
-
-
-        [Command("reset-config")]
-        [RequireOwner]
-        public async Task Reset_config()
-        {
-            await ReplyAsync("> :white_check_mark: After the bot finished to reset the config, it will stops.");
-            ConfigController.CreateConfig();
-        }
+        
 
         [Command("help")]
         public async Task Help()
@@ -285,7 +250,7 @@ namespace BSDiscordRanking.Discord.Modules
             EmbedBuilder l_ModBuilder = new EmbedBuilder();
             l_ModBuilder.WithTitle("Admins Commands");
             l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..]", "Add a map to a level", true);
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Owner only: Reset the config file, **the bot will stop!**", true);
+            l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Reset the config file, **the bot will stop!**", true);
             l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "TODO: Unlinks the ScoreSaber account of a player", true);
             l_ModBuilder.WithColor(Color.Red);
             l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
