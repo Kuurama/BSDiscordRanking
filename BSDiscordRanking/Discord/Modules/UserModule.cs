@@ -88,8 +88,6 @@ namespace BSDiscordRanking.Discord.Modules
             if (l_IDExist)
             {
                 Level l_Level = new Level(p_Level);
-                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                l_EmbedBuilder.WithTitle($"Maps for Level {p_Level}");
                 try
                 {
                     List<bool> l_Passed = new List<bool>();
@@ -141,21 +139,36 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                     }
 
+                    EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                    l_EmbedBuilder.WithTitle($"Maps for Level {p_Level}");
+                    string l_BigGgp = null;
                     int l_Y = 0;
+                    int l_NumbedOfEmbed = 1;
+                    
+                    if (ConfigController.ReadConfig().BigGGP) l_BigGgp = "\n\u200B";
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
                         foreach (var l_SongDifficulty in l_Song.difficulties)
                         {
                             if (!l_Passed[l_Y])
+                                l_EmbedBuilder.AddField(l_Song.name, $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}{l_BigGgp}", true);
+                            else
+                                l_EmbedBuilder.AddField($"~~{l_Song.name}~~", $"~~{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}~~{l_BigGgp}", true);
+                            if (l_NumbedOfEmbed % 2 != 0)
                             {
-                                l_EmbedBuilder.AddField(l_Song.name, $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}", true);
+                                if (l_Y % 2 == 0)
+                                    l_EmbedBuilder.AddField("\u200B","\u200B", true);
                             }
                             else
-                            {
-                                l_EmbedBuilder.AddField($"~~{l_Song.name}~~", $"~~{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}~~", true);
-                            }
-
+                                if (l_Y % 2 != 0) 
+                                    l_EmbedBuilder.AddField("\u200B","\u200B", true);
                             l_Y++;
+                            if (l_Y % 15 == 0)
+                            {
+                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                l_EmbedBuilder = new EmbedBuilder();
+                                l_NumbedOfEmbed++;
+                            }
                         }
                     }
 

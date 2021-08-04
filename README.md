@@ -11,6 +11,7 @@ It is created on the first start and can be reset with the command "reset-config
 | Command prefix | string |
 | Discord Status | string |
 | BotManagement RoleID | ulong |
+| BigGGP (embed) | bool |
 
 ## Commands
 
@@ -23,6 +24,7 @@ It is created on the first start and can be reset with the command "reset-config
 | ggp \<level> | Shows the maps of a level and bar them if passed. |
 | gpl \<level or "all"> | Send the playlist file/folder. |
 | scan | Scan and store all your scores, check if you passed maps from levels. |
+| profile | Shows your user profile. |
 
 ### Admin Commands
 | Command | Description |
