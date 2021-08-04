@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
@@ -235,6 +237,11 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("help")]
         public async Task Help()
         {
+            bool l_IsAdmin = false;
+            if (Context.User is SocketGuildUser l_User)
+                if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.ReadConfig().BotManagementRoleID))
+                    l_IsAdmin = true;
+            
             EmbedBuilder l_Builder = new EmbedBuilder();
             l_Builder.WithTitle("User Commands");
             l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
@@ -243,17 +250,22 @@ namespace BSDiscordRanking.Discord.Modules
             l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "gpl *[level]*", "Send the playlist file. Use \"all\" to get playlist folder.", true);
+            if (!l_IsAdmin)
+                l_Builder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
             l_Builder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
-
-            EmbedBuilder l_ModBuilder = new EmbedBuilder();
-            l_ModBuilder.WithTitle("Admins Commands");
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..]", "Add a map to a level", true);
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Reset the config file, **the bot will stop!**", true);
-            l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "TODO: Unlinks the ScoreSaber account of a player", true);
-            l_ModBuilder.WithColor(Color.Red);
-            l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
-            await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
+            
+            if (l_IsAdmin)
+            {
+                EmbedBuilder l_ModBuilder = new EmbedBuilder();
+                l_ModBuilder.WithTitle("Admins Commands");
+                l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..]", "Add a map to a level", true);
+                l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Reset the config file, **the bot will stop!**", true);
+                l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "TODO: Unlinks the ScoreSaber account of a player", true);
+                l_ModBuilder.WithColor(Color.Red);
+                l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
+                await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
+            }
         }
     }
 }
