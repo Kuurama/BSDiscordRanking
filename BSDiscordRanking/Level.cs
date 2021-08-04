@@ -14,7 +14,7 @@ namespace BSDiscordRanking
     public class Level
     {
         public LevelFormat m_Level;
-        private BeatMapsIOFormat m_BeatMapsIo;
+        private BeatSaverFormat m_BeatSaver;
         private int m_LevelID;
         public const string SUFFIX_NAME = "_Level";
 
@@ -194,14 +194,14 @@ namespace BSDiscordRanking
                 if (m_Level != null)
                 {
                     p_Code = p_Code.ToUpper();
-                    m_BeatMapsIo = FetchBeatMap(p_Code, p_SocketCommandContext);
-                    if (m_BeatMapsIo is not null)
+                    m_BeatSaver = FetchBeatMap(p_Code, p_SocketCommandContext);
+                    if (m_BeatSaver is not null)
                     {
                         bool l_SongAlreadyExist = false;
                         bool l_DifficultyAlreadyExist = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatMapsIo.versions[0].hash, name = m_BeatMapsIo.name};
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
@@ -216,7 +216,7 @@ namespace BSDiscordRanking
                                     int l_I;
                                     for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
                                     {
-                                        foreach (var l_BeatMapVersion in m_BeatMapsIo.versions)
+                                        foreach (var l_BeatMapVersion in m_BeatSaver.versions)
                                         {
                                             if (String.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase))
                                             {
@@ -303,14 +303,14 @@ namespace BSDiscordRanking
             return PATH;
         }
 
-        private static BeatMapsIOFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext)
+        private static BeatSaverFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext)
         {
-            string l_URL = @$"https://api.beatmaps.io/maps/id/{p_Code}";
+            string l_URL = @$"https://api.beatsaver.com/maps/id/{p_Code}";
             using WebClient l_WebClient = new WebClient();
             try
             {
                 Console.WriteLine(l_URL);
-                return JsonSerializer.Deserialize<BeatMapsIOFormat>(l_WebClient.DownloadString(l_URL));
+                return JsonSerializer.Deserialize<BeatSaverFormat>(l_WebClient.DownloadString(l_URL));
             }
             catch (WebException l_Exception)
             {
@@ -326,21 +326,21 @@ namespace BSDiscordRanking
 
                     if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
                     {
-                        Console.WriteLine($"The bot got rate-limited on BeatMapsIO, Try later");
-                        p_SocketCommandContext.Channel.SendMessageAsync("The bot got rate-limited on BeatMapsIO, Try later");
+                        Console.WriteLine($"The bot got rate-limited on BeatSaver, Try later");
+                        p_SocketCommandContext.Channel.SendMessageAsync("The bot got rate-limited on BeatSaver, Try later");
                         return null;
                     }
 
                     if (l_Response.StatusCode == HttpStatusCode.BadGateway)
                     {
-                        p_SocketCommandContext.Channel.SendMessageAsync("BeatMapsIO Server BadGateway");
+                        p_SocketCommandContext.Channel.SendMessageAsync("BeatSaver Server BadGateway");
                         Console.WriteLine($"Server BadGateway");
                         return null;
                     }
 
                     if (l_Response.StatusCode == HttpStatusCode.InternalServerError)
                     {
-                        p_SocketCommandContext.Channel.SendMessageAsync("BeatMapsIO InternalServerError");
+                        p_SocketCommandContext.Channel.SendMessageAsync("BeatSaver InternalServerError");
                         Console.WriteLine($"InternalServerError");
                         return null;
                     }

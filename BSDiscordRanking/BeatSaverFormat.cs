@@ -2,7 +2,7 @@
 
 namespace BSDiscordRanking.Controllers
 {
-    public class BeatMapsIOFormat
+    public class BeatSaverFormat
     {
         public string id { get; set; }
         public string name { get; set; }
