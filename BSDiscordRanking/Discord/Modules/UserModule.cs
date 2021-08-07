@@ -18,7 +18,9 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("profile")]
         public async Task Profile()
         {
-            ApiPlayerFull l_PlayerFull = new Player(UserController.GetPlayer(Context.User.Id.ToString())).m_PlayerFull;
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            
+            
             PlayerPassFormat l_PlayerPasses;
             try
             {
@@ -34,12 +36,12 @@ namespace BSDiscordRanking.Discord.Modules
             }
 
             EmbedBuilder l_EmbedBuilder = new();
-            l_EmbedBuilder.WithTitle(l_PlayerFull.playerInfo.playerName);
-            l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_PlayerFull.playerInfo.playerId);
-            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_PlayerFull.playerInfo.avatar);
-            l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_PlayerFull.playerInfo.rank);
+            l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
+            l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
+            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+            l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerPasses.songs.Count);
-            l_EmbedBuilder.AddField("Level", ":trophy: " + "TODO");
+            l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel());
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
 

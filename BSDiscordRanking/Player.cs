@@ -45,6 +45,19 @@ namespace BSDiscordRanking
             ///////////////////////////////////////////////////////////////////////////////////////
         }
 
+        public int GetPlayerLevel()
+        {
+            int l_PlayerLevel = 0;
+            foreach (var l_Level in GetStats().LevelIsPassed)
+            {
+                if (l_Level)
+                    l_PlayerLevel++;
+                else
+                    break;
+            }
+            return l_PlayerLevel;
+        }
+        
         private void GetInfos()
         {
             /// This Method Get the Player's Info from the api, then Deserialize it to m_PlayerFull for later usage.
