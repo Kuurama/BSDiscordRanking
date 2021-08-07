@@ -15,8 +15,9 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("createroles")]
         public async Task CreateRoles()
         {
-            new RoleController().CreateAllRoles(Context);
+            new RoleController().CreateAllRoles(Context, false);
         }
+        
         [Command("addmap")]
         public async Task AddMap(int p_Level = 0, string p_Code = "", string p_Characteristic = "",
             string p_DifficultyName = "")

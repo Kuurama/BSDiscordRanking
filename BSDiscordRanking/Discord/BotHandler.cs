@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Discord
     public class BotHandler
     {
         public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
-
+    
         public static string m_Prefix;
         private DiscordSocketClient m_Client;
         private CommandService m_Commands;
