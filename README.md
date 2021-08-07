@@ -12,6 +12,7 @@ It is created on the first start and can be reset with the command "reset-config
 | Discord Status | string |
 | BotManagement RoleID | ulong |
 | BigGGP (embed) | bool |
+| RolePrefix ( prefix for level roles ) | string |
 
 ## Commands
 
