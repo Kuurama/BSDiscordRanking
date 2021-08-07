@@ -119,8 +119,7 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine(
-                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
@@ -148,8 +147,7 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine(
-                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
@@ -192,8 +190,7 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine(
-                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
@@ -344,8 +341,7 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine(
-                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
@@ -398,8 +394,7 @@ namespace BSDiscordRanking
             }
             else
             {
-                Console.WriteLine(
-                    "Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
@@ -720,28 +715,36 @@ namespace BSDiscordRanking
 
         private void ReWriteStats()
         {
-            try
+            if (m_ErrorNumber < ERROR_LIMIT)
             {
-                if (m_PlayerStats != null)
+                try
                 {
-                    File.WriteAllText($@"{m_Path}\stats.json", JsonSerializer.Serialize(m_PlayerStats));
+                    if (m_PlayerStats != null)
+                    {
+                        File.WriteAllText($@"{m_Path}\stats.json", JsonSerializer.Serialize(m_PlayerStats));
 
-                    Console.WriteLine($"Stats's file of {m_PlayerFull.playerInfo.playerName} Updated");
+                        Console.WriteLine($"Stats's file of {m_PlayerFull.playerInfo.playerName} Updated");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Seems like you forgot to fetch the Player's Stats.");
+                    }
                 }
-                else
+                catch
+
                 {
-                    Console.WriteLine("Seems like you forgot to fetch the Player's Stats.");
+                    Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory?)");
+                    Console.WriteLine("Attempting to create the directory..");
+                    m_ErrorNumber++;
+                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                    Thread.Sleep(200);
+                    ReWriteStats();
                 }
             }
-            catch
-
+            else
             {
-                Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory?)");
-                Console.WriteLine("Attempting to create the directory..");
-                m_ErrorNumber++;
-                CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                Thread.Sleep(200);
-                ReWriteStats();
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Please Contact an Administrator.");
             }
         }
 
