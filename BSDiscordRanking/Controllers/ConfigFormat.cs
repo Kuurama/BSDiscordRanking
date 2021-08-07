@@ -8,5 +8,7 @@
         
         public ulong BotManagementRoleID { get; set; }
         public bool BigGGP { get; set; } = false;
+        
+        public string RolePrefix { get; set; }
     }
 }

@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules
@@ -10,6 +12,11 @@ namespace BSDiscordRanking.Discord.Modules
     [RequireManagerRole]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
+        [Command("createroles")]
+        public async Task CreateRoles()
+        {
+            new RoleController().CreateAllRoles(Context);
+        }
         [Command("addmap")]
         public async Task AddMap(int p_Level = 0, string p_Code = "", string p_Characteristic = "",
             string p_DifficultyName = "")
@@ -18,7 +25,7 @@ namespace BSDiscordRanking.Discord.Modules
                 string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync(
-                    $"> :x: Seems like you didn't use the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
+                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
             }
             else
             {
