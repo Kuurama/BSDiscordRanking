@@ -91,20 +91,8 @@ namespace BSDiscordRanking.Discord.Modules
                 try
                 {
                     List<bool> l_Passed = new List<bool>();
-                    PlayerPassFormat l_PlayerPasses;
-                    try
-                    {
-                        l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
-                    }
-                    catch
-                    {
-                        l_PlayerPasses = new PlayerPassFormat()
-                        {
-                            songs = new List<SongFormat>()
-                        };
-                        Console.WriteLine($"This player don't have any pass yet");
-                    }
-
+                    Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                    PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     int l_I = 0;
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
@@ -144,7 +132,7 @@ namespace BSDiscordRanking.Discord.Modules
                     string l_BigGgp = null;
                     int l_Y = 0;
                     int l_NumbedOfEmbed = 1;
-                    
+
                     if (ConfigController.ReadConfig().BigGGP) l_BigGgp = "\n\u200B";
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
@@ -157,11 +145,11 @@ namespace BSDiscordRanking.Discord.Modules
                             if (l_NumbedOfEmbed % 2 != 0)
                             {
                                 if (l_Y % 2 == 0)
-                                    l_EmbedBuilder.AddField("\u200B","\u200B", true);
+                                    l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                             }
-                            else
-                                if (l_Y % 2 != 0) 
-                                    l_EmbedBuilder.AddField("\u200B","\u200B", true);
+                            else if (l_Y % 2 != 0)
+                                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+
                             l_Y++;
                             if (l_Y % 15 == 0)
                             {
@@ -174,6 +162,8 @@ namespace BSDiscordRanking.Discord.Modules
 
                     l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+
+                    l_Player.SetGrindInfo(p_Level, l_Passed, -1); 
                 }
                 catch (Exception l_Exception)
                 {
@@ -185,7 +175,7 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: This level does not exist.");
             }
         }
-        
+
 
         [Command("scan")]
         public async Task Scan_Scores()
@@ -201,6 +191,7 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't passed any new map.");
+                l_Player.SetGrindInfo(-1, null, l_FetchPass); 
             }
         }
 
@@ -245,7 +236,7 @@ namespace BSDiscordRanking.Discord.Modules
             else
                 await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
         }
-        
+
 
         [Command("help")]
         public async Task Help()
@@ -254,7 +245,7 @@ namespace BSDiscordRanking.Discord.Modules
             if (Context.User is SocketGuildUser l_User)
                 if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.ReadConfig().BotManagementRoleID))
                     l_IsAdmin = true;
-            
+
             EmbedBuilder l_Builder = new EmbedBuilder();
             l_Builder.WithTitle("User Commands");
             l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
@@ -267,7 +258,7 @@ namespace BSDiscordRanking.Discord.Modules
                 l_Builder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
             l_Builder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
-            
+
             if (l_IsAdmin)
             {
                 EmbedBuilder l_ModBuilder = new EmbedBuilder();

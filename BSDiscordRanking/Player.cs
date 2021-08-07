@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,6 +22,7 @@ namespace BSDiscordRanking
         private ApiScores m_PlayerScore;
         private PlayerPassFormat m_PlayerPass;
         private LevelControllerFormat m_LevelController;
+        private PlayerStatsFormat m_PlayerStats;
         private int m_NumberOfTry = 0;
         private bool m_HavePlayerInfo = false;
         private const int ERROR_LIMIT = 3;
@@ -452,9 +454,10 @@ namespace BSDiscordRanking
         public async Task<int> FetchPass(SocketCommandContext p_context = null)
         {
             /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
-            int l_passes = 0;
+            int l_Passes = 0;
             int l_MessagesIndex = 0;
             List<string> l_Messages = new List<string> {new string("")};
+            List<int> l_ExistingLevelID = new List<int>();
             LoadLevelControllerCache();
             PlayerPassFormat l_OldPlayerPass = ReturnPass();
             m_PlayerPass = new PlayerPassFormat()
@@ -465,6 +468,7 @@ namespace BSDiscordRanking
             foreach (var l_LevelID in m_LevelController.LevelID)
             {
                 l_Levels.Add(new Level(l_LevelID));
+                l_ExistingLevelID.Add(l_LevelID); /// List of the current existing levels ID
             }
 
 
@@ -489,7 +493,7 @@ namespace BSDiscordRanking
                                             {
                                                 bool l_DiffExist = false;
                                                 bool l_OldDiffExist = false;
-                                                if (l_CachedPassedSong.difficulties != null && String.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                if (l_CachedPassedSong.difficulties != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                 {
                                                     l_MapStored = true;
                                                     foreach (var l_CachedDifficulty in l_CachedPassedSong.difficulties)
@@ -522,18 +526,19 @@ namespace BSDiscordRanking
                                                         if (!l_OldDiffExist)
                                                         {
                                                             /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                            if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n".Length)
+                                                            if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n".Length)
                                                             {
                                                                 l_MessagesIndex++;
                                                             }
-                                                            
+
                                                             if (l_Messages.Count < l_MessagesIndex + 1)
                                                             {
                                                                 l_Messages.Add(""); /// Initialize the next used index.
                                                             }
 
-                                                            l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n";
-                                                            l_passes++;
+                                                            l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n";
+                                                            l_Passes++;
+                                                            SetGrindInfo(l_ExistingLevelID[l_I], new List<bool>{true}, -1); /// Mean the Player passed that level.
                                                         }
                                                     }
                                                 }
@@ -568,9 +573,11 @@ namespace BSDiscordRanking
                                                     {
                                                         l_Messages.Add(""); /// Initialize the next used index.
                                                     }
+
                                                     /// Display new pass (new diff passed while there was already a passed diff) 2/2
                                                     l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n"; /// Display new pass 2/2
-                                                    l_passes++;
+                                                    l_Passes++;
+                                                    SetGrindInfo(l_ExistingLevelID[l_I], new List<bool>{true}, -1); /// Mean the Player passed that level.
                                                 }
                                             }
                                         }
@@ -584,13 +591,13 @@ namespace BSDiscordRanking
 
             ReWritePass();
 
-            if (l_passes >= 1)
+            if (l_Passes >= 1)
                 foreach (var l_Message in l_Messages)
                 {
                     await p_context.Channel.SendMessageAsync(">>> " + l_Message);
                 }
 
-            return l_passes;
+            return l_Passes;
         }
 
         private PlayerPassFormat ReturnPass()
@@ -696,6 +703,122 @@ namespace BSDiscordRanking
                 Thread.Sleep(200);
                 ReWritePass();
             }
+        }
+
+        private void ReWriteStats()
+        {
+            try
+            {
+                if (m_PlayerStats != null)
+                {
+                    File.WriteAllText($@"{m_Path}\stats.json", JsonSerializer.Serialize(m_PlayerStats));
+
+                    Console.WriteLine($"Stats's file of {m_PlayerFull.playerInfo.playerName} Updated");
+                }
+                else
+                {
+                    Console.WriteLine("Seems like you forgot to fetch the Player's Stats.");
+                }
+            }
+            catch
+
+            {
+                Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory?)");
+                Console.WriteLine("Attempting to create the directory..");
+                m_ErrorNumber++;
+                CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                Thread.Sleep(200);
+                ReWriteStats();
+            }
+        }
+
+        private void LoadStats()
+        {
+            CreateDirectory();
+            try
+            {
+                using StreamReader l_SR = new StreamReader($@"{m_Path}\stats.json");
+                m_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
+            }
+            catch (Exception) /// file format is wrong / there isn't any file.
+            {
+                m_PlayerStats = new PlayerStatsFormat
+                {
+                    LevelIsPassed = new List<bool>(),
+                    TotalNumberOfPass = new int(),
+                    Trophy = new List<int>()
+                };
+                Console.WriteLine($"This player don't have any stats yet");
+            }
+        }
+        
+        public PlayerStatsFormat GetStats()
+        {
+            LoadStats();
+            return m_PlayerStats;
+        }
+
+        public PlayerPassFormat GetPass()
+        {
+            CreateDirectory();
+            try
+            {
+                using StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json");
+                m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                return m_PlayerPass;
+            }
+            catch (Exception) /// file format is wrong / there isn't any file.
+            {
+                m_PlayerPass = new PlayerPassFormat()
+                {
+                    songs = new List<SongFormat>()
+                };
+                Console.WriteLine("This player don't have any pass yet");
+                return m_PlayerPass;
+            }
+        }
+
+        public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass)
+        {
+            LoadStats();
+            try
+            {
+                
+                if (p_Passed != null || p_LevelID >= 0)
+                {
+                    m_PlayerStats.LevelIsPassed ??= new List<bool>();
+                    bool l_LevelIsPassed = false;
+                    foreach (var l_Pass in p_Passed)
+                    {
+                        if (l_Pass) l_LevelIsPassed = true;
+                    }
+                    
+                    for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
+                    {
+                        if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
+                        {
+                            
+                            m_PlayerStats.LevelIsPassed.Add(false);
+                            Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
+                        }
+                    }
+
+                    m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
+                }
+
+                if (p_NumberOfPass >= 0)
+                {
+                    m_PlayerStats.TotalNumberOfPass = p_NumberOfPass;
+                }
+
+                m_PlayerStats.Trophy = null;
+                ReWriteStats();
+            }
+            catch (Exception l_Exception)
+            {
+                Console.WriteLine($"SetGrindInfo : {l_Exception.Message}");
+            }
+            
         }
     }
 }
