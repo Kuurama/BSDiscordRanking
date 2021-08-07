@@ -18,32 +18,37 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("profile")]
         public async Task Profile()
         {
-            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-            
-            
-            PlayerPassFormat l_PlayerPasses;
-            try
+            if (!UserController.UserExist(Context.User.Id.ToString()))
             {
-                l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             }
-            catch (Exception l_Exception)
+            else
             {
-                l_PlayerPasses = new PlayerPassFormat()
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                PlayerPassFormat l_PlayerPasses;
+                try
                 {
-                    songs = new List<SongFormat>()
-                };
-                Console.WriteLine($"This player don't have any pass yet");
-            }
+                    l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
+                }
+                catch (Exception l_Exception)
+                {
+                    l_PlayerPasses = new PlayerPassFormat()
+                    {
+                        songs = new List<SongFormat>()
+                    };
+                    Console.WriteLine($"This player don't have any pass yet");
+                }
 
-            EmbedBuilder l_EmbedBuilder = new();
-            l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
-            l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
-            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
-            l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
-            l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerPasses.songs.Count);
-            l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel());
-            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-            UserController.UpdatePlayerLevel(Context);
+                EmbedBuilder l_EmbedBuilder = new();
+                l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
+                l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
+                l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
+                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerPasses.songs.Count);
+                l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel());
+                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                UserController.UpdatePlayerLevel(Context);
+            }
         }
 
 
@@ -166,7 +171,7 @@ namespace BSDiscordRanking.Discord.Modules
                     l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
-                    l_Player.SetGrindInfo(p_Level, l_Passed, -1); 
+                    l_Player.SetGrindInfo(p_Level, l_Passed, -1);
                 }
                 catch (Exception l_Exception)
                 {
@@ -177,6 +182,7 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 await ReplyAsync("> :x: This level does not exist.");
             }
+
             UserController.UpdatePlayerLevel(Context);
         }
 
@@ -196,7 +202,7 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
-                l_Player.SetGrindInfo(-1, null, l_FetchPass); 
+                l_Player.SetGrindInfo(-1, null, l_FetchPass);
             }
 
             if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
@@ -205,7 +211,6 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync(
                     $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
             }
-            
         }
 
         [Command("ping")]

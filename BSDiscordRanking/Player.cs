@@ -31,8 +31,15 @@ namespace BSDiscordRanking
         public Player(string p_PlayerID)
         {
             m_PlayerID = p_PlayerID;
-            m_Path = @$".\Players\{m_PlayerID}\";
-            Console.WriteLine($"Selected Path is {m_Path}");
+            if (m_PlayerID != null)
+            {
+                m_Path = @$".\Players\{m_PlayerID}\";
+                Console.WriteLine($"Selected Path is {m_Path}");
+            }
+            else
+            {
+                m_Path = null;
+            }
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
@@ -47,17 +54,25 @@ namespace BSDiscordRanking
 
         public int GetPlayerLevel()
         {
-            int l_PlayerLevel = 0;
-            foreach (var l_Level in GetStats().LevelIsPassed)
+            if (m_PlayerID != null)
             {
-                if (l_Level)
-                    l_PlayerLevel++;
-                else
-                    break;
+                int l_PlayerLevel = 0;
+                foreach (var l_Level in GetStats().LevelIsPassed)
+                {
+                    if (l_Level)
+                        l_PlayerLevel++;
+                    else
+                        break;
+                }
+
+                return l_PlayerLevel;
             }
-            return l_PlayerLevel;
+            else
+            {
+                return 0;
+            }
         }
-        
+
         private void GetInfos()
         {
             /// This Method Get the Player's Info from the api, then Deserialize it to m_PlayerFull for later usage.
@@ -65,62 +80,64 @@ namespace BSDiscordRanking
             ///
             /// If it fail to load the Player's Info, m_NumberOfTry = 6 => the program will stop trying. (limit is 5)
             /// and it mean the Score Saber ID is wrong.
-
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (m_PlayerID != null)
             {
-                using (WebClient l_WebClient = new WebClient())
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    try
+                    using (WebClient l_WebClient = new WebClient())
                     {
-                        m_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>(
-                            l_WebClient.DownloadString(@$"https://new.scoresaber.com/api/player/{m_PlayerID}/full"));
-                        m_HavePlayerInfo = true;
-                    }
-                    catch (WebException l_Exception)
-                    {
-                        if (
-                            l_Exception.Response is HttpWebResponse
-                                l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
+                        try
                         {
-                            if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
-                            {
-                                Console.WriteLine("RateLimited, Trying again in 45sec");
-                                Thread.Sleep(45000);
-                                GetInfos();
-                            }
-
-                            if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
-                            {
-                                Console.WriteLine("Wrong Profile ID, Please contact an administrator");
-                                m_NumberOfTry = 6;
-                                m_ErrorNumber = 6;
-                            }
+                            m_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>(
+                                l_WebClient.DownloadString(@$"https://new.scoresaber.com/api/player/{m_PlayerID}/full"));
+                            m_HavePlayerInfo = true;
                         }
-                        else ///< Request Error => Internet or ScoreSaber API Down.
+                        catch (WebException l_Exception)
                         {
-                            if (!CheckScoreSaberAPI_Response("Player Full")) ///< Checking if ScoreSaber Api Return.
+                            if (
+                                l_Exception.Response is HttpWebResponse
+                                    l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
                             {
-                                if (m_NumberOfTry <= 5)
+                                if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                                 {
-                                    Console.WriteLine(
-                                        $"Retrying to get PLayer's Info in 30 sec : {m_NumberOfTry} out of 5 try");
-                                    m_NumberOfTry++;
-                                    Thread.Sleep(30000);
+                                    Console.WriteLine("RateLimited, Trying again in 45sec");
+                                    Thread.Sleep(45000);
                                     GetInfos();
                                 }
-                                else
+
+                                if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
                                 {
-                                    Console.WriteLine("No try left, Canceling GetPLayerInfo()");
+                                    Console.WriteLine("Wrong Profile ID, Please contact an administrator");
+                                    m_NumberOfTry = 6;
+                                    m_ErrorNumber = 6;
+                                }
+                            }
+                            else ///< Request Error => Internet or ScoreSaber API Down.
+                            {
+                                if (!CheckScoreSaberAPI_Response("Player Full")) ///< Checking if ScoreSaber Api Return.
+                                {
+                                    if (m_NumberOfTry <= 5)
+                                    {
+                                        Console.WriteLine(
+                                            $"Retrying to get PLayer's Info in 30 sec : {m_NumberOfTry} out of 5 try");
+                                        m_NumberOfTry++;
+                                        Thread.Sleep(30000);
+                                        GetInfos();
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("No try left, Canceling GetPLayerInfo()");
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
+                else
+                {
+                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                    Console.WriteLine("Please Contact an Administrator.");
+                }
             }
         }
 
@@ -128,27 +145,29 @@ namespace BSDiscordRanking
         {
             /// This Method Create the Directory needed to save and load the Player's score cache file from it's Path parameter.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (m_PlayerID != null)
             {
-                if (!Directory.Exists(m_Path))
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    try
+                    if (!Directory.Exists(m_Path))
                     {
-                        Directory.CreateDirectory(m_Path);
-                        Console.WriteLine($"Directory {m_Path} Created");
-                    }
-                    catch (Exception l_Exception)
-                    {
-                        Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
-                        m_ErrorNumber++;
+                        try
+                        {
+                            Directory.CreateDirectory(m_Path);
+                            Console.WriteLine($"Directory {m_Path} Created");
+                        }
+                        catch (Exception l_Exception)
+                        {
+                            Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
+                            m_ErrorNumber++;
+                        }
                     }
                 }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
+                else
+                {
+                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                    Console.WriteLine("Please Contact an Administrator.");
+                }
             }
         }
 
@@ -161,37 +180,39 @@ namespace BSDiscordRanking
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
-
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (m_PlayerID != null)
             {
-                if (!Directory.Exists(m_Path))
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
-                    CreateDirectory();
-                    Console.WriteLine("Continuing Loading Player's Score(s)");
-                }
-
-                try
-                {
-                    using (StreamReader l_SR = new StreamReader(m_Path + @"\score.json"))
+                    if (!Directory.Exists(m_Path))
                     {
-                        m_PlayerScore = JsonSerializer.Deserialize<ApiScores>(l_SR.ReadToEnd());
-                        Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
+                        Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
+                        CreateDirectory();
+                        Console.WriteLine("Continuing Loading Player's Score(s)");
+                    }
+
+                    try
+                    {
+                        using (StreamReader l_SR = new StreamReader(m_Path + @"\score.json"))
+                        {
+                            m_PlayerScore = JsonSerializer.Deserialize<ApiScores>(l_SR.ReadToEnd());
+                            Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        m_PlayerScore = new ApiScores()
+                        {
+                            scores = new List<ApiScore>()
+                        };
+                        Console.WriteLine($"Player {m_PlayerID} Created (Empty Format) => (Nothing to load/Wrong Format)");
                     }
                 }
-                catch (Exception)
+                else
                 {
-                    m_PlayerScore = new ApiScores()
-                    {
-                        scores = new List<ApiScore>()
-                    };
-                    Console.WriteLine($"Player {m_PlayerID} Created (Empty Format) => (Nothing to load/Wrong Format)");
+                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                    Console.WriteLine("Please Contact an Administrator.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
             }
         }
 
@@ -212,137 +233,139 @@ namespace BSDiscordRanking
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
 
-            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
-
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (m_PlayerID != null)
             {
-                if (m_HavePlayerInfo) /// Check if Player have Player's Info
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    if (m_PlayerScore != null)
+                    p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
+                    if (m_HavePlayerInfo) /// Check if Player have Player's Info
                     {
-                        ApiScores l_Result; ///< Result From Request but Serialized.
-                        string l_URL;
-                        int l_Page = 1;
-                        int l_NumberOfAddedScore = 0;
-                        bool l_Skip = false;
-                        /// Avoid doing useless attempt, Check player's number of score (8 score per request).
-                        while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
+                        if (m_PlayerScore != null)
                         {
-                            l_URL = @$"https://new.scoresaber.com/api/player/{m_PlayerFull.playerInfo.playerId}/scores/recent/{l_Page.ToString()}";
-                            using (WebClient l_WebClient = new WebClient())
+                            ApiScores l_Result; ///< Result From Request but Serialized.
+                            string l_URL;
+                            int l_Page = 1;
+                            int l_NumberOfAddedScore = 0;
+                            bool l_Skip = false;
+                            /// Avoid doing useless attempt, Check player's number of score (8 score per request).
+                            while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
                             {
-                                try
+                                l_URL = @$"https://new.scoresaber.com/api/player/{m_PlayerFull.playerInfo.playerId}/scores/recent/{l_Page.ToString()}";
+                                using (WebClient l_WebClient = new WebClient())
                                 {
-                                    Console.WriteLine(l_URL);
-                                    l_Result = JsonSerializer.Deserialize<ApiScores>(l_WebClient.DownloadString(l_URL));
-                                    l_Page++;
-
-                                    int l_Index = 0;
-
-                                    for (int i = 0; i < m_PlayerScore.scores.Count; i++)
+                                    try
                                     {
-                                        if (l_Skip)
-                                            break; ///< break the for and l_Skip will cause the end of the While Loop.
-                                        if (l_Result != null)
-                                            for (l_Index = 0; l_Index < l_Result.scores.Count; l_Index++)
-                                            {
-                                                if (l_Result.scores[l_Index].timeSet == m_PlayerScore.scores[i].timeSet)
+                                        Console.WriteLine(l_URL);
+                                        l_Result = JsonSerializer.Deserialize<ApiScores>(l_WebClient.DownloadString(l_URL));
+                                        l_Page++;
+
+                                        int l_Index = 0;
+
+                                        for (int i = 0; i < m_PlayerScore.scores.Count; i++)
+                                        {
+                                            if (l_Skip)
+                                                break; ///< break the for and l_Skip will cause the end of the While Loop.
+                                            if (l_Result != null)
+                                                for (l_Index = 0; l_Index < l_Result.scores.Count; l_Index++)
                                                 {
-                                                    l_Skip = true; ///< One score already exist (will end the While Loop)
-                                                    break;
+                                                    if (l_Result.scores[l_Index].timeSet == m_PlayerScore.scores[i].timeSet)
+                                                    {
+                                                        l_Skip = true; ///< One score already exist (will end the While Loop)
+                                                        break;
+                                                    }
+                                                }
+                                        }
+
+                                        if (l_Result != null)
+                                            foreach (var l_NewScore in l_Result.scores) /// Remove old score and add new score.
+                                            {
+                                                if (m_PlayerScore.scores.RemoveAll(x =>
+                                                        x.leaderboardId == l_NewScore.leaderboardId &&
+                                                        x.score != l_NewScore.score) > 0 ||
+                                                    !(m_PlayerScore.scores.Any(x =>
+                                                        x.leaderboardId == l_NewScore.leaderboardId)))
+                                                {
+                                                    m_PlayerScore.scores.Add(l_NewScore);
+                                                    l_NumberOfAddedScore++;
                                                 }
                                             }
                                     }
-
-                                    if (l_Result != null)
-                                        foreach (var l_NewScore in l_Result.scores) /// Remove old score and add new score.
-                                        {
-                                            if (m_PlayerScore.scores.RemoveAll(x =>
-                                                    x.leaderboardId == l_NewScore.leaderboardId &&
-                                                    x.score != l_NewScore.score) > 0 ||
-                                                !(m_PlayerScore.scores.Any(x =>
-                                                    x.leaderboardId == l_NewScore.leaderboardId)))
-                                            {
-                                                m_PlayerScore.scores.Add(l_NewScore);
-                                                l_NumberOfAddedScore++;
-                                            }
-                                        }
-                                }
-                                catch (WebException e)
-                                {
-                                    if (e.Response is HttpWebResponse l_Response)
+                                    catch (WebException e)
                                     {
-                                        Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
-                                        if (l_Response.StatusCode == HttpStatusCode.NotFound)
+                                        if (e.Response is HttpWebResponse l_Response)
                                         {
-                                            Console.WriteLine($"No more Page to download, Downloaded {l_Page} Page(s)");
-                                            break;
-                                        }
-
-                                        if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
-                                        {
-                                            p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
-                                            Thread.Sleep(45000);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (!CheckScoreSaberAPI_Response("Player Score"))
-                                        {
-                                            Console.WriteLine($"But {l_NumberOfAddedScore} new Score(s) will be Added");
-                                            if (m_NumberOfTry > 5)
+                                            Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
+                                            if (l_Response.StatusCode == HttpStatusCode.NotFound)
                                             {
-                                                Console.WriteLine("OK Internet is Dead, Stopped Fetching Score.");
-                                                break; /// End the While Loop.
+                                                Console.WriteLine($"No more Page to download, Downloaded {l_Page} Page(s)");
+                                                break;
                                             }
 
-                                            Console.WriteLine(
-                                                $"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
-                                            m_NumberOfTry++;
-                                            Thread.Sleep(30000);
+                                            if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
+                                            {
+                                                p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
+                                                Thread.Sleep(45000);
+                                            }
                                         }
                                         else
                                         {
-                                            m_NumberOfTry = 6;
-                                            break;
+                                            if (!CheckScoreSaberAPI_Response("Player Score"))
+                                            {
+                                                Console.WriteLine($"But {l_NumberOfAddedScore} new Score(s) will be Added");
+                                                if (m_NumberOfTry > 5)
+                                                {
+                                                    Console.WriteLine("OK Internet is Dead, Stopped Fetching Score.");
+                                                    break; /// End the While Loop.
+                                                }
+
+                                                Console.WriteLine(
+                                                    $"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
+                                                m_NumberOfTry++;
+                                                Thread.Sleep(30000);
+                                            }
+                                            else
+                                            {
+                                                m_NumberOfTry = 6;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        if (l_Skip)
-                            Console.WriteLine($"Fetched {l_Page - 1} pages");
+                            if (l_Skip)
+                                Console.WriteLine($"Fetched {l_Page - 1} pages");
+                            else
+                                Console.WriteLine($"Fetched {l_Page} pages");
+                            Console.WriteLine($"{l_NumberOfAddedScore} new Score(s) Added");
+                            ReWriteScore(); /// Caching the Score from the player instance.
+                        }
                         else
-                            Console.WriteLine($"Fetched {l_Page} pages");
-                        Console.WriteLine($"{l_NumberOfAddedScore} new Score(s) Added");
-                        ReWriteScore(); /// Caching the Score from the player instance.
+                        {
+                            Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
+                            OpenSavedScore();
+                            FetchScores();
+                        }
                     }
-                    else
+                    else /// If Player don't have player's info => Trying to get Player's Info
                     {
-                        Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
-                        OpenSavedScore();
-                        FetchScores();
+                        if (m_NumberOfTry <= 5)
+                        {
+                            GetInfos();
+                            FetchScores();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Stopped Getting Player Info, canceling.");
+                            m_ErrorNumber = 6;
+                        }
                     }
                 }
-                else /// If Player don't have player's info => Trying to get Player's Info
+                else
                 {
-                    if (m_NumberOfTry <= 5)
-                    {
-                        GetInfos();
-                        FetchScores();
-                    }
-                    else
-                    {
-                        Console.WriteLine("Stopped Getting Player Info, canceling.");
-                        m_ErrorNumber = 6;
-                    }
+                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                    Console.WriteLine("Please Contact an Administrator.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
             }
         }
 
@@ -353,49 +376,51 @@ namespace BSDiscordRanking
             /// as you needed to Deserialised that cache (or set an empty format) to m_PlayerScore by using OpenSavedScore();
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (m_PlayerID != null)
             {
-                try
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    if (m_PlayerScore != null)
+                    try
                     {
-                        File.WriteAllText(m_Path + @"\score.json", JsonSerializer.Serialize(m_PlayerScore));
-                        try
+                        if (m_PlayerScore != null)
                         {
-                            Console.WriteLine(
-                                $"{m_PlayerFull.playerInfo.playerName} Updated, ({m_PlayerScore.scores.Count} Score stored)");
+                            File.WriteAllText(m_Path + @"\score.json", JsonSerializer.Serialize(m_PlayerScore));
+                            try
+                            {
+                                Console.WriteLine(
+                                    $"{m_PlayerFull.playerInfo.playerName} Updated, ({m_PlayerScore.scores.Count} Score stored)");
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine(
+                                    "Seems Like you forgot to Get Player Info, Attempting to get player's info");
+                                GetInfos();
+                                ReWriteScore();
+                            }
                         }
-                        catch (Exception)
+                        else
                         {
-                            Console.WriteLine(
-                                "Seems Like you forgot to Get Player Info, Attempting to get player's info");
-                            GetInfos();
+                            Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
+                            OpenSavedScore();
                             ReWriteScore();
                         }
                     }
-                    else
+                    catch
                     {
-                        Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
-                        OpenSavedScore();
+                        Console.WriteLine(
+                            "An error occured While attempting to Write the Player's Cache. (missing directory?)");
+                        Console.WriteLine("Attempting to create the directory..");
+                        m_ErrorNumber++;
+                        CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                        Thread.Sleep(200);
                         ReWriteScore();
                     }
                 }
-                catch
+                else
                 {
-                    Console.WriteLine(
-                        "An error occured While attempting to Write the Player's Cache. (missing directory?)");
-                    Console.WriteLine("Attempting to create the directory..");
-                    m_ErrorNumber++;
-                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                    Thread.Sleep(200);
-                    ReWriteScore();
+                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                    Console.WriteLine("Please Contact an Administrator.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
             }
         }
 
@@ -405,13 +430,16 @@ namespace BSDiscordRanking
             /// This Method Delete the player's scores's cache file.
             /// </summary>
 
-            try
+            if (m_PlayerID != null)
             {
-                File.Delete(m_Path + @"\score.json");
-            }
-            catch (Exception l_Exception)
-            {
-                Console.WriteLine($"Failed to delete File : {l_Exception.Message}");
+                try
+                {
+                    File.Delete(m_Path + @"\score.json");
+                }
+                catch (Exception l_Exception)
+                {
+                    Console.WriteLine($"Failed to delete File : {l_Exception.Message}");
+                }
             }
         }
 
@@ -461,131 +489,134 @@ namespace BSDiscordRanking
 
         public async Task<int> FetchPass(SocketCommandContext p_context = null)
         {
-            /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
-            int l_Passes = 0;
-            int l_MessagesIndex = 0;
-            List<string> l_Messages = new List<string> {new string("")};
-            List<int> l_ExistingLevelID = new List<int>();
-            LoadLevelControllerCache();
-            PlayerPassFormat l_OldPlayerPass = ReturnPass();
-            m_PlayerPass = new PlayerPassFormat()
+            if (m_PlayerID != null)
             {
-                songs = new List<SongFormat>()
-            };
-            List<Level> l_Levels = new List<Level>();
-            foreach (var l_LevelID in m_LevelController.LevelID)
-            {
-                l_Levels.Add(new Level(l_LevelID));
-                l_ExistingLevelID.Add(l_LevelID); /// List of the current existing levels ID
-            }
-
-
-            for (int l_I = 0; l_I < l_Levels.Count; l_I++)
-            {
-                foreach (var l_Song in l_Levels[l_I].m_Level.songs)
+                /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
+                int l_Passes = 0;
+                int l_MessagesIndex = 0;
+                List<string> l_Messages = new List<string> {new string("")};
+                List<int> l_ExistingLevelID = new List<int>();
+                LoadLevelControllerCache();
+                PlayerPassFormat l_OldPlayerPass = ReturnPass();
+                m_PlayerPass = new PlayerPassFormat()
                 {
-                    foreach (var l_Score in m_PlayerScore.scores)
+                    songs = new List<SongFormat>()
+                };
+                List<Level> l_Levels = new List<Level>();
+                foreach (var l_LevelID in m_LevelController.LevelID)
+                {
+                    l_Levels.Add(new Level(l_LevelID));
+                    l_ExistingLevelID.Add(l_LevelID); /// List of the current existing levels ID
+                }
+
+
+                for (int l_I = 0; l_I < l_Levels.Count; l_I++)
+                {
+                    foreach (var l_Song in l_Levels[l_I].m_Level.songs)
                     {
-                        if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
+                        foreach (var l_Score in m_PlayerScore.scores)
                         {
-                            if (l_Song.hash.ToUpper() == l_Score.songHash.ToUpper())
+                            if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
                             {
-                                bool l_MapStored = false;
-                                if (l_Song.difficulties is not null)
+                                if (l_Song.hash.ToUpper() == l_Score.songHash.ToUpper())
                                 {
-                                    foreach (var l_Difficulty in l_Song.difficulties)
+                                    bool l_MapStored = false;
+                                    if (l_Song.difficulties is not null)
                                     {
-                                        if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
+                                        foreach (var l_Difficulty in l_Song.difficulties)
                                         {
-                                            foreach (var l_CachedPassedSong in m_PlayerPass.songs)
+                                            if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                             {
-                                                bool l_DiffExist = false;
-                                                bool l_OldDiffExist = false;
-                                                if (l_CachedPassedSong.difficulties != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                foreach (var l_CachedPassedSong in m_PlayerPass.songs)
                                                 {
-                                                    l_MapStored = true;
-                                                    foreach (var l_CachedDifficulty in l_CachedPassedSong.difficulties)
+                                                    bool l_DiffExist = false;
+                                                    bool l_OldDiffExist = false;
+                                                    if (l_CachedPassedSong.difficulties != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                     {
-                                                        foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
+                                                        l_MapStored = true;
+                                                        foreach (var l_CachedDifficulty in l_CachedPassedSong.difficulties)
                                                         {
-                                                            if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
+                                                            foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
                                                             {
-                                                                foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
+                                                                if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
                                                                 {
-                                                                    if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name)
+                                                                    foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
                                                                     {
-                                                                        l_OldDiffExist = true;
-                                                                        break;
+                                                                        if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name)
+                                                                        {
+                                                                            l_OldDiffExist = true;
+                                                                            break;
+                                                                        }
                                                                     }
                                                                 }
                                                             }
+
+                                                            if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
+                                                            {
+                                                                l_DiffExist = true;
+                                                                break;
+                                                            }
                                                         }
 
-                                                        if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
+                                                        if (!l_DiffExist)
                                                         {
-                                                            l_DiffExist = true;
+                                                            l_CachedPassedSong.difficulties.Add(l_Difficulty);
+                                                            if (!l_OldDiffExist)
+                                                            {
+                                                                /// Display new pass (new diff passed while there was already a passed diff) 1/2
+                                                                if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n".Length)
+                                                                {
+                                                                    l_MessagesIndex++;
+                                                                }
+
+                                                                if (l_Messages.Count < l_MessagesIndex + 1)
+                                                                {
+                                                                    l_Messages.Add(""); /// Initialize the next used index.
+                                                                }
+
+                                                                l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n";
+                                                                l_Passes++;
+                                                                SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> {true}, -1); /// Mean the Player passed that level.
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                if (!l_MapStored)
+                                                {
+                                                    bool l_WasStored = false;
+                                                    SongFormat l_PassedSong = new SongFormat();
+                                                    l_PassedSong.difficulties = new List<InSongFormat>();
+                                                    l_PassedSong.hash = l_Song.hash.ToUpper();
+                                                    l_PassedSong.difficulties.Add(l_Difficulty);
+                                                    m_PlayerPass.songs.Add(l_PassedSong);
+
+                                                    foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
+                                                    {
+                                                        if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                        {
+                                                            l_WasStored = true;
                                                             break;
                                                         }
                                                     }
 
-                                                    if (!l_DiffExist)
+                                                    if (!l_WasStored)
                                                     {
-                                                        l_CachedPassedSong.difficulties.Add(l_Difficulty);
-                                                        if (!l_OldDiffExist)
+                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n".Length)
                                                         {
-                                                            /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                            if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n".Length)
-                                                            {
-                                                                l_MessagesIndex++;
-                                                            }
-
-                                                            if (l_Messages.Count < l_MessagesIndex + 1)
-                                                            {
-                                                                l_Messages.Add(""); /// Initialize the next used index.
-                                                            }
-
-                                                            l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n";
-                                                            l_Passes++;
-                                                            SetGrindInfo(l_ExistingLevelID[l_I], new List<bool>{true}, -1); /// Mean the Player passed that level.
+                                                            l_MessagesIndex++;
                                                         }
+
+                                                        if (l_Messages.Count < l_MessagesIndex + 1)
+                                                        {
+                                                            l_Messages.Add(""); /// Initialize the next used index.
+                                                        }
+
+                                                        /// Display new pass (new diff passed while there was already a passed diff) 2/2
+                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n"; /// Display new pass 2/2
+                                                        l_Passes++;
+                                                        SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> {true}, -1); /// Mean the Player passed that level.
                                                     }
-                                                }
-                                            }
-
-                                            if (!l_MapStored)
-                                            {
-                                                bool l_WasStored = false;
-                                                SongFormat l_PassedSong = new SongFormat();
-                                                l_PassedSong.difficulties = new List<InSongFormat>();
-                                                l_PassedSong.hash = l_Song.hash.ToUpper();
-                                                l_PassedSong.difficulties.Add(l_Difficulty);
-                                                m_PlayerPass.songs.Add(l_PassedSong);
-
-                                                foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
-                                                {
-                                                    if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
-                                                    {
-                                                        l_WasStored = true;
-                                                        break;
-                                                    }
-                                                }
-
-                                                if (!l_WasStored)
-                                                {
-                                                    if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n".Length)
-                                                    {
-                                                        l_MessagesIndex++;
-                                                    }
-
-                                                    if (l_Messages.Count < l_MessagesIndex + 1)
-                                                    {
-                                                        l_Messages.Add(""); /// Initialize the next used index.
-                                                    }
-
-                                                    /// Display new pass (new diff passed while there was already a passed diff) 2/2
-                                                    l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n"; /// Display new pass 2/2
-                                                    l_Passes++;
-                                                    SetGrindInfo(l_ExistingLevelID[l_I], new List<bool>{true}, -1); /// Mean the Player passed that level.
                                                 }
                                             }
                                         }
@@ -594,62 +625,76 @@ namespace BSDiscordRanking
                             }
                         }
                     }
+
                 }
+
+                ReWritePass();
+
+                if (l_Passes >= 1)
+                    foreach (var l_Message in l_Messages)
+                    {
+                        await p_context.Channel.SendMessageAsync(">>> " + l_Message);
+                    }
+                return l_Passes;
             }
-
-            ReWritePass();
-
-            if (l_Passes >= 1)
-                foreach (var l_Message in l_Messages)
-                {
-                    await p_context.Channel.SendMessageAsync(">>> " + l_Message);
-                }
-
-            return l_Passes;
+            else
+            {
+                return 0;
+            }
         }
 
         private PlayerPassFormat ReturnPass()
         {
             /// This method return the Serialised version of the current saved Player's pass, ruturn an empty on if none.
             PlayerPassFormat l_PlayerPass = new PlayerPassFormat();
-            if (!Directory.Exists(m_Path))
+            if (m_PlayerID != null)
             {
-                Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
-                CreateDirectory();
-                Console.WriteLine("Continuing Loading Player's Pass");
+                if (!Directory.Exists(m_Path))
+                {
+                    Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
+                    CreateDirectory();
+                    Console.WriteLine("Continuing Loading Player's Pass");
+                }
+                else
+                {
+                    try
+                    {
+                        using (StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json"))
+                        {
+                            l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                            if (l_PlayerPass == null) /// json contain "null"
+                            {
+                                l_PlayerPass = new PlayerPassFormat()
+                                {
+                                    songs = new List<SongFormat>()
+                                };
+                                Console.WriteLine($"PlayerPass Created (Empty Format), file contained null");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"pass.json of {m_PlayerID} loaded");
+                            }
+                        }
+                    }
+                    catch (Exception) /// file format is wrong / there isn't any file.
+                    {
+                        l_PlayerPass = new PlayerPassFormat()
+                        {
+                            songs = new List<SongFormat>()
+                        };
+                        Console.WriteLine($@"{m_Path}pass.json Created (Empty Format)");
+                    }
+                }
+
+                return l_PlayerPass;
             }
             else
             {
-                try
+                return l_PlayerPass = new PlayerPassFormat()
                 {
-                    using (StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json"))
-                    {
-                        l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
-                        if (l_PlayerPass == null) /// json contain "null"
-                        {
-                            l_PlayerPass = new PlayerPassFormat()
-                            {
-                                songs = new List<SongFormat>()
-                            };
-                            Console.WriteLine($"PlayerPass Created (Empty Format), file contained null");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"pass.json of {m_PlayerID} loaded");
-                        }
-                    }
-                }
-                catch (Exception) /// file format is wrong / there isn't any file.
-                {
-                    l_PlayerPass = new PlayerPassFormat()
-                    {
-                        songs = new List<SongFormat>()
-                    };
-                    Console.WriteLine($@"{m_Path}pass.json Created (Empty Format)");
-                }
+                    songs = new List<SongFormat>()
+                };
             }
-
-            return l_PlayerPass;
         }
 
         private void LoadLevelControllerCache()
@@ -680,83 +725,102 @@ namespace BSDiscordRanking
 
         private void ReWritePass()
         {
-            try
+            if (m_PlayerID != null)
             {
-                if (m_PlayerPass != null)
+                try
                 {
-                    File.WriteAllText($@"{m_Path}\pass.json", JsonSerializer.Serialize(m_PlayerPass));
-                    try
+                    if (m_PlayerPass != null)
                     {
-                        Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.songs.Count} song(s) are stored (song number <= number of scores : multiple diff)");
+                        File.WriteAllText($@"{m_Path}\pass.json", JsonSerializer.Serialize(m_PlayerPass));
+                        try
+                        {
+                            Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.songs.Count} song(s) are stored (song number <= number of scores : multiple diff)");
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine("Seems Like you forgot to Get Player Info, Attempting to get player's info");
+                            GetInfos();
+                            ReWritePass();
+                        }
                     }
-                    catch (Exception)
+                    else
                     {
-                        Console.WriteLine("Seems Like you forgot to Get Player Info, Attempting to get player's info");
-                        GetInfos();
-                        ReWritePass();
+                        Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");
+                        FetchScores();
                     }
                 }
-                else
+                catch
                 {
-                    Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");
-                    FetchScores();
+                    Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory?)");
+                    Console.WriteLine("Attempting to create the directory..");
+                    m_ErrorNumber++;
+                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                    Thread.Sleep(200);
+                    ReWritePass();
                 }
-            }
-            catch
-            {
-                Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory?)");
-                Console.WriteLine("Attempting to create the directory..");
-                m_ErrorNumber++;
-                CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                Thread.Sleep(200);
-                ReWritePass();
             }
         }
 
         private void ReWriteStats()
         {
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (m_PlayerID != null)
             {
-                try
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    if (m_PlayerStats != null)
+                    try
                     {
-                        File.WriteAllText($@"{m_Path}\stats.json", JsonSerializer.Serialize(m_PlayerStats));
+                        if (m_PlayerStats != null)
+                        {
+                            File.WriteAllText($@"{m_Path}\stats.json", JsonSerializer.Serialize(m_PlayerStats));
 
-                        Console.WriteLine($"Stats's file of {m_PlayerFull.playerInfo.playerName} Updated");
+                            Console.WriteLine($"Stats's file of {m_PlayerFull.playerInfo.playerName} Updated");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Seems like you forgot to fetch the Player's Stats.");
+                        }
                     }
-                    else
+                    catch
+
                     {
-                        Console.WriteLine("Seems like you forgot to fetch the Player's Stats.");
+                        Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory?)");
+                        Console.WriteLine("Attempting to create the directory..");
+                        m_ErrorNumber++;
+                        CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                        Thread.Sleep(200);
+                        ReWriteStats();
                     }
                 }
-                catch
-
+                else
                 {
-                    Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory?)");
-                    Console.WriteLine("Attempting to create the directory..");
-                    m_ErrorNumber++;
-                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                    Thread.Sleep(200);
-                    ReWriteStats();
+                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                    Console.WriteLine("Please Contact an Administrator.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
             }
         }
 
         private void LoadStats()
         {
-            CreateDirectory();
-            try
+            if (m_PlayerID != null)
             {
-                using StreamReader l_SR = new StreamReader($@"{m_Path}\stats.json");
-                m_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
+                CreateDirectory();
+                try
+                {
+                    using StreamReader l_SR = new StreamReader($@"{m_Path}\stats.json");
+                    m_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
+                }
+                catch (Exception) /// file format is wrong / there isn't any file.
+                {
+                    m_PlayerStats = new PlayerStatsFormat
+                    {
+                        LevelIsPassed = new List<bool>(),
+                        TotalNumberOfPass = new int(),
+                        Trophy = new List<int>()
+                    };
+                    Console.WriteLine($"This player don't have any stats yet");
+                }
             }
-            catch (Exception) /// file format is wrong / there isn't any file.
+            else
             {
                 m_PlayerStats = new PlayerStatsFormat
                 {
@@ -764,10 +828,9 @@ namespace BSDiscordRanking
                     TotalNumberOfPass = new int(),
                     Trophy = new List<int>()
                 };
-                Console.WriteLine($"This player don't have any stats yet");
             }
         }
-        
+
         public PlayerStatsFormat GetStats()
         {
             LoadStats();
@@ -776,65 +839,75 @@ namespace BSDiscordRanking
 
         public PlayerPassFormat GetPass()
         {
-            CreateDirectory();
-            try
+            if (m_PlayerID != null)
             {
-                using StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json");
-                m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
-                return m_PlayerPass;
+                CreateDirectory();
+                try
+                {
+                    using StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json");
+                    m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                    return m_PlayerPass;
+                }
+                catch (Exception) /// file format is wrong / there isn't any file.
+                {
+                    m_PlayerPass = new PlayerPassFormat
+                    {
+                        songs = new List<SongFormat>()
+                    };
+                    Console.WriteLine("This player don't have any pass yet");
+                    return m_PlayerPass;
+                }
             }
-            catch (Exception) /// file format is wrong / there isn't any file.
+            else
             {
-                m_PlayerPass = new PlayerPassFormat()
+                return m_PlayerPass = new PlayerPassFormat
                 {
                     songs = new List<SongFormat>()
                 };
-                Console.WriteLine("This player don't have any pass yet");
-                return m_PlayerPass;
             }
         }
 
         public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass)
         {
-            LoadStats();
-            try
+            if (m_PlayerID != null)
             {
-                
-                if (p_Passed != null || p_LevelID >= 0)
+                LoadStats();
+                try
                 {
-                    m_PlayerStats.LevelIsPassed ??= new List<bool>();
-                    bool l_LevelIsPassed = false;
-                    foreach (var l_Pass in p_Passed)
+                    if (p_Passed != null || p_LevelID >= 0)
                     {
-                        if (l_Pass) l_LevelIsPassed = true;
-                    }
-                    
-                    for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
-                    {
-                        if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
+                        m_PlayerStats.LevelIsPassed ??= new List<bool>();
+                        bool l_LevelIsPassed = false;
+                        foreach (var l_Pass in p_Passed)
                         {
-                            
-                            m_PlayerStats.LevelIsPassed.Add(false);
-                            Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
+                            if (l_Pass) l_LevelIsPassed = true;
                         }
+
+                        for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
+                        {
+                            if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
+                            {
+                                m_PlayerStats.LevelIsPassed.Add(false);
+                                Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
+                            }
+                        }
+
+                        m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
                     }
 
-                    m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
-                }
+                    if (p_NumberOfPass >= 0)
+                    {
+                        m_PlayerStats.TotalNumberOfPass = p_NumberOfPass;
+                    }
 
-                if (p_NumberOfPass >= 0)
+                    m_PlayerStats.Trophy = null;
+                    ReWriteStats();
+                }
+                catch (Exception l_Exception)
                 {
-                    m_PlayerStats.TotalNumberOfPass = p_NumberOfPass;
+                    Console.WriteLine($"SetGrindInfo : {l_Exception.Message}");
                 }
-
-                m_PlayerStats.Trophy = null;
-                ReWriteStats();
             }
-            catch (Exception l_Exception)
-            {
-                Console.WriteLine($"SetGrindInfo : {l_Exception.Message}");
-            }
-            
         }
     }
 }
