@@ -39,14 +39,14 @@ namespace BSDiscordRanking.Controllers
             if (!RoleExist($"{ConfigController.ReadConfig().RolePrefix} Ranked") || Overwrite)
             {
                 var l_Role = p_Context.Guild.CreateRoleAsync($"{ConfigController.ReadConfig().RolePrefix} Ranked", GuildPermissions.None, Color.Blue, false, false).Result;
-                m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name});
+                m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = 0});
             }
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
                 if (!RoleExist($"Lv.{l_LevelID}") || Overwrite)
                 {
                     var l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
-                    m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name});
+                    m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
                 }
             }
             WriteRolesDB();

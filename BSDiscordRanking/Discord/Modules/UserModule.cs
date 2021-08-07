@@ -43,6 +43,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerPasses.songs.Count);
             l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel());
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+            UserController.UpdatePlayerLevel(Context);
         }
 
 
@@ -176,25 +177,35 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 await ReplyAsync("> :x: This level does not exist.");
             }
+            UserController.UpdatePlayerLevel(Context);
         }
 
 
         [Command("scan")]
         public async Task Scan_Scores()
         {
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            int l_OldPlayerLevel = l_Player.GetPlayerLevel();
             if (!UserController.UserExist(Context.User.Id.ToString()))
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             else
             {
-                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 l_Player.FetchScores(Context);
                 int l_FetchPass = await l_Player.FetchPass(Context);
                 if (l_FetchPass >= 1)
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
-                    await ReplyAsync($"> :x: Sorry, you didn't passed any new map.");
+                    await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
                 l_Player.SetGrindInfo(-1, null, l_FetchPass); 
             }
+
+            if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
+            {
+                UserController.UpdatePlayerLevel(Context);
+                await ReplyAsync(
+                    $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+            }
+            
         }
 
         [Command("ping")]

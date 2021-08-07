@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Discord.Rest;
+
 
 namespace BSDiscordRanking.Controllers
 {
@@ -13,5 +12,6 @@ namespace BSDiscordRanking.Controllers
     {
         public ulong RoleID { get; set; }
         public string RoleName { get; set; }
+        public int LevelID { get; set; }
     }
 }

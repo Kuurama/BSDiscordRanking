@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json;
@@ -43,7 +44,19 @@ namespace BSDiscordRanking.Controllers
 
             return false;
         }
-        
+
+        public static void UpdatePlayerLevel(SocketCommandContext p_Context)
+        {
+            int l_PlayerLevel = new Player(UserController.GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
+            ulong l_RoleID = 0;
+            foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles.Where(l_Role => l_Role.LevelID == l_PlayerLevel))
+            {
+                l_RoleID = l_Role.RoleID;
+            }
+
+            if (l_RoleID != 0)
+                ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_RoleID));
+        }
         
         public static void GenerateDB()
         {
