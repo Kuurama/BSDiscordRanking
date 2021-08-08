@@ -47,18 +47,27 @@ namespace BSDiscordRanking.Controllers
 
         public static void UpdatePlayerLevel(SocketCommandContext p_Context)
         {
-            int l_PlayerLevel = new Player(UserController.GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
-            ulong l_RoleID = 0;
+            int l_PlayerLevel = new Player(GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
             foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles.Where(l_Role => l_Role.LevelID == l_PlayerLevel))
             {
-                l_RoleID = l_Role.RoleID;
+                if (l_Role.LevelID == l_PlayerLevel)
+                    ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
             }
 
-            if (l_RoleID != 0)
-                ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_RoleID));
+            SocketGuildUser l_User = p_Context.User as SocketGuildUser;
+            foreach (SocketRole l_UserRole in l_User.Roles)
+            {
+                foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles)
+                {
+                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel)
+                    {
+                        ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
+                    }
+                }
+            }
         }
         
-        public static void GenerateDB()
+        public static void GenerateDB() 
         {
             File.WriteAllText("players.json", JsonConvert.SerializeObject(m_Users));
         }
