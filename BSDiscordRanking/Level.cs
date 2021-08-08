@@ -290,6 +290,121 @@ namespace BSDiscordRanking
             }
         }
 
+        public void RemoveMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
+            SocketCommandContext p_SocketCommandContext)
+        {
+            /// <summary>
+            /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist() Method to update the file.
+            /// It use the Hash, the Selected Characteristic (Standard, Lawless, etc)
+            /// and the choosed Difficulty Name (Easy, Normal, Hard, Expert, ExpertPlus);
+            ///
+            /// This method will be locked if m_ErrorNumber < m_ErrorLimit to avoid any loop error.
+
+            if (m_ErrorNumber < ERROR_LIMIT)
+            {
+                if (m_Level != null)
+                {
+                    p_Code = p_Code.ToUpper();
+                    m_BeatSaver = FetchBeatMap(p_Code, p_SocketCommandContext);
+                    if (m_BeatSaver is not null)
+                    {
+                        bool l_SongAlreadyExist = false;
+                        bool l_DifficultyAlreadyExist = false;
+                        try
+                        {
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
+
+                            InSongFormat l_InSongFormat = new InSongFormat
+                            {
+                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic
+                            };
+                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
+
+                            if (!string.IsNullOrEmpty(l_SongFormat.name))
+                            {
+                                if (m_Level.songs.Count != 0)
+                                {
+                                    int l_I;
+                                    for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
+                                    {
+                                        foreach (var l_BeatMapVersion in m_BeatSaver.versions)
+                                        {
+                                            if (String.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase))
+                                            {
+                                                l_SongAlreadyExist = true;
+                                                break;
+                                            }
+                                        }
+                                        if (l_SongAlreadyExist)
+                                            break;
+                                    }
+
+                                    if (l_SongAlreadyExist)
+                                    {
+                                        foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
+                                        {
+                                            if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                                l_DifficultyAlreadyExist = true;
+                                            l_InSongFormat = l_Difficulty;
+                                        }
+
+                                        if (l_DifficultyAlreadyExist)
+                                        {
+                                            m_Level.songs[l_I].difficulties.Remove(l_InSongFormat);
+                                            if (m_Level.songs[l_I].difficulties.Count <= 0)
+                                            {
+                                                m_Level.songs.RemoveAt(l_I);
+                                            }
+                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
+                                            ReWritePlaylist();
+                                        }
+                                        else
+                                        {
+                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
+                                            ReWritePlaylist();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
+                                        ReWritePlaylist();
+                                    }
+                                }
+                                else
+                                {
+                                    p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
+                                    ReWritePlaylist();
+                                }
+                            }
+                            else
+                            {
+                                m_ErrorNumber++;
+                                p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
+                            }
+                        }
+                        catch
+                        {
+                            m_ErrorNumber++;
+                            p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Seems like you forgot to Load the Level, Attempting to load the Level Cache..");
+                    m_ErrorNumber++;
+                    LoadLevel();
+                    Console.WriteLine($"Trying to RemoveMap {p_Code}");
+                    RemoveMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Please Contact an Administrator.");
+            }
+        }
+
 
         private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
         {

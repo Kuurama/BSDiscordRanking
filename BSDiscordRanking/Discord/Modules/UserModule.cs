@@ -25,26 +25,14 @@ namespace BSDiscordRanking.Discord.Modules
             else
             {
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-                PlayerPassFormat l_PlayerPasses;
-                try
-                {
-                    l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
-                }
-                catch
-                {
-                    l_PlayerPasses = new PlayerPassFormat()
-                    {
-                        songs = new List<SongFormat>()
-                    };
-                    Console.WriteLine($"This player don't have any pass yet");
-                }
+                var l_PlayerStats = l_Player.GetStats();
 
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
                 l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
                 l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
-                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerPasses.songs.Count);
+                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass);
                 l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel());
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
                 UserController.UpdatePlayerLevel(Context);
@@ -269,7 +257,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "link **[id]**", "Links your ScoreSaber account.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "unlink", "Unlinks your ScoreSaber account", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Shows you the maps of your level.", true);
+            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Display the maps to grind for the [level].", true);
             l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
             l_Builder.AddField(BotHandler.m_Prefix + "gpl *[level]*", "Send the playlist file. Use \"all\" to get playlist folder.", true);
             if (!l_IsAdmin)
