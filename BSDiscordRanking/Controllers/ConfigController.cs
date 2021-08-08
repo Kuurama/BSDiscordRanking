@@ -26,7 +26,7 @@ namespace BSDiscordRanking.Controllers
                         return l_ConfigFormat;
                     }
                 }
-                catch (Exception e)
+                catch
                 {
                     Console.WriteLine("An error occured while reading the config. Creating a new one");
                     CreateConfig();

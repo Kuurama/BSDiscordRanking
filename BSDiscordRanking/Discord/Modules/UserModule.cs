@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     l_PlayerPasses = JsonSerializer.Deserialize<PlayerPassFormat>(await File.ReadAllTextAsync("./Players/" + UserController.GetPlayer(Context.User.Id.ToString()) + "/pass.json"));
                 }
-                catch (Exception l_Exception)
+                catch
                 {
                     l_PlayerPasses = new PlayerPassFormat()
                     {
