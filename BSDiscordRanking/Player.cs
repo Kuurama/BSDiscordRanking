@@ -575,7 +575,7 @@ namespace BSDiscordRanking
 
                                                                 l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n";
                                                                 l_Passes++;
-                                                                SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> {true}, -1); /// Mean the Player passed that level.
+                                                                SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> {true}, -1, null); /// Mean the Player passed that level.
                                                             }
                                                         }
                                                     }
@@ -614,7 +614,7 @@ namespace BSDiscordRanking
                                                         /// Display new pass (new diff passed while there was already a passed diff) 2/2
                                                         l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n"; /// Display new pass 2/2
                                                         l_Passes++;
-                                                        SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> {true}, -1); /// Mean the Player passed that level.
+                                                        SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> {true}, -1, null); /// Mean the Player passed that level.
                                                     }
                                                 }
                                             }
@@ -760,7 +760,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private void ReWriteStats()
+        public void ReWriteStats()
         {
             if (m_PlayerID != null)
             {
@@ -798,7 +798,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private void LoadStats()
+        public void LoadStats()
         {
             if (m_PlayerID != null)
             {
@@ -814,7 +814,7 @@ namespace BSDiscordRanking
                     {
                         LevelIsPassed = new List<bool>(),
                         TotalNumberOfPass = new int(),
-                        Trophy = new List<int>()
+                        Trophy = new Trophy()
                     };
                     Console.WriteLine($"This player don't have any stats yet");
                 }
@@ -825,7 +825,13 @@ namespace BSDiscordRanking
                 {
                     LevelIsPassed = new List<bool>(),
                     TotalNumberOfPass = new int(),
-                    Trophy = new List<int>()
+                    Trophy = new Trophy
+                    {
+                        Plastic = 0,
+                        Silver = 0,
+                        Gold = 0,
+                        Diamond = 0
+                    }
                 };
             }
         }
@@ -866,7 +872,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass)
+        public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass, Trophy p_Trophy)
         {
             if (m_PlayerID != null)
             {
@@ -899,7 +905,11 @@ namespace BSDiscordRanking
                         m_PlayerStats.TotalNumberOfPass = p_NumberOfPass;
                     }
 
-                    m_PlayerStats.Trophy = null;
+                    if (p_Trophy != null)
+                    {
+                        m_PlayerStats.Trophy = p_Trophy;
+                    }
+                    
                     ReWriteStats();
                 }
                 catch (Exception l_Exception)

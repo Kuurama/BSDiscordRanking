@@ -27,24 +27,10 @@ namespace BSDiscordRanking.Discord.Modules
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 var l_PlayerStats = l_Player.GetStats();
 
-                int l_Plastics = 0;
-                int l_Silvers = 0;
-                int l_Golds = 0;
-                int l_Diamonds = 0;
-                foreach (var l_TrophyLevel in l_PlayerStats.Trophy)
-                {
-                    switch (l_TrophyLevel)
-                    {
-                        case 1: l_Plastics++;
-                            break;
-                        case 2: l_Silvers++;
-                            break;
-                        case 3: l_Golds++;
-                            break;
-                        case 4: l_Diamonds++;
-                            break;
-                    }
-                }
+                int l_Plastics = l_PlayerStats.Trophy.Plastic;
+                int l_Silvers = l_PlayerStats.Trophy.Silver;
+                int l_Golds = l_PlayerStats.Trophy.Plastic;
+                int l_Diamonds = l_PlayerStats.Trophy.Plastic;
 
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
@@ -54,7 +40,7 @@ namespace BSDiscordRanking.Discord.Modules
                 l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
                 l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField("Plastic Trophies:",l_Plastics, true);
+                l_EmbedBuilder.AddField("Plastic Trophies:", l_Plastics, true);
                 l_EmbedBuilder.AddField("Silver Trophies:", l_Silvers, true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                 l_EmbedBuilder.AddField("Gold Trophies:", l_Golds, true);
@@ -74,8 +60,10 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 string l_Path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
                 if (File.Exists(l_Path))
+
                     await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
                 else
+
                     await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
             }
             else if (p_Level == "all")
@@ -92,6 +80,7 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
                 }
             }
+
             else
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
         }
@@ -116,6 +105,7 @@ namespace BSDiscordRanking.Discord.Modules
                     int l_NumberOfPass = 0;
                     Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
+                    l_Player.LoadStats();
                     int l_I = 0;
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
@@ -139,7 +129,7 @@ namespace BSDiscordRanking.Discord.Modules
                                     }
                                 }
                             }
-                        
+
 
                         for (int l_N = 0; l_N < l_Song.difficulties.Count; l_N++)
                         {
@@ -151,7 +141,7 @@ namespace BSDiscordRanking.Discord.Modules
                             l_I++;
                         }
                     }
-                    
+
                     int l_NumberOfDifficulties = 0;
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
@@ -160,38 +150,38 @@ namespace BSDiscordRanking.Discord.Modules
                             l_NumberOfDifficulties++;
                         }
                     }
-                    
+
                     string l_PlayerTrophy = "";
+                    
                     switch ((l_NumberOfPass * 100 / l_NumberOfDifficulties))
                     {
                         case <= 39:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level] = 1;
+                            l_Player.m_PlayerStats.Trophy.Plastic += 1;
                             l_PlayerTrophy = "<:plastic:874215132874571787>";
                             break;
                         }
                         case <= 69:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level] = 2;
+                            l_Player.m_PlayerStats.Trophy.Silver += 2;
                             l_PlayerTrophy = "<:silver:874215133197500446>";
                             break;
                         }
                         case <= 99:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level] = 3;
+                            l_Player.m_PlayerStats.Trophy.Gold += 3;
                             l_PlayerTrophy = "<:gold:874215133147197460>";
                             break;
                         }
-                        
+
                         case 100:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level] = 4;
+                            l_Player.m_PlayerStats.Trophy.Diamond += 4;
                             l_PlayerTrophy = "<:diamond:874215133289795584>";
                             break;
                         }
-
                     }
-                    
+                    l_Player.ReWriteStats();
 
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                     l_EmbedBuilder.WithTitle($"Maps for Level {p_Level} {l_PlayerTrophy}");
@@ -229,7 +219,7 @@ namespace BSDiscordRanking.Discord.Modules
                     l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
-                    l_Player.SetGrindInfo(p_Level, l_Passed, -1);
+                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy);
                 }
                 catch (Exception l_Exception)
                 {
@@ -260,7 +250,7 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
-                l_Player.SetGrindInfo(-1, null, l_FetchPass);
+                l_Player.SetGrindInfo(-1, null, l_FetchPass, null);
             }
 
             if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
