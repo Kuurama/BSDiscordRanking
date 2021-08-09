@@ -7,7 +7,7 @@ namespace BSDiscordRanking.Formats
         public List<bool> LevelIsPassed { get; set; }
         public int TotalNumberOfPass { get; set; }
 
-        public Trophy Trophy { get; set; }
+        public List<Trophy> Trophy { get; set; }
         //plastic 0% 1
         //silver 40% 2
         //gold 70% 3

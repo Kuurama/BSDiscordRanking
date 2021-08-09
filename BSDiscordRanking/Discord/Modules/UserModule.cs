@@ -28,10 +28,17 @@ namespace BSDiscordRanking.Discord.Modules
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 var l_PlayerStats = l_Player.GetStats();
 
-                int l_Plastics = l_PlayerStats.Trophy.Plastic;
-                int l_Silvers = l_PlayerStats.Trophy.Silver;
-                int l_Golds = l_PlayerStats.Trophy.Gold;
-                int l_Diamonds = l_PlayerStats.Trophy.Diamond;
+                int l_Plastics = 0;
+                int l_Silvers = 0;
+                int l_Golds = 0;
+                int l_Diamonds = 0;
+                foreach (var l_Trophy in l_PlayerStats.Trophy)
+                {
+                    l_Plastics += l_Trophy.Plastic;
+                    l_Silvers += l_Trophy.Silver;
+                    l_Golds += l_Trophy.Gold;
+                    l_Diamonds += l_Trophy.Diamond;
+                }
 
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
@@ -154,30 +161,54 @@ namespace BSDiscordRanking.Discord.Modules
 
                     string l_PlayerTrophy = "";
                     
-                    switch ((l_NumberOfPass * 100 / l_NumberOfDifficulties))
+                        if (l_Player.m_PlayerStats.Trophy.ElementAtOrDefault(p_Level - 1) == null)
+                        {
+                            l_Player.m_PlayerStats.Trophy.Insert(p_Level - 1, new Trophy()
+                            {
+                                Plastic = 0,
+                                Silver = 0,
+                                Gold = 0,
+                                Diamond = 0
+                            });
+                        }
+                        else
+                        {
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic = 0;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver = 0;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold = 0;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond = 0;
+                        }
+
+                        // ReSharper disable once IntDivisionByZero
+                        switch ((l_NumberOfPass * 100 / l_NumberOfDifficulties))
                     {
+                        case 0:
+                        {
+                            l_PlayerTrophy = "";
+                            break;
+                        }
                         case <= 39:
                         {
-                            l_Player.m_PlayerStats.Trophy.Plastic += 1;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic += 1;
                             l_PlayerTrophy = "<:plastic:874215132874571787>";
                             break;
                         }
                         case <= 69:
                         {
-                            l_Player.m_PlayerStats.Trophy.Silver += 2;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver += 1;
                             l_PlayerTrophy = "<:silver:874215133197500446>";
                             break;
                         }
                         case <= 99:
                         {
-                            l_Player.m_PlayerStats.Trophy.Gold += 3;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold += 1;
                             l_PlayerTrophy = "<:gold:874215133147197460>";
                             break;
                         }
 
                         case 100:
                         {
-                            l_Player.m_PlayerStats.Trophy.Diamond += 4;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond += 1;
                             l_PlayerTrophy = "<:diamond:874215133289795584>";
                             break;
                         }
@@ -220,7 +251,7 @@ namespace BSDiscordRanking.Discord.Modules
                     l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
-                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy);
+                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1]);
                 }
                 catch (Exception l_Exception)
                 {
