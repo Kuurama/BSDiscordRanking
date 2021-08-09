@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 
-namespace BSDiscordRanking.Controllers
+namespace BSDiscordRanking.Formats
 {
     public class RolesFormat
     {

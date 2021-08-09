@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
 
 
 namespace BSDiscordRanking.Controllers

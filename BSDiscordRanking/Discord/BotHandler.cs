@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
-namespace BSDiscordRanking.Controllers
+namespace BSDiscordRanking.Formats
 {
     public class ConfigFormat
     {

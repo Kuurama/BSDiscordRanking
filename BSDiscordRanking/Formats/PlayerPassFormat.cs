@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BSDiscordRanking
+namespace BSDiscordRanking.Formats
 {
     public class PlayerPassFormat
     {

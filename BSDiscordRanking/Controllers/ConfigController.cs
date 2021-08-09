@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using BSDiscordRanking.Formats;
 using Newtonsoft.Json;
 
 namespace BSDiscordRanking.Controllers

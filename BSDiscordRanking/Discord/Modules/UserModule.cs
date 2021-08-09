@@ -6,10 +6,10 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
 {
@@ -30,8 +30,8 @@ namespace BSDiscordRanking.Discord.Modules
 
                 int l_Plastics = l_PlayerStats.Trophy.Plastic;
                 int l_Silvers = l_PlayerStats.Trophy.Silver;
-                int l_Golds = l_PlayerStats.Trophy.Plastic;
-                int l_Diamonds = l_PlayerStats.Trophy.Plastic;
+                int l_Golds = l_PlayerStats.Trophy.Gold;
+                int l_Diamonds = l_PlayerStats.Trophy.Diamond;
 
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
@@ -41,11 +41,11 @@ namespace BSDiscordRanking.Discord.Modules
                 l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
                 l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField("Plastic Trophies:", l_Plastics, true);
-                l_EmbedBuilder.AddField("Silver Trophies:", l_Silvers, true);
+                l_EmbedBuilder.AddField("<:plastic:874215132874571787> : ", l_Plastics, true);
+                l_EmbedBuilder.AddField("<:silver:874215133197500446> : ",l_Silvers,true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField("Gold Trophies:", l_Golds, true);
-                l_EmbedBuilder.AddField("Diamond Trophies:", l_Diamonds, true);
+                l_EmbedBuilder.AddField($"<:gold:874215133147197460> : {l_Golds}", "\u200B" , true);
+                l_EmbedBuilder.AddField("<:diamond:874215133289795584> : ", l_Diamonds, true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
                 UserController.UpdatePlayerLevel(Context);
