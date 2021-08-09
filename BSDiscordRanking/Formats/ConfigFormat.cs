@@ -1,4 +1,7 @@
-﻿namespace BSDiscordRanking.Controllers
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+namespace BSDiscordRanking.Controllers
 {
     public class ConfigFormat
     {
@@ -10,5 +13,9 @@
         public bool BigGGP { get; set; } = false;
         
         public string RolePrefix { get; set; }
+
+        public List<ulong> AuthorizedChannels { get; set; }
+        
     }
+    
 }

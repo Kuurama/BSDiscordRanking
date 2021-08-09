@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -6,9 +7,11 @@ namespace BSDiscordRanking.Controllers
 {
     public class ConfigController
     {
+        public static ConfigFormat m_ConfigFormat = new ConfigFormat(){ AuthorizedChannels = new List<ulong>()};
+        
         public static void CreateConfig()
         {
-            string l_Config = JsonConvert.SerializeObject(new ConfigFormat());
+            string l_Config = JsonConvert.SerializeObject(new ConfigFormat() { AuthorizedChannels = new List<ulong>()});
             File.WriteAllText("./config.json", l_Config);
             Console.WriteLine("Blank config file created");
             Environment.Exit(0);
@@ -22,8 +25,8 @@ namespace BSDiscordRanking.Controllers
                 {   
                     using (StreamReader l_StreamReader = new StreamReader("./config.json"))
                     {
-                        ConfigFormat l_ConfigFormat = JsonConvert.DeserializeObject<ConfigFormat>(l_StreamReader.ReadToEnd());
-                        return l_ConfigFormat;
+                        m_ConfigFormat  = JsonConvert.DeserializeObject<ConfigFormat>(l_StreamReader.ReadToEnd());
+                        return m_ConfigFormat;
                     }
                 }
                 catch
@@ -38,6 +41,12 @@ namespace BSDiscordRanking.Controllers
                 CreateConfig();
             }
             return null;
+        }
+
+        public static void ReWriteConfig()
+        {
+            string l_Config = JsonConvert.SerializeObject(m_ConfigFormat);
+            File.WriteAllText("./config.json", l_Config);
         }
         
     }

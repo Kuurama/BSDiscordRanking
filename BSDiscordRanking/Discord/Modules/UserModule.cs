@@ -13,6 +13,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Discord.Modules
 {
+    [CheckChannel]
     public class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("profile")]
@@ -336,6 +337,21 @@ namespace BSDiscordRanking.Discord.Modules
                 l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
                 await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
             }
+        }
+    }
+
+    class CheckChannelAttribute : PreconditionAttribute
+    {
+        public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context, CommandInfo p_Command, IServiceProvider p_Services)
+        {
+            foreach (var l_AuthorizedChannel in ConfigController.ReadConfig().AuthorizedChannels)
+            {
+                if (p_Context.Message.Channel.Id == l_AuthorizedChannel)
+                {
+                    return Task.FromResult(PreconditionResult.FromSuccess());
+                }
+            }
+            return Task.FromResult(PreconditionResult.FromError("> :x: Sorry, you can't use this command here."));
         }
     }
 }

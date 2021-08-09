@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
@@ -10,6 +11,32 @@ namespace BSDiscordRanking.Discord.Modules
     [RequireManagerRole]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
+        [Command("addchannel")]
+        public async Task AddChannel()
+        {
+            ConfigController.m_ConfigFormat.AuthorizedChannels ??= new List<ulong>();
+            if (ConfigController.m_ConfigFormat.AuthorizedChannels.Any(l_Channel => Context.Message.Channel.Id == l_Channel))
+            {
+                await ReplyAsync("> :x: Sorry, this channel can already be used for user commands");
+                return;
+            }
+            ConfigController.m_ConfigFormat.AuthorizedChannels.Add(Context.Message.Channel.Id);
+            ConfigController.ReWriteConfig();
+            await ReplyAsync("> :white_check_mark: This channel can now be used for user commands");
+        }
+        
+        [Command("removechannel")]
+        public async Task RemoveChannel()
+        {
+            foreach (var l_Channel in ConfigController.m_ConfigFormat.AuthorizedChannels.Where(l_Channel => Context.Message.Channel.Id == l_Channel))
+            {
+                ConfigController.m_ConfigFormat.AuthorizedChannels.Remove(l_Channel);
+            }
+            
+            ConfigController.ReWriteConfig();
+            await ReplyAsync("> :white_check_mark: This channel cannot longer be used for user commands");
+        }
+        
         [Command("createroles")]
         public async Task CreateRoles()
         {
