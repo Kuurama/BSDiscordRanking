@@ -42,7 +42,6 @@ namespace BSDiscordRanking.Controllers
                 if (!RoleExist($"Lv.{l_LevelID}") || Overwrite)
                 {
                     var l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
-                    await l_Role.ModifyAsync(p_Properties => p_Properties.Position = l_LevelID);
                     m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
                 }
             }
