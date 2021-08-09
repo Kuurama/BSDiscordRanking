@@ -27,13 +27,39 @@ namespace BSDiscordRanking.Discord.Modules
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 var l_PlayerStats = l_Player.GetStats();
 
+                int l_Plastics = 0;
+                int l_Silvers = 0;
+                int l_Golds = 0;
+                int l_Diamonds = 0;
+                foreach (var l_TrophyLevel in l_PlayerStats.Trophy)
+                {
+                    switch (l_TrophyLevel)
+                    {
+                        case 1: l_Plastics++;
+                            break;
+                        case 2: l_Silvers++;
+                            break;
+                        case 3: l_Golds++;
+                            break;
+                        case 4: l_Diamonds++;
+                            break;
+                    }
+                }
+
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
                 l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
                 l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
-                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass);
-                l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel());
+                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
+                l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                l_EmbedBuilder.AddField("Plastic Trophies:",l_Plastics, true);
+                l_EmbedBuilder.AddField("Silver Trophies:", l_Silvers, true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                l_EmbedBuilder.AddField("Gold Trophies:", l_Golds, true);
+                l_EmbedBuilder.AddField("Diamond Trophies:", l_Diamonds, true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
                 UserController.UpdatePlayerLevel(Context);
             }
@@ -87,6 +113,7 @@ namespace BSDiscordRanking.Discord.Modules
                 try
                 {
                     List<bool> l_Passed = new List<bool>();
+                    int l_NumberOfPass = 0;
                     Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     int l_I = 0;
@@ -104,6 +131,7 @@ namespace BSDiscordRanking.Discord.Modules
                                             if (l_SongDifficulty.characteristic == l_PlayerPassDifficulty.characteristic && l_SongDifficulty.name == l_PlayerPassDifficulty.name)
                                             {
                                                 Console.WriteLine($"Pass detected on {l_Song.name} {l_SongDifficulty.name}");
+                                                l_NumberOfPass++;
                                                 l_Passed.Insert(l_I, true);
                                                 break;
                                             }
@@ -111,6 +139,7 @@ namespace BSDiscordRanking.Discord.Modules
                                     }
                                 }
                             }
+                        
 
                         for (int l_N = 0; l_N < l_Song.difficulties.Count; l_N++)
                         {
@@ -122,9 +151,50 @@ namespace BSDiscordRanking.Discord.Modules
                             l_I++;
                         }
                     }
+                    
+                    int l_NumberOfDifficulties = 0;
+                    foreach (var l_Song in l_Level.m_Level.songs)
+                    {
+                        foreach (var l_Difficulty in l_Song.difficulties)
+                        {
+                            l_NumberOfDifficulties++;
+                        }
+                    }
+                    
+                    string l_PlayerTrophy = "";
+                    switch ((l_NumberOfPass * 100 / l_NumberOfDifficulties))
+                    {
+                        case <= 39:
+                        {
+                            l_Player.m_PlayerStats.Trophy[p_Level] = 1;
+                            l_PlayerTrophy = "<:plastic:874215132874571787>";
+                            break;
+                        }
+                        case <= 69:
+                        {
+                            l_Player.m_PlayerStats.Trophy[p_Level] = 2;
+                            l_PlayerTrophy = "<:silver:874215133197500446>";
+                            break;
+                        }
+                        case <= 99:
+                        {
+                            l_Player.m_PlayerStats.Trophy[p_Level] = 3;
+                            l_PlayerTrophy = "<:gold:874215133147197460>";
+                            break;
+                        }
+                        
+                        case 100:
+                        {
+                            l_Player.m_PlayerStats.Trophy[p_Level] = 4;
+                            l_PlayerTrophy = "<:diamond:874215133289795584>";
+                            break;
+                        }
+
+                    }
+                    
 
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                    l_EmbedBuilder.WithTitle($"Maps for Level {p_Level}");
+                    l_EmbedBuilder.WithTitle($"Maps for Level {p_Level} {l_PlayerTrophy}");
                     string l_BigGgp = null;
                     int l_Y = 0;
                     int l_NumbedOfEmbed = 1;

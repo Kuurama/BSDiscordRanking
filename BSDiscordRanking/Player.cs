@@ -22,7 +22,7 @@ namespace BSDiscordRanking
         private ApiScores m_PlayerScore;
         private PlayerPassFormat m_PlayerPass;
         private LevelControllerFormat m_LevelController;
-        private PlayerStatsFormat m_PlayerStats;
+        public PlayerStatsFormat m_PlayerStats;
         private int m_NumberOfTry = 0;
         private bool m_HavePlayerInfo = false;
         private const int ERROR_LIMIT = 3;
@@ -64,7 +64,6 @@ namespace BSDiscordRanking
                     else
                         break;
                 }
-
                 return l_PlayerLevel;
             }
             else
