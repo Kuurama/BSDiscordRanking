@@ -87,7 +87,13 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
-                        new Level(p_Level).RemoveMap(p_Code, p_Characteristic, p_DifficultyName, Context);
+                        Level l_Level = new Level(p_Level);
+                        l_Level.RemoveMap(p_Code, p_Characteristic, p_DifficultyName, Context);
+                        if (l_Level.m_Level.songs.Count == 0)
+                        {
+                            l_Level.DeleteLevel();
+                        }
+
                     }
                     else
                         await ReplyAsync(

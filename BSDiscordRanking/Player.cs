@@ -487,84 +487,177 @@ namespace BSDiscordRanking
         }
 
 
-        public async Task<int> FetchPass(SocketCommandContext p_context = null)
+        public async Task<int> FetchPass(SocketCommandContext p_Context = null)
         {
             if (m_PlayerID != null)
             {
                 /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
                 int l_Passes = 0;
+                int l_PassesPerLevel = 0;
+                int l_NumberOfDifficulties = 0;
                 int l_MessagesIndex = 0;
+                int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
+                Trophy l_Trophy = new Trophy();
                 List<string> l_Messages = new List<string> { new string("") };
                 List<int> l_ExistingLevelID = new List<int>();
+                int l_BiggerLevelID = 0;
+                new LevelController().FetchLevel();
                 LoadLevelControllerCache();
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
-                m_PlayerPass = new PlayerPassFormat()
+                m_PlayerPass = new PlayerPassFormat
                 {
                     songs = new List<SongFormat>()
                 };
+                ResetTrophy();
+                ResetLevels();
                 List<Level> l_Levels = new List<Level>();
                 foreach (var l_LevelID in m_LevelController.LevelID)
                 {
-                    l_Levels.Add(new Level(l_LevelID));
                     l_ExistingLevelID.Add(l_LevelID); /// List of the current existing levels ID
+                    if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
                 }
 
-
-                for (int l_I = 0; l_I < l_Levels.Count; l_I++)
+                bool l_LevelExist;
+                for (int l_I = 0; l_I < l_BiggerLevelID; l_I++)
                 {
-                    foreach (var l_Song in l_Levels[l_I].m_Level.songs)
+                    l_LevelExist = false;
+                    foreach (var l_ID in l_ExistingLevelID)
                     {
-                        foreach (var l_Score in m_PlayerScore.scores)
+                        if (l_ID-1 == l_I)
+                            l_LevelExist = true;
+                    }
+
+                    if (l_LevelExist)
+                    {
+                        l_Levels.Add(new Level(l_I+1));
+                    }
+                    else
+                    {
+                        l_Levels.Add(null);
+                    }
+                }
+
+                int l_Y = 0;
+                try
+                {
+                    
+                    for ( l_Y = 0; l_Y <= l_BiggerLevelID; l_Y++)
+                    {
+                        if (l_Y == 34)
                         {
-                            if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
+                            Console.WriteLine("it's 34");
+                        }
+                        l_LevelExist = false;
+                        foreach (var l_ID in l_ExistingLevelID)
+                        {
+                            if (l_ID-1 == l_Y)
                             {
-                                if (l_Song.hash.ToUpper() == l_Score.songHash.ToUpper())
+                                l_LevelExist = true;
+                                break;
+                            }
+                        }
+
+                        if (l_LevelExist)
+                        {
+                            foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
+                            {
+                                foreach (var l_Score in m_PlayerScore.scores)
                                 {
-                                    bool l_MapStored = false;
-                                    if (l_Song.difficulties is not null)
+                                    if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
                                     {
-                                        foreach (var l_Difficulty in l_Song.difficulties)
+                                        if (String.Equals(l_Song.hash, l_Score.songHash, StringComparison.CurrentCultureIgnoreCase))
                                         {
-                                            if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
+                                            bool l_MapStored = false;
+                                            if (l_Song.difficulties is not null)
                                             {
-                                                foreach (var l_CachedPassedSong in m_PlayerPass.songs)
+                                                foreach (var l_Difficulty in l_Song.difficulties)
                                                 {
-                                                    bool l_DiffExist = false;
-                                                    bool l_OldDiffExist = false;
-                                                    if (l_CachedPassedSong.difficulties != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                    if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                     {
-                                                        l_MapStored = true;
-                                                        foreach (var l_CachedDifficulty in l_CachedPassedSong.difficulties)
+                                                        foreach (var l_CachedPassedSong in m_PlayerPass.songs)
                                                         {
-                                                            foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
+                                                            bool l_DiffExist = false;
+                                                            bool l_OldDiffExist = false;
+                                                            if (l_CachedPassedSong.difficulties != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                             {
-                                                                if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
+                                                                l_MapStored = true;
+                                                                foreach (var l_CachedDifficulty in l_CachedPassedSong.difficulties)
                                                                 {
-                                                                    foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
+                                                                    foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
                                                                     {
-                                                                        if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name)
+                                                                        if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
                                                                         {
-                                                                            l_OldDiffExist = true;
-                                                                            break;
+                                                                            foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
+                                                                            {
+                                                                                if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name)
+                                                                                {
+                                                                                    l_OldDiffExist = true;
+                                                                                    break;
+                                                                                }
+                                                                            }
                                                                         }
                                                                     }
+
+                                                                    if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
+                                                                    {
+                                                                        l_DiffExist = true;
+                                                                        break;
+                                                                    }
+                                                                }
+
+                                                                if (!l_DiffExist)
+                                                                {
+                                                                    l_CachedPassedSong.difficulties.Add(l_Difficulty);
+                                                                    if (!l_OldDiffExist)
+                                                                    {
+                                                                        /// Display new pass (new diff passed while there was already a passed diff) 1/2
+                                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y-1}\n".Length)
+                                                                        {
+                                                                            l_MessagesIndex++;
+                                                                        }
+
+                                                                        if (l_Messages.Count < l_MessagesIndex + 1)
+                                                                        {
+                                                                            l_Messages.Add(""); /// Initialize the next used index.
+                                                                        }
+
+                                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y-1}\n";
+                                                                        l_Passes++;
+                                                                        l_PassesPerLevel++;
+                                                                        SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null); /// Mean the Player passed that level.
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        l_PassesPerLevel++;
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    l_PassesPerLevel++;
+                                                                }
+                                                            }
+                                                        }
+                                                        if (!l_MapStored)
+                                                        {
+                                                            bool l_WasStored = false;
+                                                            SongFormat l_PassedSong = new SongFormat();
+                                                            l_PassedSong.difficulties = new List<InSongFormat>();
+                                                            l_PassedSong.hash = l_Song.hash.ToUpper();
+                                                            l_PassedSong.difficulties.Add(l_Difficulty);
+                                                            m_PlayerPass.songs.Add(l_PassedSong);
+
+                                                            foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
+                                                            {
+                                                                if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                                {
+                                                                    l_WasStored = true;
+                                                                    break;
                                                                 }
                                                             }
 
-                                                            if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
+                                                            if (!l_WasStored)
                                                             {
-                                                                l_DiffExist = true;
-                                                                break;
-                                                            }
-                                                        }
-
-                                                        if (!l_DiffExist)
-                                                        {
-                                                            l_CachedPassedSong.difficulties.Add(l_Difficulty);
-                                                            if (!l_OldDiffExist)
-                                                            {
-                                                                /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                                if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n".Length)
+                                                                if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y + 1}\n".Length)
                                                                 {
                                                                     l_MessagesIndex++;
                                                                 }
@@ -574,68 +667,114 @@ namespace BSDiscordRanking
                                                                     l_Messages.Add(""); /// Initialize the next used index.
                                                                 }
 
-                                                                l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_ExistingLevelID[l_I]}\n";
+                                                                /// Display new pass (new diff passed while there was already a passed diff) 2/2
+                                                                l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y + 1}\n"; /// Display new pass 2/2
                                                                 l_Passes++;
-                                                                SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> { true }, -1, null); /// Mean the Player passed that level.
+                                                                l_PassesPerLevel++;
+                                                                SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null); /// Mean the Player passed that level.
                                                             }
+                                                            else
+                                                            {
+                                                                l_PassesPerLevel++;
+                                                            }
+                                                            
                                                         }
-                                                    }
-                                                }
-
-                                                if (!l_MapStored)
-                                                {
-                                                    bool l_WasStored = false;
-                                                    SongFormat l_PassedSong = new SongFormat();
-                                                    l_PassedSong.difficulties = new List<InSongFormat>();
-                                                    l_PassedSong.hash = l_Song.hash.ToUpper();
-                                                    l_PassedSong.difficulties.Add(l_Difficulty);
-                                                    m_PlayerPass.songs.Add(l_PassedSong);
-
-                                                    foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
-                                                    {
-                                                        if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
-                                                        {
-                                                            l_WasStored = true;
-                                                            break;
-                                                        }
-                                                    }
-
-                                                    if (!l_WasStored)
-                                                    {
-                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n".Length)
-                                                        {
-                                                            l_MessagesIndex++;
-                                                        }
-
-                                                        if (l_Messages.Count < l_MessagesIndex + 1)
-                                                        {
-                                                            l_Messages.Add(""); /// Initialize the next used index.
-                                                        }
-
-                                                        /// Display new pass (new diff passed while there was already a passed diff) 2/2
-                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_I + 1}\n"; /// Display new pass 2/2
-                                                        l_Passes++;
-                                                        SetGrindInfo(l_ExistingLevelID[l_I], new List<bool> { true }, -1, null); /// Mean the Player passed that level.
                                                     }
                                                 }
                                             }
+                                            
                                         }
+                                        
                                     }
+                                    
+                                }
+                            }
+
+                            
+                            foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
+                            {
+                                foreach (var l_Difficulty in l_Song.difficulties)
+                                {
+                                    l_NumberOfDifficulties++;
                                 }
                             }
                         }
+
+                        if (l_NumberOfDifficulties == 0)
+                        {
+                            Console.WriteLine("wtf");
+                        }
+
+                        if (l_NumberOfDifficulties > 0)
+                        {
+                            switch (l_PassesPerLevel * 100 / l_NumberOfDifficulties)
+                            {
+                                case 0:
+                                {
+                                    SetGrindInfo(l_Y+1, new List<bool> { false }, -1, null);
+                                    break;
+                                }
+                                case <= 39:
+                                {
+                                    l_Plastic = 1;
+                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    break;
+                                }
+                                case <= 69:
+                                {
+                                    l_Silver = 1;
+                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    break;
+                                }
+                                case <= 99:
+                                {
+                                    l_Gold = 1;
+                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    break;
+                                }
+
+                                case 100:
+                                {
+                                    l_Diamond = 1;
+                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            SetGrindInfo(l_Y+1, new List<bool> { false }, -1, null);
+                        }
+
+                        l_Trophy.Plastic = l_Plastic;
+                        l_Trophy.Silver = l_Silver;
+                        l_Trophy.Gold = l_Gold;
+                        l_Trophy.Diamond = l_Diamond;
+                        l_Plastic = 0;
+                        l_Silver = 0;
+                        l_Gold = 0;
+                        l_Diamond = 0;
+
+                        SetGrindInfo(l_Y+1, null, -1, l_Trophy);
+                        l_PassesPerLevel = 0;
+                        l_NumberOfDifficulties = 0;
                     }
+
+                    ReWritePass();
+
+                    if (l_Passes >= 1)
+                        foreach (var l_Message in l_Messages)
+                        {
+                            await p_Context.Channel.SendMessageAsync(">>> " + l_Message);
+                        }
+
+                    return l_Passes;
                 }
-
-                ReWritePass();
-
-                if (l_Passes >= 1)
-                    foreach (var l_Message in l_Messages)
-                    {
-                        await p_context.Channel.SendMessageAsync(">>> " + l_Message);
-                    }
-
-                return l_Passes;
+                catch (Exception e)
+                {
+                    Console.WriteLine($"erreur : {l_Y} {e.Data}");
+                    return 0;
+                }
             }
             else
             {
@@ -758,6 +897,33 @@ namespace BSDiscordRanking
                     Thread.Sleep(200);
                     ReWritePass();
                 }
+            }
+        }
+
+        public void ResetTrophy()
+        {
+            if (m_PlayerStats?.Trophy != null)
+            {
+                m_PlayerStats.Trophy.Clear();
+                m_PlayerStats.Trophy = new List<Trophy>()
+                {
+                    new Trophy()
+                    {
+                        Plastic = 0,
+                        Silver = 0,
+                        Gold = 0,
+                        Diamond = 0
+                    }
+                };
+            }
+        }
+
+        public void ResetLevels()
+        {
+            if (m_PlayerStats?.LevelIsPassed != null)
+            {
+                m_PlayerStats.LevelIsPassed.Clear();
+                m_PlayerStats.LevelIsPassed = new List<bool>();
             }
         }
 
@@ -896,21 +1062,25 @@ namespace BSDiscordRanking
                     {
                         m_PlayerStats.LevelIsPassed ??= new List<bool>();
                         bool l_LevelIsPassed = false;
-                        foreach (var l_Pass in p_Passed)
-                        {
-                            if (l_Pass) l_LevelIsPassed = true;
-                        }
 
-                        for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
+                        if (p_Passed != null)
                         {
-                            if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
+                            foreach (var l_Pass in p_Passed)
                             {
-                                m_PlayerStats.LevelIsPassed.Add(false);
-                                Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
+                                if (l_Pass) l_LevelIsPassed = true;
                             }
-                        }
 
-                        m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
+                            for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
+                            {
+                                if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
+                                {
+                                    m_PlayerStats.LevelIsPassed.Add(false);
+                                    Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
+                                }
+                            }
+
+                            m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
+                        }
                     }
 
                     if (p_NumberOfPass >= 0)

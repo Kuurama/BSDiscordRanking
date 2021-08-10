@@ -16,7 +16,7 @@ namespace BSDiscordRanking
             /// Fetch all levels in the Level's folder and put them into a cache file named LevelController.json (LevelID of the levels : {"LevelID":[12,1,2,4]}) 
 
 
-            //Player l_Player = new Player("76561198410694791"); /// Use Kuurama "76561198126131670" for complete level 1 wdg pass with multiple diff
+            //Player l_Player = new Player("76561198126131670"); /// Use Kuurama "76561198126131670" for complete level 1 wdg pass with multiple diff
             //l_Player.FetchScores();
             //l_Player.FetchPass();
 

@@ -179,6 +179,42 @@ namespace BSDiscordRanking
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
+        
+         public void DeleteLevel()
+        {
+            /// This Method Delete the level cache file
+
+            if (m_ErrorNumber < ERROR_LIMIT)
+            {
+                try
+                {
+                    if (m_Level != null)
+                    {
+                        File.Delete($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist");
+                        Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Deleted");
+                        new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
+                    }
+                    else
+                    {
+                        Console.WriteLine("Seems like the level cache file didn't existed");
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine(
+                        "An error occured While attempting to Delete the Playlist file. (missing directory?)");
+                    Console.WriteLine("Attempting to create the directory..");
+                    m_ErrorNumber++;
+                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                    Thread.Sleep(200);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Please Contact an Administrator.");
+            }
+        }
 
         public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
             SocketCommandContext p_SocketCommandContext)

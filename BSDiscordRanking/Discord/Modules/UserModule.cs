@@ -16,81 +16,60 @@ namespace BSDiscordRanking.Discord.Modules
     [CheckChannel]
     public class UserModule : ModuleBase<SocketCommandContext>
     {
-        [Command("profile")]
-        public async Task Profile()
+        [Command("link")]
+        public async Task LinkUser(string p_ScoreSaberArg)
         {
-            if (!UserController.UserExist(Context.User.Id.ToString()))
+            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_ScoreSaberArg.Length == 17) ///< check if id is in a correct length
+            {
+                /// TODO: VERIFY SCORESABER ACCOUNT
+                UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
+                await ReplyAsync($"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
+            }
+            else if (p_ScoreSaberArg.Length != 17)
+                await ReplyAsync("> :x: Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
+            else
+                await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
+        }
+
+        [Command("unlink")]
+        public async Task UnLinkUser()
+        {
+            /// TODO: HANDLE UNLINK SPECIFIC USERS IF ADMIN
+            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
             {
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             }
             else
             {
-                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-                var l_PlayerStats = l_Player.GetStats();
-
-                int l_Plastics = 0;
-                int l_Silvers = 0;
-                int l_Golds = 0;
-                int l_Diamonds = 0;
-                foreach (var l_Trophy in l_PlayerStats.Trophy)
-                {
-                    l_Plastics += l_Trophy.Plastic;
-                    l_Silvers += l_Trophy.Silver;
-                    l_Golds += l_Trophy.Gold;
-                    l_Diamonds += l_Trophy.Diamond;
-                }
-
-                EmbedBuilder l_EmbedBuilder = new();
-                l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
-                l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
-                l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
-                l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
-                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
-                l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField($"Plastic trophies:",$"<:plastic:874215132874571787>: {l_Plastics}", true);
-                l_EmbedBuilder.AddField($"Silver trophies:",$"<:silver:874215133197500446>: {l_Silvers}",true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField($"Gold trophies:",$"<:gold:874215133147197460>: {l_Golds}", true);
-                l_EmbedBuilder.AddField($"Diamond trophies:",$"<:diamond:874215133289795584>: {l_Diamonds}",true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                UserController.UpdatePlayerLevel(Context);
+                UserController.RemovePlayer(Context.User.Id.ToString());
+                await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
             }
         }
 
-
-        [Command("getplaylist")]
-        [Alias("gpl")]
-        public async Task GetPlaylist(string p_Level)
+        [Command("scan")]
+        public async Task Scan_Scores()
         {
-            if (int.TryParse(p_Level, out _))
-            {
-                string l_Path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
-                if (File.Exists(l_Path))
-
-                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
-                else
-
-                    await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
-            }
-            else if (p_Level == "all")
-            {
-                if (File.Exists("levels.zip"))
-                    File.Delete("levels.zip");
-                try
-                {
-                    ZipFile.CreateFromDirectory("./Levels/", "levels.zip");
-                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
-                }
-                catch
-                {
-                    await ReplyAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
-                }
-            }
-
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            int l_OldPlayerLevel = l_Player.GetPlayerLevel();
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             else
-                await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
+            {
+                l_Player.FetchScores(Context);
+                int l_FetchPass = await l_Player.FetchPass(Context);
+                if (l_FetchPass >= 1)
+                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
+                else
+                    await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
+                l_Player.SetGrindInfo(-1, null, l_FetchPass, null);
+            }
+
+            if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
+            {
+                UserController.UpdatePlayerLevel(Context);
+                await ReplyAsync(
+                    $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+            }
         }
 
         [Command("ggp")]
@@ -160,27 +139,20 @@ namespace BSDiscordRanking.Discord.Modules
                     }
 
                     string l_PlayerTrophy = "";
-                    
-                        if (l_Player.m_PlayerStats.Trophy.ElementAtOrDefault(p_Level - 1) == null)
-                        {
-                            l_Player.m_PlayerStats.Trophy.Insert(p_Level - 1, new Trophy()
-                            {
-                                Plastic = 0,
-                                Silver = 0,
-                                Gold = 0,
-                                Diamond = 0
-                            });
-                        }
-                        else
-                        {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic = 0;
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver = 0;
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold = 0;
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond = 0;
-                        }
 
-                        // ReSharper disable once IntDivisionByZero
-                        switch ((l_NumberOfPass * 100 / l_NumberOfDifficulties))
+                    while (l_Player.m_PlayerStats.Trophy.Count <= p_Level - 1)
+                    {
+                        l_Player.m_PlayerStats.Trophy.Add(new Trophy
+                        {
+                            Plastic = 0,
+                            Silver = 0,
+                            Gold = 0,
+                            Diamond = 0
+                        });
+                    }
+
+                    // ReSharper disable once IntDivisionByZero
+                    switch (l_NumberOfPass * 100 / l_NumberOfDifficulties)
                     {
                         case 0:
                         {
@@ -189,30 +161,31 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                         case <= 39:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic += 1;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic = 1;
                             l_PlayerTrophy = "<:plastic:874215132874571787>";
                             break;
                         }
                         case <= 69:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver += 1;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver = 1;
                             l_PlayerTrophy = "<:silver:874215133197500446>";
                             break;
                         }
                         case <= 99:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold += 1;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold = 1;
                             l_PlayerTrophy = "<:gold:874215133147197460>";
                             break;
                         }
 
                         case 100:
                         {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond += 1;
+                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond = 1;
                             l_PlayerTrophy = "<:diamond:874215133289795584>";
                             break;
                         }
                     }
+
                     l_Player.ReWriteStats();
 
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -266,30 +239,79 @@ namespace BSDiscordRanking.Discord.Modules
             UserController.UpdatePlayerLevel(Context);
         }
 
-
-        [Command("scan")]
-        public async Task Scan_Scores()
+        [Command("getplaylist")]
+        [Alias("gpl")]
+        public async Task GetPlaylist(string p_Level)
         {
-            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-            int l_OldPlayerLevel = l_Player.GetPlayerLevel();
-            if (!UserController.UserExist(Context.User.Id.ToString()))
-                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
-            else
+            if (int.TryParse(p_Level, out _))
             {
-                l_Player.FetchScores(Context);
-                int l_FetchPass = await l_Player.FetchPass(Context);
-                if (l_FetchPass >= 1)
-                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
+                string l_Path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
+                if (File.Exists(l_Path))
+
+                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
                 else
-                    await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
-                l_Player.SetGrindInfo(-1, null, l_FetchPass, null);
+
+                    await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
+            }
+            else if (p_Level == "all")
+            {
+                if (File.Exists("levels.zip"))
+                    File.Delete("levels.zip");
+                try
+                {
+                    ZipFile.CreateFromDirectory("./Levels/", "levels.zip");
+                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
+                }
+                catch
+                {
+                    await ReplyAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
+                }
             }
 
-            if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
+            else
+                await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
+        }
+
+        [Command("profile")]
+        public async Task Profile()
+        {
+            if (!UserController.UserExist(Context.User.Id.ToString()))
             {
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+            }
+            else
+            {
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                var l_PlayerStats = l_Player.GetStats();
+
+                int l_Plastics = 0;
+                int l_Silvers = 0;
+                int l_Golds = 0;
+                int l_Diamonds = 0;
+                foreach (var l_Trophy in l_PlayerStats.Trophy)
+                {
+                    l_Plastics += l_Trophy.Plastic;
+                    l_Silvers += l_Trophy.Silver;
+                    l_Golds += l_Trophy.Gold;
+                    l_Diamonds += l_Trophy.Diamond;
+                }
+
+                EmbedBuilder l_EmbedBuilder = new();
+                l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
+                l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
+                l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
+                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
+                l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                l_EmbedBuilder.AddField($"Plastic trophies:", $"<:plastic:874215132874571787>: {l_Plastics}", true);
+                l_EmbedBuilder.AddField($"Silver trophies:", $"<:silver:874215133197500446>: {l_Silvers}", true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                l_EmbedBuilder.AddField($"Gold trophies:", $"<:gold:874215133147197460>: {l_Golds}", true);
+                l_EmbedBuilder.AddField($"Diamond trophies:", $"<:diamond:874215133289795584>: {l_Diamonds}", true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
                 UserController.UpdatePlayerLevel(Context);
-                await ReplyAsync(
-                    $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
             }
         }
 
@@ -304,37 +326,6 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
-
-        [Command("unlink")]
-        public async Task UnLinkUser()
-        {
-            /// TODO: HANDLE UNLINK SPECIFIC USERS IF ADMIN
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
-            {
-                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
-            }
-            else
-            {
-                UserController.RemovePlayer(Context.User.Id.ToString());
-                await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
-            }
-        }
-
-        [Command("link")]
-        public async Task LinkUser(string p_ScoreSaberArg)
-        {
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_ScoreSaberArg.Length == 17) ///< check if id is in a correct length
-            {
-                /// TODO: VERIFY SCORESABER ACCOUNT
-                UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
-                await ReplyAsync($"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
-            }
-            else if (p_ScoreSaberArg.Length != 17)
-                await ReplyAsync("> :x: Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
-            else
-                await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
-        }
-
 
         [Command("help")]
         public async Task Help()
@@ -382,6 +373,7 @@ namespace BSDiscordRanking.Discord.Modules
                     return Task.FromResult(PreconditionResult.FromSuccess());
                 }
             }
+
             return Task.FromResult(PreconditionResult.FromError("> :x: Sorry, you can't use this command here."));
         }
     }
