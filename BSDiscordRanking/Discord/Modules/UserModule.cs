@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("link")]
         public async Task LinkUser(string p_ScoreSaberArg)
         {
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_ScoreSaberArg.Length == 17) ///< check if id is in a correct length
+            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_ScoreSaberArg.Length == 17 || p_ScoreSaberArg.Length == 16) ///< check if id is in a correct length
             {
                 /// TODO: VERIFY SCORESABER ACCOUNT
                 UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
