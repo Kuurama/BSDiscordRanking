@@ -70,6 +70,7 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync(
                     $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
             }
+            UserController.UpdatePlayerLevel(Context);
         }
 
         [Command("ggp")]

@@ -543,10 +543,6 @@ namespace BSDiscordRanking
                     
                     for ( l_Y = 0; l_Y <= l_BiggerLevelID; l_Y++)
                     {
-                        if (l_Y == 34)
-                        {
-                            Console.WriteLine("it's 34");
-                        }
                         l_LevelExist = false;
                         foreach (var l_ID in l_ExistingLevelID)
                         {
@@ -700,11 +696,6 @@ namespace BSDiscordRanking
                             }
                         }
 
-                        if (l_NumberOfDifficulties == 0)
-                        {
-                            Console.WriteLine("wtf");
-                        }
-
                         if (l_NumberOfDifficulties > 0)
                         {
                             switch (l_PassesPerLevel * 100 / l_NumberOfDifficulties)
@@ -770,9 +761,10 @@ namespace BSDiscordRanking
 
                     return l_Passes;
                 }
-                catch (Exception e)
+                catch (Exception l_Exception)
                 {
-                    Console.WriteLine($"erreur : {l_Y} {e.Data}");
+                    Console.WriteLine($"error : {l_Y} {l_Exception.Data}");
+                    await p_Context.Channel.SendMessageAsync($"Error : {l_Exception.Message}");
                     return 0;
                 }
             }
