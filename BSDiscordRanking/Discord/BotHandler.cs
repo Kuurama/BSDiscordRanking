@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Discord
 
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
-            m_Prefix = p_Config.CommandPrefix[1];
+            m_Prefix = p_Config.CommandPrefix[0];
             m_Client = new DiscordSocketClient();
             m_Commands = new CommandService();
 

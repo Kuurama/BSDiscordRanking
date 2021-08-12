@@ -12,7 +12,14 @@ namespace BSDiscordRanking.Controllers
         
         public static void CreateConfig()
         {
-            string l_Config = JsonConvert.SerializeObject(new ConfigFormat() { AuthorizedChannels = new List<ulong>()});
+            string l_Config = JsonConvert.SerializeObject(new ConfigFormat()
+            {
+                AuthorizedChannels = new List<ulong>(),
+                CommandPrefix = new List<string>()
+                {
+                    "!"
+                }
+            });
             File.WriteAllText("./config.json", l_Config);
             Console.WriteLine("Blank config file created");
             Environment.Exit(0);
