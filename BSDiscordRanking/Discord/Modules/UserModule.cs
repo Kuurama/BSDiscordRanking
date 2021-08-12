@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
@@ -17,32 +18,54 @@ namespace BSDiscordRanking.Discord.Modules
     public class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("link")]
-        public async Task LinkUser(string p_ScoreSaberArg)
+        public async Task LinkUser(string p_ScoreSaberArg = "")
         {
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && p_ScoreSaberArg.Length == 17 || p_ScoreSaberArg.Length == 16) ///< check if id is in a correct length
+            if (!string.IsNullOrEmpty(p_ScoreSaberArg))
             {
-                /// TODO: VERIFY SCORESABER ACCOUNT
-                UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
-                await ReplyAsync($"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
+                p_ScoreSaberArg = Regex.Match(p_ScoreSaberArg, @"\d+").Value;
+                if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
+                    UserController.AccountExist(p_ScoreSaberArg))
+                {
+                    UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
+                    await ReplyAsync(
+                        $"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
+                }
+                else if (!UserController.AccountExist(p_ScoreSaberArg))
+                    await ReplyAsync("> :x: Sorry, but please enter an correct Scoresaber link/id.");
+                else if (!string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                    await ReplyAsync(
+                        $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
+                else
+                    await ReplyAsync("> :x: Oopie, unhandled error.");
             }
-            else if (p_ScoreSaberArg.Length != 17)
-                await ReplyAsync("> :x: Sorry, but please enter an correct scoresaber id."); ///< TODO: HANDLE SCORESABER LINKS
             else
-                await ReplyAsync($"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
+                await ReplyAsync("> :x: Please enter a ScoreSaber link/id.");
         }
-
+        
         [Command("unlink")]
-        public async Task UnLinkUser()
+        public async Task UnLinkUser(string p_DiscordID = "")
         {
-            /// TODO: HANDLE UNLINK SPECIFIC USERS IF ADMIN
-            if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+            if (!string.IsNullOrEmpty(p_DiscordID))
             {
-                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                if (Context.User is SocketGuildUser l_User)
+                {
+                    if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.ReadConfig().BotManagementRoleID))
+                    {
+                        UserController.RemovePlayer(p_DiscordID);
+                    }
+                }
             }
             else
             {
-                UserController.RemovePlayer(Context.User.Id.ToString());
-                await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
+                if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                {
+                    await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                }
+                else
+                {
+                    UserController.RemovePlayer(Context.User.Id.ToString());
+                    await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
+                }
             }
         }
 

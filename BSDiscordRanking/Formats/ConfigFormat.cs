@@ -5,7 +5,7 @@ namespace BSDiscordRanking.Formats
     public class ConfigFormat
     {
         public string DiscordToken { get; set; } = "";
-        public List<string> CommandPrefix { get; set; } = new List<string>() { "" };
+        public List<string> CommandPrefix { get; set; } = new List<string>();
         public string DiscordStatus { get; set; } = "Made by Kuurama & Julien";
         
         public ulong BotManagementRoleID { get; set; }

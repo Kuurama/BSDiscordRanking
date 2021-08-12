@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Controllers
 {
@@ -15,6 +18,25 @@ namespace BSDiscordRanking.Controllers
     {
         static List<UserFormat> m_Users = new List<UserFormat>();
 
+        public static bool AccountExist(string p_ScoreSaberID)
+        {
+            try
+            {
+                WebClient l_WebClient = new WebClient();
+                var l_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>
+                    (l_WebClient.DownloadString(@$"https://new.scoresaber.com/api/player/{p_ScoreSaberID}/full"));
+                if (!string.IsNullOrEmpty(l_PlayerFull.playerInfo.playerName))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+            return false;
+        }
+        
         public static bool UserExist(string p_DisID)
         {
             if (string.IsNullOrEmpty(GetPlayer(p_DisID)))
