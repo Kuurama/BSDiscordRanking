@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
@@ -18,7 +19,7 @@ namespace BSDiscordRanking.Discord
 
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
-            m_Prefix = p_Config.CommandPrefix;
+            m_Prefix = p_Config.CommandPrefix[1];
             m_Client = new DiscordSocketClient();
             m_Commands = new CommandService();
 
@@ -49,15 +50,19 @@ namespace BSDiscordRanking.Discord
             if (l_Message != null && l_Message.Author.IsBot) return;
             
             int l_ArgPos = 0;
-        
-            if (l_Message.HasStringPrefix(m_Prefix, ref l_ArgPos))
+
+            foreach (var l_Prefix in ConfigController.ReadConfig().CommandPrefix)
             {
-                var l_Result = await m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
-                if (!l_Result.IsSuccess) Console.WriteLine(l_Result.ErrorReason);
-                if (l_Result.Error.Equals(CommandError.UnmetPrecondition))
-                    if (l_Message != null)
-                        await l_Message.Channel.SendMessageAsync(l_Result.ErrorReason);
+                if (l_Message.HasStringPrefix(l_Prefix, ref l_ArgPos))
+                {
+                    var l_Result = await m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
+                    if (!l_Result.IsSuccess) Console.WriteLine(l_Result.ErrorReason);
+                    if (l_Result.Error.Equals(CommandError.UnmetPrecondition))
+                        if (l_Message != null)
+                            await l_Message.Channel.SendMessageAsync(l_Result.ErrorReason);
+                }
             }
+
         }
     }
 }
