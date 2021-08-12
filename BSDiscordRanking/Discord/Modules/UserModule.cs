@@ -59,7 +59,7 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                 {
-                    await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                    await ReplyAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
                 }
                 else
                 {
