@@ -14,7 +14,9 @@ namespace BSDiscordRanking.Formats
         public string RolePrefix { get; set; }
 
         public List<ulong> AuthorizedChannels { get; set; }
-        
+
+        public bool GiveOldRoles { get; set; } = false;
+
     }
     
 }

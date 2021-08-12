@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
@@ -48,10 +49,13 @@ namespace BSDiscordRanking.Controllers
         public static void UpdatePlayerLevel(SocketCommandContext p_Context)
         {
             int l_PlayerLevel = new Player(GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
-            foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles.Where(l_Role => l_Role.LevelID == l_PlayerLevel))
+            foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles)
             {
                 if (l_Role.LevelID == l_PlayerLevel)
                     ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
+                if (l_Role.LevelID < l_PlayerLevel && ConfigController.ReadConfig().GiveOldRoles)
+                    ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
+                Thread.Sleep(20); // Discord API limit
             }
 
             SocketGuildUser l_User = p_Context.User as SocketGuildUser;
@@ -59,10 +63,11 @@ namespace BSDiscordRanking.Controllers
             {
                 foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles)
                 {
-                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel)
-                    {
+                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID > l_PlayerLevel)
                         ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
-                    }
+                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel && !ConfigController.ReadConfig().GiveOldRoles)
+                        ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
+                    Thread.Sleep(20); // Discord API limit
                 }
             }
         }
