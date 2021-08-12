@@ -28,10 +28,10 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
                     await ReplyAsync(
-                        $"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest pass!");
+                        $"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
                 }
                 else if (!UserController.AccountExist(p_ScoreSaberArg))
-                    await ReplyAsync("> :x: Sorry, but please enter an correct Scoresaber link/id.");
+                    await ReplyAsync("> :x: Sorry, but please enter a correct Scoresaber Link/ID.");
                 else if (!string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                     await ReplyAsync(
                         $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
