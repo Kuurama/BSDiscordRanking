@@ -8,11 +8,13 @@ It is created on the first start and can be reset with the command "reset-config
 | Input | Type |
 | --- | --- |
 | Discord Token | string |
-| Command prefix | string |
+| Command prefix | List<string> |
 | Discord Status | string |
 | BotManagement RoleID | ulong |
 | BigGGP (embed) | bool |
 | RolePrefix ( prefix for level roles ) | string |
+| AuthorizedChannel | List<ulong> |
+| GiveOldRoles | bool |
 
 ## Commands
 
@@ -26,12 +28,17 @@ It is created on the first start and can be reset with the command "reset-config
 | gpl \<level or "all"> | Send the playlist file/folder. |
 | scan | Scan and store all your scores, check if you passed maps from levels. |
 | profile | Shows your user profile. |
+| ping | Shows bot's latency for Discord & Scoresaber servers. |
 
-### Admin Commands
+### BotManager Commands
 | Command | Description |
 | --- | --- |
 | addmap \<level> \<key> \<Standard/Lawless..> \<ExperPlus/Hard..> | Add a map to a level. |
-| reset-config | (ServerOwner only) Reset the config file of the bot. The bot stops after running the command. |
+| removemap \<level> \<key> \<Standard/Lawless..> \<ExperPlus/Hard..> | Remove a map from a level. |
+| reset-config | Reset the config file of the bot. The bot stops after running the command. |
+| createroles | Create a role for each level. |
+| addchannel | Add the channel to autorized channels list |
+| removechannel | Remove the channel from autorized channels list |
 
 ## Credit
 
