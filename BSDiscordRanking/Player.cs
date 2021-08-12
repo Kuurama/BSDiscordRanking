@@ -982,7 +982,8 @@ namespace BSDiscordRanking
                                 Gold = 0,
                                 Diamond = 0
                             }
-                        }
+                        },
+                        Points = new int()
                     };
                     Console.WriteLine($"This player don't have any stats yet");
                 }
@@ -1002,7 +1003,8 @@ namespace BSDiscordRanking
                             Gold = 0,
                             Diamond = 0
                         }
-                    }
+                    },
+                    Points = new int()
                 };
             }
         }

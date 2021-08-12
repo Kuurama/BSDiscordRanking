@@ -12,6 +12,8 @@ namespace BSDiscordRanking.Formats
         //silver 40% 2
         //gold 70% 3
         //diamond 100% 4
+        
+        public int Points { get; set; }
     }
 
     public class Trophy
@@ -21,4 +23,5 @@ namespace BSDiscordRanking.Formats
         public int Gold { get; set; }
         public int Diamond { get; set; }
     }
+    
 }
