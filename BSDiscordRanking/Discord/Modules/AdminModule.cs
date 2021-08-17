@@ -44,14 +44,13 @@ namespace BSDiscordRanking.Discord.Modules
         }
         
         [Command("addmap")]
-        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_Characteristic = "",
-            string p_DifficultyName = "")
+        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync(
-                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
+                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
             }
             else
             {
@@ -72,14 +71,13 @@ namespace BSDiscordRanking.Discord.Modules
         }
         
         [Command("removemap")]
-        public async Task RemoveMap(int p_Level = 0, string p_Code = "", string p_Characteristic = "",
-            string p_DifficultyName = "")
+        public async Task RemoveMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync(
-                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}removemap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..] `");
+                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}removemap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
             }
             else
             {
