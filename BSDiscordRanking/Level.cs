@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
+using Discord;
 using Discord.Commands;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -15,10 +16,11 @@ namespace BSDiscordRanking
     public class Level
     {
         public LevelFormat m_Level;
-        private BeatSaverFormat m_BeatSaver;
+        public BeatSaverFormat m_BeatSaver;
         private int m_LevelID;
         public const string SUFFIX_NAME = "_Level";
-
+        public bool m_MapAdded;
+        public bool m_MapDeleted;
         /// Keep the underscore at the beginning to avoid issue with the controller.
         private const string PATH = @".\Levels\";
 
@@ -217,7 +219,7 @@ namespace BSDiscordRanking
         }
 
         public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
-            SocketCommandContext p_SocketCommandContext)
+            SocketCommandContext p_Context)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist() Method to update the file.
@@ -231,7 +233,7 @@ namespace BSDiscordRanking
                 if (m_Level != null)
                 {
                     p_Code = p_Code.ToUpper();
-                    m_BeatSaver = FetchBeatMap(p_Code, p_SocketCommandContext);
+                    m_BeatSaver = FetchBeatMap(p_Code, p_Context);
                     if (m_BeatSaver is not null)
                     {
                         bool l_SongAlreadyExist = false;
@@ -275,40 +277,46 @@ namespace BSDiscordRanking
 
                                         if (l_DifficultyAlreadyExist)
                                         {
-                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
+                                            p_Context.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
                                         }
                                         else
                                         {
                                             m_Level.songs[l_I].difficulties.Add(l_InSongFormat);
-                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                            p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                             ReWritePlaylist();
                                         }
                                     }
                                     else
                                     {
                                         m_Level.songs.Add(l_SongFormat);
-                                        p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                        p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                         ReWritePlaylist();
                                     }
                                 }
                                 else
                                 {
                                     m_Level.songs.Add(l_SongFormat);
-                                    p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                    p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                     ReWritePlaylist();
                                 }
                             }
                             else
                             {
                                 m_ErrorNumber++;
-                                p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
+                                p_Context.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                             }
                         }
                         catch
                         {
                             m_ErrorNumber++;
-                            p_SocketCommandContext.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
+                            p_Context.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                         }
+
+                        if (!l_DifficultyAlreadyExist)
+                            m_MapAdded = false;
+                        else
+                            m_MapAdded = true;
+
                     }
                 }
                 else
@@ -317,7 +325,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Code}");
-                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
+                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_Context);
                 }
             }
             else
@@ -393,7 +401,9 @@ namespace BSDiscordRanking
                                                 m_Level.songs.RemoveAt(l_I);
                                             }
                                             p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
+                                            m_MapDeleted = true;
                                             ReWritePlaylist();
+                                            
                                         }
                                         else
                                         {
@@ -434,6 +444,7 @@ namespace BSDiscordRanking
                     Console.WriteLine($"Trying to RemoveMap {p_Code}");
                     RemoveMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
                 }
+                
             }
             else
             {
@@ -455,7 +466,7 @@ namespace BSDiscordRanking
             return PATH;
         }
 
-        private static BeatSaverFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext)
+        public static BeatSaverFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext)
         {
             string l_URL = @$"https://api.beatsaver.com/maps/id/{p_Code}";
             using WebClient l_WebClient = new WebClient();
