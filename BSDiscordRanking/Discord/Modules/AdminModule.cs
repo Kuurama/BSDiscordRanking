@@ -78,10 +78,11 @@ namespace BSDiscordRanking.Discord.Modules
                             if (!l_Level.m_MapAdded)
                             {
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                                l_EmbedBuilder.WithTitle("Map added!");
-                                l_EmbedBuilder.AddField("Map name:", l_Map.name);
-                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
-                                l_EmbedBuilder.AddField("Level:", p_Level);
+                                l_EmbedBuilder.WithTitle("Map Added:");
+                                l_EmbedBuilder.WithDescription(l_Map.name);
+                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
+                                l_EmbedBuilder.AddField("Level:", p_Level, true);
+                                l_EmbedBuilder.AddField("Link:", l_Map.versions[^1].downloadURL, false);
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithColor(Color.Blue);
