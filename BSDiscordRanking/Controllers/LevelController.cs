@@ -153,5 +153,30 @@ namespace BSDiscordRanking.Controllers
             m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
         }
+        
+        public bool MapExist(string p_Hash, string p_Difficulty, string p_Characteristic)
+        {
+            new LevelController().FetchLevel();
+            foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+            {
+                Level l_Level = new Level(l_LevelID);
+                foreach (var l_Map in l_Level.m_Level.songs)
+                {
+                    if (p_Hash.ToUpper() == l_Map.hash)
+                    {
+                        foreach (var l_Difficulty in l_Map.difficulties)
+                        {
+                            if (l_Difficulty.name == p_Difficulty && l_Difficulty.characteristic == p_Characteristic)
+                            {
+                                Console.WriteLine($"Map already exist in level {l_Level}");
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
     }
 }

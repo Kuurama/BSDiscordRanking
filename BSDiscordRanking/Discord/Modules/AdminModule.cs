@@ -71,20 +71,27 @@ namespace BSDiscordRanking.Discord.Modules
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
                         Level l_Level = new Level(p_Level);
-                        l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, Context);
-                        if (!l_Level.m_MapAdded)
+                        BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
+                        if (!new LevelController().MapExist(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic))
                         {
-                            BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
-                            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                            l_EmbedBuilder.WithTitle("Map added!");
-                            l_EmbedBuilder.AddField("Map name:", l_Map.name);
-                            l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
-                            l_EmbedBuilder.AddField("Level:", p_Level);
-                            l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                            l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
-                            l_EmbedBuilder.WithColor(Color.Blue);
-                            await Context.Guild.GetTextChannel(ConfigController.ReadConfig().LoggingChannel)
-                                .SendMessageAsync("", false, l_EmbedBuilder.Build());
+                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, Context);
+                            if (!l_Level.m_MapAdded)
+                            {
+                                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                                l_EmbedBuilder.WithTitle("Map added!");
+                                l_EmbedBuilder.AddField("Map name:", l_Map.name);
+                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
+                                l_EmbedBuilder.AddField("Level:", p_Level);
+                                l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                l_EmbedBuilder.WithColor(Color.Blue);
+                                await Context.Guild.GetTextChannel(ConfigController.ReadConfig().LoggingChannel)
+                                    .SendMessageAsync("", false, l_EmbedBuilder.Build());
+                            }
+                        }
+                        else
+                        {
+                            await ReplyAsync("> :x: Sorry, this map & difficulty already exist in a other level.");
                         }
                     }
                     else

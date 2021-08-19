@@ -42,6 +42,9 @@ namespace BSDiscordRanking
             //AddMap("B76F546A682122155BE11739438FCAE6CFE2C2CF", "Standard", "Easy");
         }
 
+
+        
+
         private void LoadLevel()
         {
             /// If First Launch* : Assign a Playlist Sample to m_Level. (mean there isn't any cache file yet)
