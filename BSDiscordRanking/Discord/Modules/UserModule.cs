@@ -49,7 +49,7 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (Context.User is SocketGuildUser l_User)
                 {
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.ReadConfig().BotManagementRoleID))
+                    if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.GetConfig().BotManagementRoleID))
                     {
                         UserController.RemovePlayer(p_DiscordID);
                     }
@@ -218,7 +218,7 @@ namespace BSDiscordRanking.Discord.Modules
                     int l_Y = 0;
                     int l_NumbedOfEmbed = 1;
 
-                    if (ConfigController.ReadConfig().BigGGP) l_BigGgp = "\n\u200B";
+                    if (ConfigController.GetConfig().BigGGP) l_BigGgp = "\n\u200B";
                     foreach (var l_Song in l_Level.m_Level.songs)
                     {
                         foreach (var l_SongDifficulty in l_Song.difficulties)
@@ -356,7 +356,7 @@ namespace BSDiscordRanking.Discord.Modules
         {
             bool l_IsAdmin = false;
             if (Context.User is SocketGuildUser l_User)
-                if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.ReadConfig().BotManagementRoleID))
+                if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.GetConfig().BotManagementRoleID))
                     l_IsAdmin = true;
 
             EmbedBuilder l_Builder = new EmbedBuilder();
@@ -390,7 +390,7 @@ namespace BSDiscordRanking.Discord.Modules
     {
         public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context, CommandInfo p_Command, IServiceProvider p_Services)
         {
-            foreach (var l_AuthorizedChannel in ConfigController.ReadConfig().AuthorizedChannels)
+            foreach (var l_AuthorizedChannel in ConfigController.GetConfig().AuthorizedChannels)
             {
                 if (p_Context.Message.Channel.Id == l_AuthorizedChannel)
                 {

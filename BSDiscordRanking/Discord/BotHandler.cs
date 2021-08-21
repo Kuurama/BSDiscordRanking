@@ -51,7 +51,7 @@ namespace BSDiscordRanking.Discord
             
             int l_ArgPos = 0;
 
-            foreach (var l_Prefix in ConfigController.ReadConfig().CommandPrefix)
+            foreach (var l_Prefix in ConfigController.GetConfig().CommandPrefix)
             {
                 if (l_Message.HasStringPrefix(l_Prefix, ref l_ArgPos))
                 {

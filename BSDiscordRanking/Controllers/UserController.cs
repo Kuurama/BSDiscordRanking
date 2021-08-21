@@ -75,7 +75,7 @@ namespace BSDiscordRanking.Controllers
             {
                 if (l_Role.LevelID == l_PlayerLevel)
                     ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
-                if (l_Role.LevelID < l_PlayerLevel && ConfigController.ReadConfig().GiveOldRoles)
+                if (l_Role.LevelID < l_PlayerLevel && ConfigController.GetConfig().GiveOldRoles)
                     ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
                 Thread.Sleep(20); // Discord API limit
             }
@@ -87,7 +87,7 @@ namespace BSDiscordRanking.Controllers
                 {
                     if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID > l_PlayerLevel)
                         ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
-                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel && !ConfigController.ReadConfig().GiveOldRoles)
+                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel && !ConfigController.GetConfig().GiveOldRoles)
                         ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(x => x.Id == l_Role.RoleID));
                     Thread.Sleep(20); // Discord API limit
                 }

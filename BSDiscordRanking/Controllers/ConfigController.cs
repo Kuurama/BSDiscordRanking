@@ -9,7 +9,8 @@ namespace BSDiscordRanking.Controllers
     public class ConfigController
     {
         public static ConfigFormat m_ConfigFormat = new ConfigFormat(){ AuthorizedChannels = new List<ulong>()};
-        
+        private static readonly ConfigFormat DefaultConfig = new ConfigFormat() { AuthorizedChannels = new List<ulong>()};
+
         public static void CreateConfig()
         {
             string l_Config = JsonConvert.SerializeObject(new ConfigFormat()
@@ -49,6 +50,13 @@ namespace BSDiscordRanking.Controllers
                 CreateConfig();
             }
             return null;
+        }
+        
+        public static ConfigFormat GetConfig()
+        {
+            if (m_ConfigFormat != DefaultConfig)
+                return m_ConfigFormat;
+            return ReadConfig();
         }
 
         public static void ReWriteConfig()

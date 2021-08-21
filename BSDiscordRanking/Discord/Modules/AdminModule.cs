@@ -17,7 +17,7 @@ namespace BSDiscordRanking.Discord.Modules
         [Alias("logchannel")]
         public async Task SetChannel()
         {
-                ConfigController.ReadConfig();
+                ConfigController.GetConfig();
                 ConfigController.m_ConfigFormat.LoggingChannel = Context.Channel.Id;
                 ConfigController.ReWriteConfig();
                 ReplyAsync("> :white_check_mark: This channel is now used as log-channel.");
@@ -86,7 +86,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithColor(Color.Blue);
-                                await Context.Guild.GetTextChannel(ConfigController.ReadConfig().LoggingChannel)
+                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
                                     .SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                         }
@@ -133,7 +133,7 @@ namespace BSDiscordRanking.Discord.Modules
                             l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                             l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                             l_EmbedBuilder.WithColor(Color.Red);
-                            await Context.Guild.GetTextChannel(ConfigController.ReadConfig().LoggingChannel)
+                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
                                 .SendMessageAsync("", false, l_EmbedBuilder.Build());
                         }
                         
@@ -149,7 +149,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 l_EmbedBuilder.AddField("Reason:", "All maps has been removed.");
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithColor(Color.DarkRed);
-                                await Context.Guild.GetTextChannel(ConfigController.ReadConfig().LoggingChannel)
+                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
                                     .SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                         }
@@ -178,7 +178,8 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (p_Context.User is SocketGuildUser l_User)
                 {
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.ReadConfig().BotManagementRoleID))
+                    ulong l_RoleID = ConfigController.GetConfig().BotManagementRoleID;
+                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID))
                     {
                         return Task.FromResult(PreconditionResult.FromSuccess());
                     }

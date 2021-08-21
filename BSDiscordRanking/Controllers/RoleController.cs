@@ -43,9 +43,9 @@ namespace BSDiscordRanking.Controllers
                     m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
                 }
             }
-            if (!RoleExist($"{ConfigController.ReadConfig().RolePrefix} Ranked") || Overwrite)
+            if (!RoleExist($"{ConfigController.GetConfig().RolePrefix} Ranked") || Overwrite)
             {
-                var l_Role = p_Context.Guild.CreateRoleAsync($"{ConfigController.ReadConfig().RolePrefix} Ranked", GuildPermissions.None, Color.Blue, false, false).Result;
+                var l_Role = p_Context.Guild.CreateRoleAsync($"{ConfigController.GetConfig().RolePrefix} Ranked", GuildPermissions.None, Color.Blue, false, false).Result;
                 await l_Role.ModifyAsync(p_Properties => p_Properties.Position = 0);
                 m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = 0});
             }
