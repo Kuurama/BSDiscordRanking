@@ -521,5 +521,58 @@ namespace BSDiscordRanking
                 }
             }
         }
+
+         public static BeatSaverFormat FetchBeatMapByHash(string p_Hash, SocketCommandContext p_SocketCommandContext)
+        {
+            string l_URL = @$"https://api.beatsaver.com/maps/hash/{p_Hash}";
+            using WebClient l_WebClient = new WebClient();
+            try
+            {
+                Console.WriteLine(l_URL);
+                return JsonSerializer.Deserialize<BeatSaverFormat>(l_WebClient.DownloadString(l_URL));
+            }
+            catch (WebException l_Exception)
+            {
+                if (l_Exception.Response is HttpWebResponse l_Response)
+                {
+                    Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
+                    if (l_Response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        Console.WriteLine($"The Map do not exist");
+                        p_SocketCommandContext.Channel.SendMessageAsync("The Map do not exist");
+                        return null;
+                    }
+
+                    if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        Console.WriteLine($"The bot got rate-limited on BeatSaver, Try later");
+                        p_SocketCommandContext.Channel.SendMessageAsync("The bot got rate-limited on BeatSaver, Try later");
+                        return null;
+                    }
+
+                    if (l_Response.StatusCode == HttpStatusCode.BadGateway)
+                    {
+                        p_SocketCommandContext.Channel.SendMessageAsync("BeatSaver Server BadGateway");
+                        Console.WriteLine($"Server BadGateway");
+                        return null;
+                    }
+
+                    if (l_Response.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        p_SocketCommandContext.Channel.SendMessageAsync("BeatSaver InternalServerError");
+                        Console.WriteLine($"InternalServerError");
+                        return null;
+                    }
+
+                    return null;
+                }
+                else
+                {
+                    p_SocketCommandContext.Channel.SendMessageAsync("Internet dead? Something went wrong");
+                    Console.WriteLine("OK Internet is Dead?");
+                    return null;
+                }
+            }
+        }
     }
 }

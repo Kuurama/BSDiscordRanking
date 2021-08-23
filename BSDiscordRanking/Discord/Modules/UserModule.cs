@@ -17,6 +17,40 @@ namespace BSDiscordRanking.Discord.Modules
     [CheckChannel]
     public class UserModule : ModuleBase<SocketCommandContext>
     {
+    
+        [Command("getinfo")]
+        public async Task GetInfo(params string[] p_Words)
+        {
+            bool l_MapFound = false;
+            new LevelController().FetchLevel();
+            foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+            {
+                //string[] l_Words = p_Args.Split(' ', '-', '_');
+                Level l_Level = new Level(l_LevelID);
+                foreach (var l_Map in l_Level.m_Level.songs)
+                {
+                    var l_MapName = l_Map.name.Split(' ', '-', '_');
+                    if (l_MapName.Any(p_MapWord => p_Words.Any(p_Arg => p_MapWord == p_Arg)))
+                    {
+                       
+                        EmbedBuilder l_EmbedBuilder = new();
+                        foreach (var l_Difficulty in l_Map.difficulties)
+                        {
+                            l_EmbedBuilder.AddField(l_Difficulty.name, l_Difficulty.characteristic);
+                        }
+                        l_EmbedBuilder.WithTitle(l_Map.name);
+                        l_EmbedBuilder.WithDescription("Ranked difficulties:");
+                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg"); 
+                        l_EmbedBuilder.WithUrl(Level.FetchBeatMapByHash(l_Map.hash, Context).versions[^1].downloadURL);
+                        await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                        l_MapFound = true;
+                    }
+                }
+            }
+            if (!l_MapFound) await ReplyAsync(":x: Map not found");
+        }
+        
+        
         [Command("link")]
         public async Task LinkUser(string p_ScoreSaberArg = "")
         {
