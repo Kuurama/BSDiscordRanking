@@ -22,7 +22,9 @@ namespace BSDiscordRanking.Discord.Modules
         public async Task GetInfo(params string[] p_Words)
         {
             bool l_MapFound = false;
+            SongFormat l_FoundMap = null;
             new LevelController().FetchLevel();
+            EmbedBuilder l_EmbedBuilder = new();
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
@@ -30,22 +32,27 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     if (l_Map.NameParts.Any(p_MapWord => p_Words.Any(p_Arg => p_MapWord.ToLower() == p_Arg.ToLower())))
                     {
-                       
-                        EmbedBuilder l_EmbedBuilder = new();
+                        
                         foreach (var l_Difficulty in l_Map.difficulties)
                         {
-                            l_EmbedBuilder.AddField(l_Difficulty.name, l_Difficulty.characteristic);
+                            l_EmbedBuilder.AddField(l_Difficulty.name, l_Difficulty.characteristic, true);
+                            l_EmbedBuilder.AddField("Level:", $"Lv.{l_LevelID}", true);
+                            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                         }
-                        l_EmbedBuilder.WithTitle(l_Map.name);
-                        l_EmbedBuilder.WithDescription("Ranked difficulties:");
-                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg"); 
-                        l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).versions[^1].key}");
-                        await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                        l_FoundMap = l_Map;
                         l_MapFound = true;
                     }
                 }
             }
             if (!l_MapFound) await ReplyAsync(":x: Map not found");
+            else
+            {
+                l_EmbedBuilder.WithDescription("Ranked difficulties:");
+                l_EmbedBuilder.WithTitle(l_FoundMap.name);
+                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_FoundMap.hash.ToLower()}.jpg"); 
+                l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_FoundMap.hash, Context).versions[^1].key}");
+                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+            }
         }
         
         
