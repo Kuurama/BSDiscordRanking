@@ -25,12 +25,10 @@ namespace BSDiscordRanking.Discord.Modules
             new LevelController().FetchLevel();
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
-                //string[] l_Words = p_Args.Split(' ', '-', '_');
                 Level l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    var l_MapName = l_Map.name.Split(' ', '-', '_');
-                    if (l_MapName.Any(p_MapWord => p_Words.Any(p_Arg => p_MapWord == p_Arg)))
+                    if (l_Map.NameParts.Any(p_MapWord => p_Words.Any(p_Arg => p_MapWord.ToLower() == p_Arg.ToLower())))
                     {
                        
                         EmbedBuilder l_EmbedBuilder = new();
@@ -41,7 +39,7 @@ namespace BSDiscordRanking.Discord.Modules
                         l_EmbedBuilder.WithTitle(l_Map.name);
                         l_EmbedBuilder.WithDescription("Ranked difficulties:");
                         l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg"); 
-                        l_EmbedBuilder.WithUrl(Level.FetchBeatMapByHash(l_Map.hash, Context).versions[^1].downloadURL);
+                        l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).versions[^1].key}");
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
                         l_MapFound = true;
                     }
