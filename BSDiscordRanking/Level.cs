@@ -113,6 +113,18 @@ namespace BSDiscordRanking
             }
         }
 
+        public void ResetScoreRequirement()
+        {
+            foreach (var l_Song in m_Level.songs)
+            {
+                foreach (var l_Difficulty in l_Song.difficulties)
+                {
+                    l_Difficulty.minScoreRequirement = new int();
+                    l_Difficulty.minScoreRequirement = 0;
+                }
+            }
+            ReWritePlaylist();
+        }
         private void CreateDirectory()
         {
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
@@ -156,9 +168,17 @@ namespace BSDiscordRanking
                 {
                     if (m_Level != null)
                     {
-                        File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(m_Level));
-                        Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
-                        new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
+                        if (m_Level.songs.Count > 0)
+                        {
+                            File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(m_Level));
+                            Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
+                            new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
+                        }
+                        else
+                        {
+                            DeleteLevel();
+                            Console.WriteLine("No songs in Playlist, Playlist Deleted.");
+                        }
                     }
                     else
                     {
@@ -221,7 +241,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
+        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName, int p_MinScoreRequirement,
             SocketCommandContext p_Context)
         {
             /// <summary>
@@ -241,13 +261,14 @@ namespace BSDiscordRanking
                     {
                         bool l_SongAlreadyExist = false;
                         bool l_DifficultyAlreadyExist = false;
+                        bool l_ScoreRequirementEdit = false;
                         try
                         {
                             SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
-                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic
+                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = p_MinScoreRequirement
                             };
                             l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
 
@@ -275,10 +296,23 @@ namespace BSDiscordRanking
                                         foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
                                         {
                                             if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                            {
                                                 l_DifficultyAlreadyExist = true;
+                                                if (l_InSongFormat.minScoreRequirement != l_Difficulty.minScoreRequirement)
+                                                {
+                                                    l_Difficulty.minScoreRequirement = l_InSongFormat.minScoreRequirement;
+                                                    l_ScoreRequirementEdit = true;
+                                                }
+                                                break;
+                                            }
                                         }
-
-                                        if (l_DifficultyAlreadyExist)
+                                        
+                                        if (l_ScoreRequirementEdit)
+                                        {
+                                            p_Context.Channel.SendMessageAsync($"> :ballot_box_with_check: Min Score Requirement changed to {l_InSongFormat.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
+                                            ReWritePlaylist();
+                                        }
+                                        else if (l_DifficultyAlreadyExist)
                                         {
                                             p_Context.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
                                         }
@@ -328,7 +362,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Code}");
-                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_Context);
+                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_MinScoreRequirement, p_Context);
                 }
             }
             else
@@ -364,7 +398,7 @@ namespace BSDiscordRanking
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
-                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic
+                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = 0
                             };
                             l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
 

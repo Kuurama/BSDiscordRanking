@@ -31,12 +31,14 @@ namespace BSDiscordRanking.Formats
         public string hash { get; set; }
         public List<InSongFormat> difficulties { get; set; }
         public string name { get; set; }
-        public string[] NameParts => name.Split(' ', '-', '_');
+        public string[] nameParts => name.Split(' ', '-', '_');
     }
 
     public class InSongFormat
     {
         public string characteristic { get; set; }
         public string name { get; set; }
+        
+        public int minScoreRequirement { get; set; }
     }
 }

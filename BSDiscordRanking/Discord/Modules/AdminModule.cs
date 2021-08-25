@@ -23,6 +23,7 @@ namespace BSDiscordRanking.Discord.Modules
                 ReplyAsync("> :white_check_mark: This channel is now used as log-channel.");
         }
         
+        
         [Command("addchannel")]
         public async Task AddChannel()
         {
@@ -56,7 +57,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
         
         [Command("addmap")]
-        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
+        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", int p_MinScoreRequirement = 0)
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -72,9 +73,10 @@ namespace BSDiscordRanking.Discord.Modules
                     {
                         Level l_Level = new Level(p_Level);
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
-                        if (!new LevelController().MapExist(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic))
+                        List<bool> l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, p_MinScoreRequirement);
+                        if (!l_MapExistCheck[0] && !l_MapExistCheck[1])
                         {
-                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, Context);
+                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement,Context);
                             if (!l_Level.m_MapAdded)
                             {
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -82,6 +84,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
+                                l_EmbedBuilder.AddField("ScoreRequirement:", p_MinScoreRequirement, true);
                                 l_EmbedBuilder.AddField("Link:", l_Map.versions[^1].downloadURL, false);
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
@@ -90,9 +93,25 @@ namespace BSDiscordRanking.Discord.Modules
                                     .SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                         }
+                        else if (l_MapExistCheck[1])
+                        {
+                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement,Context);
+                            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                            l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
+                            l_EmbedBuilder.WithDescription(l_Map.name);
+                            l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
+                            l_EmbedBuilder.AddField("Level:", p_Level, true);
+                            l_EmbedBuilder.AddField("New ScoreRequirement:", p_MinScoreRequirement, true);
+                            l_EmbedBuilder.AddField("Link:", l_Map.versions[^1].downloadURL, false);
+                            l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                            l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                            l_EmbedBuilder.WithColor(Color.Blue);
+                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
+                                .SendMessageAsync("", false, l_EmbedBuilder.Build());
+                        }
                         else
                         {
-                            await ReplyAsync("> :x: Sorry, this map & difficulty already exist in a other level.");
+                            await ReplyAsync("> :x: Sorry, this map & difficulty already exist into a level.");
                         }
                     }
                     else
@@ -165,6 +184,17 @@ namespace BSDiscordRanking.Discord.Modules
             }
         }
 
+        [Command("resetscorerequirement")]
+        public async Task ResetScoreRequirement(int p_Level)
+        {
+            if (p_Level >= 0)
+            {
+                
+                new Level(p_Level).ResetScoreRequirement();
+                await ReplyAsync($"> :white_check_mark: All maps in playlist {p_Level} have now a score requirement of 0");
+            }
+        }
+        
         [Command("reset-config")]
         public async Task Reset_config()
         {

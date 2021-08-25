@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules
                 Level l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    if (l_Map.NameParts.Any(p_MapWord => p_Words.Any(p_Arg => p_MapWord.ToLower() == p_Arg.ToLower())))
+                    if (l_Map.nameParts.Any(p_MapWord => p_Words.Any(p_Arg => p_MapWord.ToLower() == p_Arg.ToLower())))
                     {
                         
                         foreach (var l_Difficulty in l_Map.difficulties)
@@ -157,38 +157,41 @@ namespace BSDiscordRanking.Discord.Modules
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     l_Player.LoadStats();
                     int l_I = 0;
-                    foreach (var l_Song in l_Level.m_Level.songs)
+                    if (l_Level.m_Level.songs.Count > 0)
                     {
-                        if (l_PlayerPasses != null)
-                            foreach (var l_PlayerPass in l_PlayerPasses.songs)
-                            {
-                                if (l_Song.hash == l_PlayerPass.hash)
+                        foreach (var l_Song in l_Level.m_Level.songs)
+                        {
+                            if (l_PlayerPasses != null)
+                                foreach (var l_PlayerPass in l_PlayerPasses.songs)
                                 {
-                                    foreach (var l_SongDifficulty in l_Song.difficulties)
+                                    if (l_Song.hash == l_PlayerPass.hash)
                                     {
-                                        foreach (var l_PlayerPassDifficulty in l_PlayerPass.difficulties)
+                                        foreach (var l_SongDifficulty in l_Song.difficulties)
                                         {
-                                            if (l_SongDifficulty.characteristic == l_PlayerPassDifficulty.characteristic && l_SongDifficulty.name == l_PlayerPassDifficulty.name)
+                                            foreach (var l_PlayerPassDifficulty in l_PlayerPass.difficulties)
                                             {
-                                                Console.WriteLine($"Pass detected on {l_Song.name} {l_SongDifficulty.name}");
-                                                l_NumberOfPass++;
-                                                l_Passed.Insert(l_I, true);
-                                                break;
+                                                if (l_SongDifficulty.characteristic == l_PlayerPassDifficulty.characteristic && l_SongDifficulty.name == l_PlayerPassDifficulty.name)
+                                                {
+                                                    Console.WriteLine($"Pass detected on {l_Song.name} {l_SongDifficulty.name}");
+                                                    l_NumberOfPass++;
+                                                    l_Passed.Insert(l_I, true);
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
 
-                        for (int l_N = 0; l_N < l_Song.difficulties.Count; l_N++)
-                        {
-                            if (l_Passed.Count <= l_I)
+                            for (int l_N = 0; l_N < l_Song.difficulties.Count; l_N++)
                             {
-                                l_Passed.Insert(l_I, false);
-                            }
+                                if (l_Passed.Count <= l_I)
+                                {
+                                    l_Passed.Insert(l_I, false);
+                                }
 
-                            l_I++;
+                                l_I++;
+                            }
                         }
                     }
 
@@ -215,40 +218,43 @@ namespace BSDiscordRanking.Discord.Modules
                     }
 
                     // ReSharper disable once IntDivisionByZero
-                    switch (l_NumberOfPass * 100 / l_NumberOfDifficulties)
+                    if (l_NumberOfDifficulties != 0)
                     {
-                        case 0:
+                        switch (l_NumberOfPass * 100 / l_NumberOfDifficulties)
                         {
-                            l_PlayerTrophy = "";
-                            break;
-                        }
-                        case <= 39:
-                        {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic = 1;
-                            l_PlayerTrophy = "<:plastic:874215132874571787>";
-                            break;
-                        }
-                        case <= 69:
-                        {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver = 1;
-                            l_PlayerTrophy = "<:silver:874215133197500446>";
-                            break;
-                        }
-                        case <= 99:
-                        {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold = 1;
-                            l_PlayerTrophy = "<:gold:874215133147197460>";
-                            break;
-                        }
+                            case 0:
+                            {
+                                l_PlayerTrophy = "";
+                                break;
+                            }
+                            case <= 39:
+                            {
+                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic = 1;
+                                l_PlayerTrophy = "<:plastic:874215132874571787>";
+                                break;
+                            }
+                            case <= 69:
+                            {
+                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver = 1;
+                                l_PlayerTrophy = "<:silver:874215133197500446>";
+                                break;
+                            }
+                            case <= 99:
+                            {
+                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold = 1;
+                                l_PlayerTrophy = "<:gold:874215133147197460>";
+                                break;
+                            }
 
-                        case 100:
-                        {
-                            l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond = 1;
-                            l_PlayerTrophy = "<:diamond:874215133289795584>";
-                            break;
+                            case 100:
+                            {
+                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond = 1;
+                                l_PlayerTrophy = "<:diamond:874215133289795584>";
+                                break;
+                            }
                         }
                     }
-
+                    
                     l_Player.ReWriteStats();
 
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();

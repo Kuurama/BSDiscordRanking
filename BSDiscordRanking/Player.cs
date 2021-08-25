@@ -585,7 +585,7 @@ namespace BSDiscordRanking
                                                                         {
                                                                             foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
                                                                             {
-                                                                                if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name)
+                                                                                if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.minScoreRequirement)
                                                                                 {
                                                                                     l_OldDiffExist = true;
                                                                                     break;
@@ -594,7 +594,7 @@ namespace BSDiscordRanking
                                                                         }
                                                                     }
 
-                                                                    if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name)
+                                                                    if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_CachedDifficulty.minScoreRequirement)
                                                                     {
                                                                         l_DiffExist = true;
                                                                         break;
@@ -633,13 +633,14 @@ namespace BSDiscordRanking
                                                                 }
                                                             }
                                                         }
-                                                        if (!l_MapStored)
+                                                        if (!l_MapStored && l_Score.unmodififiedScore >= l_Difficulty.minScoreRequirement)
                                                         {
                                                             bool l_WasStored = false;
                                                             SongFormat l_PassedSong = new SongFormat();
                                                             l_PassedSong.difficulties = new List<InSongFormat>();
                                                             l_PassedSong.hash = l_Song.hash.ToUpper();
                                                             l_PassedSong.difficulties.Add(l_Difficulty);
+                                                            l_PassedSong.name = l_Song.name;
                                                             m_PlayerPass.songs.Add(l_PassedSong);
 
                                                             foreach (var l_OldPassedSong in l_OldPlayerPass.songs)
@@ -858,36 +859,39 @@ namespace BSDiscordRanking
         {
             if (m_PlayerID != null)
             {
-                try
+                if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    if (m_PlayerPass != null)
+                    try
                     {
-                        File.WriteAllText($@"{m_Path}\pass.json", JsonSerializer.Serialize(m_PlayerPass));
-                        try
+                        if (m_PlayerPass != null)
                         {
-                            Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.songs.Count} song(s) are stored (song number <= number of scores : multiple diff)");
+                            File.WriteAllText($@"{m_Path}\pass.json", JsonSerializer.Serialize(m_PlayerPass));
+                            try
+                            {
+                                Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.songs.Count} song(s) are stored (song number <= number of scores : multiple diff)");
+                            }
+                            catch (Exception)
+                            {
+                                Console.WriteLine("Seems Like you forgot to Get Player Info, Attempting to get player's info");
+                                GetInfos();
+                                ReWritePass();
+                            }
                         }
-                        catch (Exception)
+                        else
                         {
-                            Console.WriteLine("Seems Like you forgot to Get Player Info, Attempting to get player's info");
-                            GetInfos();
-                            ReWritePass();
+                            Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");
+                            FetchScores();
                         }
                     }
-                    else
+                    catch
                     {
-                        Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");
-                        FetchScores();
+                        Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory?)");
+                        Console.WriteLine("Attempting to create the directory..");
+                        m_ErrorNumber++;
+                        CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                        Thread.Sleep(200);
+                        ReWritePass();
                     }
-                }
-                catch
-                {
-                    Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory?)");
-                    Console.WriteLine("Attempting to create the directory..");
-                    m_ErrorNumber++;
-                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                    Thread.Sleep(200);
-                    ReWritePass();
                 }
             }
         }
