@@ -63,7 +63,7 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 p_ScoreSaberArg = Regex.Match(p_ScoreSaberArg, @"\d+").Value;
                 if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
-                    UserController.AccountExist(p_ScoreSaberArg))
+                    UserController.AccountExist(p_ScoreSaberArg) && !UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
                 {
                     UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
                     await ReplyAsync(
@@ -74,8 +74,13 @@ namespace BSDiscordRanking.Discord.Modules
                 else if (!string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                     await ReplyAsync(
                         $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
+                else if (UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
+                {
+                    await ReplyAsync(
+                        $"> :x: Sorry but this account is already linked to an other user.\nIf you entered the correct id and you didn't linked it on an other discord account\nPlease Contact an administrator.");
+                }
                 else
-                    await ReplyAsync("> :x: Oopie, unhandled error.");
+                    await ReplyAsync("> :x: Oopsie, unhandled error.");
             }
             else
                 await ReplyAsync("> :x: Please enter a ScoreSaber link/id.");

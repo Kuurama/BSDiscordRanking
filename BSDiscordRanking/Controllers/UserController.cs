@@ -9,6 +9,7 @@ using Discord;
 using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
+using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -34,9 +35,23 @@ namespace BSDiscordRanking.Controllers
             {
                 // ignored
             }
+
             return false;
         }
-        
+
+        public static bool SSIsAlreadyLinked(string p_ScoreSaberID)
+        {
+            foreach (var l_User in m_Users)
+            {
+                if (p_ScoreSaberID == l_User.ScoreSaberID)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static bool UserExist(string p_DisID)
         {
             if (string.IsNullOrEmpty(GetPlayer(p_DisID)))
@@ -47,7 +62,7 @@ namespace BSDiscordRanking.Controllers
 
         public static void AddPlayer(string p_DisID, string p_ScoID)
         {
-            m_Users.Add(new UserFormat {DiscordID = p_DisID, ScoreSaberID = p_ScoID});
+            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = p_ScoID });
             Console.WriteLine($"Player {p_DisID} was added with scoresaber: {p_ScoID}");
             GenerateDB();
         }
@@ -93,8 +108,8 @@ namespace BSDiscordRanking.Controllers
                 }
             }
         }
-        
-        public static void GenerateDB() 
+
+        private static void GenerateDB()
         {
             File.WriteAllText("players.json", JsonConvert.SerializeObject(m_Users));
         }
