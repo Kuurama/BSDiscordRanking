@@ -17,13 +17,13 @@ namespace BSDiscordRanking.Discord.Modules
         [Alias("logchannel")]
         public async Task SetChannel()
         {
-                ConfigController.GetConfig();
-                ConfigController.m_ConfigFormat.LoggingChannel = Context.Channel.Id;
-                ConfigController.ReWriteConfig();
-                ReplyAsync("> :white_check_mark: This channel is now used as log-channel.");
+            ConfigController.GetConfig();
+            ConfigController.m_ConfigFormat.LoggingChannel = Context.Channel.Id;
+            ConfigController.ReWriteConfig();
+            ReplyAsync("> :white_check_mark: This channel is now used as log-channel.");
         }
-        
-        
+
+
         [Command("addchannel")]
         public async Task AddChannel()
         {
@@ -33,11 +33,12 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: Sorry, this channel can already be used for user commands");
                 return;
             }
+
             ConfigController.m_ConfigFormat.AuthorizedChannels.Add(Context.Message.Channel.Id);
             ConfigController.ReWriteConfig();
             await ReplyAsync("> :white_check_mark: This channel can now be used for user commands");
         }
-        
+
         [Command("removechannel")]
         public async Task RemoveChannel()
         {
@@ -45,17 +46,17 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 ConfigController.m_ConfigFormat.AuthorizedChannels.Remove(l_Channel);
             }
-            
+
             ConfigController.ReWriteConfig();
             await ReplyAsync("> :white_check_mark: This channel cannot longer be used for user commands");
         }
-        
+
         [Command("createroles")]
         public async Task CreateRoles()
         {
             new RoleController().CreateAllRoles(Context, false);
         }
-        
+
         [Command("addmap")]
         public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", int p_MinScoreRequirement = 0)
         {
@@ -76,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules
                         List<bool> l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, p_MinScoreRequirement);
                         if (!l_MapExistCheck[0] && !l_MapExistCheck[1])
                         {
-                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement,Context);
+                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement, Context);
                             if (!l_Level.m_MapAdded)
                             {
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -95,7 +96,7 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                         else if (l_MapExistCheck[1])
                         {
-                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement,Context);
+                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement, Context);
                             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                             l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
                             l_EmbedBuilder.WithDescription(l_Map.name);
@@ -123,7 +124,7 @@ namespace BSDiscordRanking.Discord.Modules
                         "> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
             }
         }
-        
+
         [Command("removemap")]
         public async Task RemoveMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
         {
@@ -155,7 +156,7 @@ namespace BSDiscordRanking.Discord.Modules
                             await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
                                 .SendMessageAsync("", false, l_EmbedBuilder.Build());
                         }
-                        
+
                         if (l_Level.m_Level.songs.Count == 0)
                         {
                             l_Level.DeleteLevel();
@@ -172,7 +173,6 @@ namespace BSDiscordRanking.Discord.Modules
                                     .SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                         }
-
                     }
                     else
                         await ReplyAsync(
@@ -189,19 +189,18 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (p_Level >= 0)
             {
-                
                 new Level(p_Level).ResetScoreRequirement();
                 await ReplyAsync($"> :white_check_mark: All maps in playlist {p_Level} have now a score requirement of 0");
             }
         }
-        
+
         [Command("reset-config")]
         public async Task Reset_config()
         {
             await ReplyAsync("> :white_check_mark: After the bot finished to reset the config, it will stops.");
             ConfigController.CreateConfig();
         }
-        
+
         private class RequireManagerRoleAttribute : PreconditionAttribute
         {
             public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context, CommandInfo p_Command, IServiceProvider p_Services)
@@ -214,6 +213,7 @@ namespace BSDiscordRanking.Discord.Modules
                         return Task.FromResult(PreconditionResult.FromSuccess());
                     }
                 }
+
                 return Task.FromResult(PreconditionResult.FromError("> :x: Sorry, you don't have the permission to access admin commands."));
             }
         }

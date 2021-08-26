@@ -494,6 +494,8 @@ namespace BSDiscordRanking
                 /// This Method Fetch the passes the Player did by checking all Levels and player's pass and add the matching ones.
                 int l_Passes = 0;
                 int l_PassesPerLevel = 0;
+                int l_TotalAmountOfPass = 0;
+                float l_Points = 0;
                 int l_NumberOfDifficulties = 0;
                 int l_MessagesIndex = 0;
                 int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
@@ -523,13 +525,13 @@ namespace BSDiscordRanking
                     l_LevelExist = false;
                     foreach (var l_ID in l_ExistingLevelID)
                     {
-                        if (l_ID-1 == l_I)
+                        if (l_ID - 1 == l_I)
                             l_LevelExist = true;
                     }
 
                     if (l_LevelExist)
                     {
-                        l_Levels.Add(new Level(l_I+1));
+                        l_Levels.Add(new Level(l_I + 1));
                     }
                     else
                     {
@@ -540,13 +542,12 @@ namespace BSDiscordRanking
                 int l_Y = 0;
                 try
                 {
-                    
-                    for ( l_Y = 0; l_Y <= l_BiggerLevelID; l_Y++)
+                    for (l_Y = 0; l_Y <= l_BiggerLevelID; l_Y++)
                     {
                         l_LevelExist = false;
                         foreach (var l_ID in l_ExistingLevelID)
                         {
-                            if (l_ID-1 == l_Y)
+                            if (l_ID - 1 == l_Y)
                             {
                                 l_LevelExist = true;
                                 break;
@@ -607,7 +608,7 @@ namespace BSDiscordRanking
                                                                     if (!l_OldDiffExist)
                                                                     {
                                                                         /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y-1}\n".Length)
+                                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y - 1}\n".Length)
                                                                         {
                                                                             l_MessagesIndex++;
                                                                         }
@@ -617,10 +618,10 @@ namespace BSDiscordRanking
                                                                             l_Messages.Add(""); /// Initialize the next used index.
                                                                         }
 
-                                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y-1}\n";
+                                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y - 1}\n";
                                                                         l_Passes++;
                                                                         l_PassesPerLevel++;
-                                                                        SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null); /// Mean the Player passed that level.
+                                                                        SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1); /// Mean the Player passed that level.
                                                                     }
                                                                     else
                                                                     {
@@ -633,6 +634,7 @@ namespace BSDiscordRanking
                                                                 }
                                                             }
                                                         }
+
                                                         if (!l_MapStored && l_Score.unmodififiedScore >= l_Difficulty.minScoreRequirement)
                                                         {
                                                             bool l_WasStored = false;
@@ -668,26 +670,22 @@ namespace BSDiscordRanking
                                                                 l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y + 1}\n"; /// Display new pass 2/2
                                                                 l_Passes++;
                                                                 l_PassesPerLevel++;
-                                                                SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null); /// Mean the Player passed that level.
+                                                                SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1); /// Mean the Player passed that level.
                                                             }
                                                             else
                                                             {
                                                                 l_PassesPerLevel++;
                                                             }
-                                                            
                                                         }
                                                     }
                                                 }
                                             }
-                                            
                                         }
-                                        
                                     }
-                                    
                                 }
                             }
 
-                            
+
                             foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
                             {
                                 foreach (var l_Difficulty in l_Song.difficulties)
@@ -703,39 +701,39 @@ namespace BSDiscordRanking
                             {
                                 case 0:
                                 {
-                                    SetGrindInfo(l_Y+1, new List<bool> { false }, -1, null);
+                                    SetGrindInfo(l_Y + 1, new List<bool> { false }, -1, null, -1);
                                     break;
                                 }
                                 case <= 39:
                                 {
                                     l_Plastic = 1;
-                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1);
                                     break;
                                 }
                                 case <= 69:
                                 {
                                     l_Silver = 1;
-                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1);
                                     break;
                                 }
                                 case <= 99:
                                 {
                                     l_Gold = 1;
-                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1);
                                     break;
                                 }
 
                                 case 100:
                                 {
                                     l_Diamond = 1;
-                                    SetGrindInfo(l_Y+1, new List<bool> { true }, -1, null);
+                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1);
                                     break;
                                 }
                             }
                         }
                         else
                         {
-                            SetGrindInfo(l_Y+1, new List<bool> { false }, -1, null);
+                            SetGrindInfo(l_Y + 1, new List<bool> { false }, -1, null, -1);
                         }
 
                         l_Trophy.Plastic = l_Plastic;
@@ -747,11 +745,14 @@ namespace BSDiscordRanking
                         l_Gold = 0;
                         l_Diamond = 0;
 
-                        SetGrindInfo(l_Y+1, null, -1, l_Trophy);
+                        SetGrindInfo(l_Y + 1, null, -1, l_Trophy, -1);
+                        l_TotalAmountOfPass += l_PassesPerLevel;
+                        l_Points += (l_Y+1) * 4 * l_PassesPerLevel; /// Current RPL formula from BSCC (Level*4)
                         l_PassesPerLevel = 0;
                         l_NumberOfDifficulties = 0;
                     }
 
+                    SetGrindInfo(-1, null, l_TotalAmountOfPass, null, l_Points);
                     ReWritePass();
 
                     if (l_Passes >= 1)
@@ -1049,7 +1050,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass, Trophy p_Trophy)
+        public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass, Trophy p_Trophy, float p_Points)
         {
             if (m_PlayerID != null)
             {
@@ -1099,6 +1100,27 @@ namespace BSDiscordRanking
                     }
 
                     ReWriteStats();
+                    int l_Plastics = 0;
+                    int l_Silvers = 0;
+                    int l_Golds = 0;
+                    int l_Diamonds = 0;
+                    foreach (var l_Trophy in m_PlayerStats.Trophy)
+                    {
+                        l_Plastics += l_Trophy.Plastic;
+                        l_Silvers += l_Trophy.Silver;
+                        l_Golds += l_Trophy.Gold;
+                        l_Diamonds += l_Trophy.Diamond;
+                    }
+
+                    Trophy l_TotalTrophy = new Trophy()
+                    {
+                        Plastic = l_Plastics,
+                        Silver = l_Silvers,
+                        Gold = l_Golds,
+                        Diamond = l_Diamonds
+                    };
+
+                    new LeaderboardController().ManagePlayer(m_PlayerFull.playerInfo.playerName, m_PlayerID, p_Points, GetPlayerLevel(), l_TotalTrophy); /// Manage the Leaderboard
                 }
                 catch (Exception l_Exception)
                 {

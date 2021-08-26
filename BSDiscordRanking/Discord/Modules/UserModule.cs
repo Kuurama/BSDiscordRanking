@@ -128,7 +128,6 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
-                l_Player.SetGrindInfo(-1, null, l_FetchPass, null);
             }
 
             if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
@@ -298,7 +297,7 @@ namespace BSDiscordRanking.Discord.Modules
                     l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
-                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1]);
+                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1);
                 }
                 catch (Exception l_Exception)
                 {
@@ -398,6 +397,19 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithFooter("#LoveArche",
                 "https://images.genius.com/d4b8905048993e652aba3d8e105b5dbf.1000x1000x1.jpg");
             l_EmbedBuilder.WithColor(Color.Blue);
+            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+        }
+        
+        [Command("leaderboard")]
+        public async Task Leaderboard()
+        {
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            l_EmbedBuilder.WithTitle("Leaderboard:");
+            LeaderboardController l_LeaderboardController = new LeaderboardController();
+            foreach (var l_RankedPlayer in l_LeaderboardController.m_Leaderboard.Leaderboard)
+            {
+                l_EmbedBuilder.AddField($"{l_RankedPlayer.Name} - Level: {l_RankedPlayer.Level}, {l_RankedPlayer.Points} Points", $"https://scoresaber.com/u/{l_RankedPlayer.ScoreSaberID}");
+            }
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
 

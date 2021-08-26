@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
-using Discord;
 using Discord.Commands;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
