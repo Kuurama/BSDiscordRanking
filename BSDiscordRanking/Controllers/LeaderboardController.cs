@@ -130,10 +130,10 @@ namespace BSDiscordRanking.Controllers
                             if (m_Leaderboard.Leaderboard != null)
                             {
                                 m_Leaderboard.Leaderboard =
-                                    m_Leaderboard.Leaderboard.OrderByDescending(x => x.Points).ToList();
+                                    m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
                             }
 
-                            if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(x => x.ScoreSaberID == null);
+                            if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
 
                             Console.WriteLine($"Leaderboard Loaded and Sorted");
                         }
@@ -199,7 +199,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         if (m_Leaderboard.Leaderboard.Count > 0)
                         {
-                            IEnumerable<RankedPlayer> l_Query = m_Leaderboard.Leaderboard.OrderBy(p_RankedPlayer => p_RankedPlayer.Points);
+                            m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
                             File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(m_Leaderboard));
                             Console.WriteLine($"{FILENAME}.json Updated and sorted ({m_Leaderboard.Leaderboard.Count} player in the leaderboard)");
                         }
