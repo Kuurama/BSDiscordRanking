@@ -139,10 +139,24 @@ namespace BSDiscordRanking.Discord.Modules
             UserController.UpdatePlayerLevel(Context);
         }
 
-        [Command("ggp")]
+[Command("ggp")]
         [Alias("getgrindpool")]
-        public async Task GetGrindPool(int p_Level)
+        public async Task GetGrindPool(int p_Level = -1)
         {
+            bool l_CheckForLastGGP = false;
+            try
+            {
+                if (p_Level < 0)
+                {
+                    p_Level = new Player(UserController.GetPlayer(Context.User.Id.ToString())).GetPlayerLevel()+1;
+                    l_CheckForLastGGP = true;
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
             bool l_IDExist = false;
             foreach (var l_ID in LevelController.GetLevelControllerCache().LevelID)
             {
@@ -304,6 +318,10 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :x: Error occured : {l_Exception.Message}");
                 }
             }
+            else if (l_CheckForLastGGP)
+            {
+                await ReplyAsync("> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
+            }
             else
             {
                 await ReplyAsync("> :x: This level does not exist.");
@@ -346,6 +364,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("profile")]
+        [Alias("stats")]
         public async Task Profile()
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
@@ -399,18 +418,52 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
-        
+
         [Command("leaderboard")]
-        public async Task Leaderboard()
+        [Alias("ld")]
+        public async Task Leaderboard(int p_Page = default)
         {
+            bool l_PageExist = false;
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-            l_EmbedBuilder.WithTitle("Leaderboard:");
             LeaderboardController l_LeaderboardController = new LeaderboardController();
-            foreach (var l_RankedPlayer in l_LeaderboardController.m_Leaderboard.Leaderboard)
+            if (p_Page == default)
             {
-                l_EmbedBuilder.AddField($"{l_RankedPlayer.Name} - Level: {l_RankedPlayer.Level}, {l_RankedPlayer.Points} Points", $"https://scoresaber.com/u/{l_RankedPlayer.ScoreSaberID}");
+                try
+                {
+                    p_Page = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(x =>
+                        x.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString())) / 10 + 1;
+                }
+                catch
+                {
+                    p_Page = 1;
+                }
             }
-            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+
+            for (var l_Index = (p_Page-1)*10; l_Index < (p_Page-1)*10+10; l_Index++)
+            {
+                try
+                {
+                    var l_RankedPlayer = l_LeaderboardController.m_Leaderboard.Leaderboard[l_Index];
+                    l_EmbedBuilder.AddField(
+                        $"#{l_Index + 1} - {l_RankedPlayer.Name} : {l_RankedPlayer.Points} RPL",
+                        $"Level: {l_RankedPlayer.Level}. [ScoreSaber Profile](https://scoresaber.com/u/{l_RankedPlayer.ScoreSaberID})");
+                    l_PageExist = true;
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+
+            if (l_PageExist)
+            {
+                l_EmbedBuilder.WithTitle("Leaderboard:");
+                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+            }
+            else
+                await ReplyAsync("> :x: Sorry, this page doesn't exist");
+
+
         }
 
         [Command("help")]

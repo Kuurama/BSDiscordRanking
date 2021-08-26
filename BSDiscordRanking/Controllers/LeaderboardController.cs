@@ -129,7 +129,8 @@ namespace BSDiscordRanking.Controllers
                         {
                             if (m_Leaderboard.Leaderboard != null)
                             {
-                                IEnumerable<RankedPlayer> l_Query = m_Leaderboard.Leaderboard.OrderBy(p_RankedPlayer => p_RankedPlayer.Points);
+                                m_Leaderboard.Leaderboard =
+                                    m_Leaderboard.Leaderboard.OrderByDescending(x => x.Points).ToList();
                             }
 
                             if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(x => x.ScoreSaberID == null);
