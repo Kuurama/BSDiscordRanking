@@ -139,7 +139,7 @@ namespace BSDiscordRanking.Discord.Modules
             UserController.UpdatePlayerLevel(Context);
         }
 
-[Command("ggp")]
+        [Command("ggp")]
         [Alias("getgrindpool")]
         public async Task GetGrindPool(int p_Level = -1)
         {
@@ -286,10 +286,15 @@ namespace BSDiscordRanking.Discord.Modules
                     {
                         foreach (var l_SongDifficulty in l_Song.difficulties)
                         {
+                            var l_EmbedValue = $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}{l_BigGgp}";
+                            if (l_SongDifficulty.minScoreRequirement != 0)
+                                l_EmbedValue += $" - MinScore: {l_SongDifficulty.minScoreRequirement}";
+                            
                             if (!l_Passed[l_Y])
-                                l_EmbedBuilder.AddField(l_Song.name, $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}{l_BigGgp}", true);
+                                l_EmbedBuilder.AddField(l_Song.name, l_EmbedValue , true);
                             else
-                                l_EmbedBuilder.AddField($"~~{l_Song.name}~~", $"~~{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}~~{l_BigGgp}", true);
+                                l_EmbedBuilder.AddField($"~~{l_Song.name}~~", $"~~{l_EmbedValue}~~", true);
+                            
                             if (l_NumbedOfEmbed % 2 != 0)
                             {
                                 if (l_Y % 2 == 0)
@@ -358,7 +363,6 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
                 }
             }
-
             else
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
         }
