@@ -513,7 +513,7 @@ namespace BSDiscordRanking.Discord.Modules
                 }
             }
 
-            return Task.FromResult(PreconditionResult.FromError("> :x: Sorry, you can't use this command here."));
+            return Task.FromResult(PreconditionResult.FromError(ExecuteResult.FromError(new Exception(ErrorMessage = "Forbidden channel"))));
         }
     }
 }
