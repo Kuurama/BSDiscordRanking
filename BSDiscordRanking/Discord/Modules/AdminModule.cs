@@ -214,7 +214,7 @@ namespace BSDiscordRanking.Discord.Modules
                     }
                 }
 
-                return Task.FromResult(PreconditionResult.FromError("> :x: Sorry, you don't have the permission to access admin commands."));
+                return Task.FromResult(PreconditionResult.FromError(ExecuteResult.FromError(new Exception(ErrorMessage = "Incorrect user's permissions"))));
             }
         }
     }
