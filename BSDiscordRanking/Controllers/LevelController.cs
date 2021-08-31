@@ -161,6 +161,7 @@ namespace BSDiscordRanking.Controllers
             public bool DifferentMinScore { get; set; }
             public int Level { get; set; }
         }
+
         public MapExistFormat MapExist_DifferentMinScore(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement)
         {
             new LevelController().FetchLevel();
@@ -189,6 +190,7 @@ namespace BSDiscordRanking.Controllers
                                 break;
                             }
                         }
+
                         return l_MapExistFormat;
                     }
                 }

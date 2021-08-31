@@ -100,8 +100,8 @@ namespace BSDiscordRanking
                             {
                                 if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                                 {
-                                    Console.WriteLine("RateLimited, Trying again in 45sec");
-                                    Thread.Sleep(45000);
+                                    Console.WriteLine("RateLimited, Trying again in 50sec");
+                                    Thread.Sleep(50000);
                                     GetInfos();
                                 }
 
@@ -226,7 +226,7 @@ namespace BSDiscordRanking
             ///
             /// When this method download ALL the player's Score and check there is already some saved scores to stop the research,
             /// it also delete outdated score from old cached passes.
-            /// it know when it should stop => Score already saved, => no more Pages, => internet issue, => api rate limit (retrying after 45sec).
+            /// it know when it should stop => Score already saved, => no more Pages, => internet issue, => api rate limit (retrying after 50sec).
             ///
             /// You need to run this method to Update the Player's Scores's cache (if there is any).
             ///
@@ -303,8 +303,8 @@ namespace BSDiscordRanking
 
                                             if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
                                             {
-                                                p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 45s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
-                                                Thread.Sleep(45000);
+                                                p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 50s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
+                                                Thread.Sleep(50000);
                                             }
                                         }
                                         else
