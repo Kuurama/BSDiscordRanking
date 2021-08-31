@@ -85,12 +85,11 @@ namespace BSDiscordRanking.Discord.Modules
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
                                 l_EmbedBuilder.AddField("ScoreRequirement:", p_MinScoreRequirement, true);
-                                l_EmbedBuilder.AddField("Link:", l_Map.versions[^1].downloadURL, false);
+                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithColor(Color.Blue);
-                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
-                                    .SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                         }
                         else if (l_MapExistCheck.DifferentMinScore)
@@ -102,12 +101,11 @@ namespace BSDiscordRanking.Discord.Modules
                             l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                             l_EmbedBuilder.AddField("Level:", p_Level, true);
                             l_EmbedBuilder.AddField("New ScoreRequirement:", p_MinScoreRequirement, true);
-                            l_EmbedBuilder.AddField("Link:", l_Map.versions[^1].downloadURL, false);
+                            l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
                             l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                             l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                             l_EmbedBuilder.WithColor(Color.Blue);
-                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
-                                .SendMessageAsync("", false, l_EmbedBuilder.Build());
+                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                         }
                         else
                         {

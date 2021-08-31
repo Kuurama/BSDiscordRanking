@@ -348,8 +348,7 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: This level does not exist.");
             }
 
-            if (UserController.UserExist(Context.User.Id.ToString()))
-                UserController.UpdatePlayerLevel(Context);
+            /// if (UserController.UserExist(Context.User.Id.ToString())) UserController.UpdatePlayerLevel(Context); /// Make the player update all his roles, too heavy for a ggp
         }
 
         [Command("getplaylist")]
