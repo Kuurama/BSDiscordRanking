@@ -22,9 +22,10 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("getinfo")]
         public async Task GetInfo(string p_Arg)
         {
+            p_Arg = p_Arg.Replace("_", "");
             if (p_Arg.Length < 3)
             {
-                await ReplyAsync("> :x: Sorry, the minimum for searching a map is 3 characters.");
+                await ReplyAsync("> :x: Sorry, the minimum for searching a map is 3 characters (excluding '_').");
                 return;
             }
             
@@ -35,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules
                 var l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    if (l_Map.name.Contains(p_Arg, StringComparison.OrdinalIgnoreCase))
+                    if (l_Map.name.Replace(" ","").Replace("_", "").Contains(p_Arg, StringComparison.OrdinalIgnoreCase))
                     {
                         l_Maps.Add(new Tuple<SongFormat, int>(l_Map, l_LevelID));
                     }
