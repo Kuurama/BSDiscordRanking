@@ -128,14 +128,15 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
-                
-                if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
-                {
-                    UserController.UpdatePlayerLevel(Context);
-                    await ReplyAsync(
-                        $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
-                }
             }
+
+            if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
+            {
+                UserController.UpdatePlayerLevel(Context);
+                await ReplyAsync(
+                    $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+            }
+            UserController.UpdatePlayerLevel(Context);
         }
 
         [Command("ggp")]
