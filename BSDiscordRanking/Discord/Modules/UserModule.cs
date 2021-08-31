@@ -131,10 +131,10 @@ namespace BSDiscordRanking.Discord.Modules
                 
                 if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
                 {
-                    UserController.UpdatePlayerLevel(Context);
                     await ReplyAsync(
                         $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
                 }
+                UserController.UpdatePlayerLevel(Context);
             }
         }
 
