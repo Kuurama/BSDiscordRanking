@@ -31,7 +31,6 @@ namespace BSDiscordRanking.Formats
         public string hash { get; set; }
         public List<InSongFormat> difficulties { get; set; }
         public string name { get; set; }
-        public string[] nameParts => name.Split(' ', '-', '_');
     }
 
     public class InSongFormat
