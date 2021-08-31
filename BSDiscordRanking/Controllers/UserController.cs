@@ -85,6 +85,7 @@ namespace BSDiscordRanking.Controllers
 
         public static void UpdatePlayerLevel(SocketCommandContext p_Context)
         {
+            if (!UserExist(p_Context.User.Id.ToString())) return;
             int l_PlayerLevel = new Player(GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
             foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles)
             {

@@ -331,7 +331,8 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: This level does not exist.");
             }
 
-            UserController.UpdatePlayerLevel(Context);
+            if (UserController.UserExist(Context.User.Id.ToString()))
+                UserController.UpdatePlayerLevel(Context);
         }
 
         [Command("getplaylist")]
