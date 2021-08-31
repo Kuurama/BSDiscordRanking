@@ -155,11 +155,21 @@ namespace BSDiscordRanking.Controllers
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public List<bool> MapExist_DifferentMinScore(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement)
+        public class MapExistFormat
+        {
+            public bool MapExist { get; set; }
+            public bool DifferentMinScore { get; set; }
+            public int Level { get; set; }
+        }
+        public MapExistFormat MapExist_DifferentMinScore(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement)
         {
             new LevelController().FetchLevel();
-            bool l_MapExist = false;
-            bool l_DifferentMinScore = false;
+            MapExistFormat l_MapExistFormat = new MapExistFormat
+            {
+                MapExist = false,
+                DifferentMinScore = false,
+                Level = -1
+            };
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
@@ -172,25 +182,19 @@ namespace BSDiscordRanking.Controllers
                             if (l_Difficulty.name == p_Difficulty && l_Difficulty.characteristic == p_Characteristic)
                             {
                                 Console.WriteLine($"Map already exist in level {l_Level}");
-                                l_MapExist = true;
+                                l_MapExistFormat.MapExist = true;
                                 if (l_Difficulty.minScoreRequirement != p_MinScoreRequirement)
-                                    l_DifferentMinScore = true;
+                                    l_MapExistFormat.DifferentMinScore = true;
+                                l_MapExistFormat.Level = l_LevelID;
                                 break;
                             }
                         }
-
-                        return new List<bool>()
-                        {
-                            l_MapExist, l_DifferentMinScore
-                        };
+                        return l_MapExistFormat;
                     }
                 }
             }
 
-            return new List<bool>()
-            {
-                false, false
-            };
+            return l_MapExistFormat;
         }
     }
 }

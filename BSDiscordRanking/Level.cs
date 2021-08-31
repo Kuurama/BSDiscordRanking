@@ -20,6 +20,7 @@ namespace BSDiscordRanking
         public const string SUFFIX_NAME = "_Level";
         public bool m_MapAdded;
         public bool m_MapDeleted;
+
         /// Keep the underscore at the beginning to avoid issue with the controller.
         private const string PATH = @".\Levels\";
 
@@ -41,8 +42,6 @@ namespace BSDiscordRanking
             //AddMap("B76F546A682122155BE11739438FCAE6CFE2C2CF", "Standard", "Easy");
         }
 
-
-        
 
         private void LoadLevel()
         {
@@ -77,7 +76,8 @@ namespace BSDiscordRanking
                                 playlistAuthor = new string(""),
                                 playlistDescription = new string(""),
                                 syncURL = null,
-                                image = new string("")
+                                image = new string(""),
+                                weighting = 0
                             };
                             Console.WriteLine($"Level {m_LevelID} Created (Empty Format), contained null");
                         }
@@ -100,7 +100,8 @@ namespace BSDiscordRanking
                         playlistAuthor = new string(""),
                         playlistDescription = new string(""),
                         syncURL = null,
-                        image = new string("")
+                        image = new string(""),
+                        weighting = 0
                     };
                     Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Created (Empty Format)");
                 }
@@ -122,8 +123,10 @@ namespace BSDiscordRanking
                     l_Difficulty.minScoreRequirement = 0;
                 }
             }
+
             ReWritePlaylist();
         }
+
         private void CreateDirectory()
         {
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
@@ -167,6 +170,8 @@ namespace BSDiscordRanking
                 {
                     if (m_Level != null)
                     {
+                        m_Level.weighting = new float();
+                        m_Level.weighting = 0;
                         if (m_Level.songs.Count > 0)
                         {
                             File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(m_Level));
@@ -203,8 +208,8 @@ namespace BSDiscordRanking
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
-        
-         public void DeleteLevel()
+
+        public void DeleteLevel()
         {
             /// This Method Delete the level cache file
 
@@ -263,13 +268,13 @@ namespace BSDiscordRanking
                         bool l_ScoreRequirementEdit = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name };
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
                                 name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = p_MinScoreRequirement
                             };
-                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
+                            l_SongFormat.difficulties = new List<InSongFormat> { l_InSongFormat };
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -286,6 +291,7 @@ namespace BSDiscordRanking
                                                 break;
                                             }
                                         }
+
                                         if (l_SongAlreadyExist)
                                             break;
                                     }
@@ -302,10 +308,11 @@ namespace BSDiscordRanking
                                                     l_Difficulty.minScoreRequirement = l_InSongFormat.minScoreRequirement;
                                                     l_ScoreRequirementEdit = true;
                                                 }
+
                                                 break;
                                             }
                                         }
-                                        
+
                                         if (l_ScoreRequirementEdit)
                                         {
                                             p_Context.Channel.SendMessageAsync($"> :ballot_box_with_check: Min Score Requirement changed to {l_InSongFormat.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
@@ -348,11 +355,7 @@ namespace BSDiscordRanking
                             p_Context.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                         }
 
-                        if (!l_DifficultyAlreadyExist)
-                            m_MapAdded = false;
-                        else
-                            m_MapAdded = true;
-
+                        m_MapAdded = l_DifficultyAlreadyExist;
                     }
                 }
                 else
@@ -393,13 +396,13 @@ namespace BSDiscordRanking
                         bool l_DifficultyAlreadyExist = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name };
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
                                 name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = 0
                             };
-                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
+                            l_SongFormat.difficulties = new List<InSongFormat> { l_InSongFormat };
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -416,6 +419,7 @@ namespace BSDiscordRanking
                                                 break;
                                             }
                                         }
+
                                         if (l_SongAlreadyExist)
                                             break;
                                     }
@@ -436,10 +440,10 @@ namespace BSDiscordRanking
                                             {
                                                 m_Level.songs.RemoveAt(l_I);
                                             }
+
                                             p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
                                             m_MapDeleted = true;
                                             ReWritePlaylist();
-                                            
                                         }
                                         else
                                         {
@@ -480,7 +484,6 @@ namespace BSDiscordRanking
                     Console.WriteLine($"Trying to RemoveMap {p_Code}");
                     RemoveMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
                 }
-                
             }
             else
             {
@@ -555,7 +558,7 @@ namespace BSDiscordRanking
             }
         }
 
-         public static BeatSaverFormat FetchBeatMapByHash(string p_Hash, SocketCommandContext p_SocketCommandContext)
+        public static BeatSaverFormat FetchBeatMapByHash(string p_Hash, SocketCommandContext p_SocketCommandContext)
         {
             string l_URL = @$"https://api.beatsaver.com/maps/hash/{p_Hash}";
             using WebClient l_WebClient = new WebClient();

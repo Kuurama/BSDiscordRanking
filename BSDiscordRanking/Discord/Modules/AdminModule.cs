@@ -63,8 +63,7 @@ namespace BSDiscordRanking.Discord.Modules
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
             {
-                await ReplyAsync(
-                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
+                await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
             }
             else
             {
@@ -74,8 +73,8 @@ namespace BSDiscordRanking.Discord.Modules
                     {
                         Level l_Level = new Level(p_Level);
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
-                        List<bool> l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, p_MinScoreRequirement);
-                        if (!l_MapExistCheck[0] && !l_MapExistCheck[1])
+                        LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, p_MinScoreRequirement);
+                        if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                         {
                             l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement, Context);
                             if (!l_Level.m_MapAdded)
@@ -94,7 +93,7 @@ namespace BSDiscordRanking.Discord.Modules
                                     .SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                         }
-                        else if (l_MapExistCheck[1])
+                        else if (l_MapExistCheck.DifferentMinScore)
                         {
                             l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement, Context);
                             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -112,27 +111,25 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                         else
                         {
-                            await ReplyAsync("> :x: Sorry, this map & difficulty already exist into a level.");
+                            await ReplyAsync($"> :x: Sorry, this map & difficulty already exist into level {l_MapExistCheck.Level}.");
                         }
                     }
                     else
-                        await ReplyAsync(
-                            "> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                        await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
                 }
                 else
-                    await ReplyAsync(
-                        "> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+                    await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
             }
         }
 
         [Command("removemap")]
-        public async Task RemoveMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
+        public async Task RemoveMap(string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
         {
-            if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
+            if (string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync(
-                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}removemap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
+                    $"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}removemap [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
             }
             else
             {
@@ -140,47 +137,45 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
-                        Level l_Level = new Level(p_Level);
-                        l_Level.RemoveMap(p_Code, p_Characteristic, p_DifficultyName, Context);
-                        if (!l_Level.m_MapAdded)
+                        BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
+                        LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0);
+                        if (l_MapExistCheck.Level >= 0)
                         {
-                            BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
+                            Level l_Level = new Level(l_MapExistCheck.Level);
+                            l_Level.RemoveMap(p_Code, p_Characteristic, p_DifficultyName, Context);
+
+                            l_Map = Level.FetchBeatMap(p_Code, Context);
                             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                            l_EmbedBuilder.WithTitle("Map removed!");
-                            l_EmbedBuilder.AddField("Map name:", l_Map.name);
-                            l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
-                            l_EmbedBuilder.AddField("Level:", p_Level);
+                            if (l_Level.m_Level.songs.Count == 0)
+                            {
+                                l_Level.DeleteLevel();
+                                l_EmbedBuilder.WithTitle("Level Removed!");
+                                l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
+                                l_EmbedBuilder.AddField("Reason:", "All maps has been removed.");
+                            }
+                            else
+                            {
+                                l_EmbedBuilder.WithTitle("Map removed!");
+                                l_EmbedBuilder.AddField("Map name:", l_Map.name);
+                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
+                                l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
+                            }
+
                             l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                             l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                             l_EmbedBuilder.WithColor(Color.Red);
-                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
-                                .SendMessageAsync("", false, l_EmbedBuilder.Build());
+                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                         }
-
-                        if (l_Level.m_Level.songs.Count == 0)
+                        else
                         {
-                            l_Level.DeleteLevel();
-                            if (!l_Level.m_MapAdded)
-                            {
-                                BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
-                                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                                l_EmbedBuilder.WithTitle("Level Removed!");
-                                l_EmbedBuilder.AddField("Level:", p_Level);
-                                l_EmbedBuilder.AddField("Reason:", "All maps has been removed.");
-                                l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                                l_EmbedBuilder.WithColor(Color.DarkRed);
-                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel)
-                                    .SendMessageAsync("", false, l_EmbedBuilder.Build());
-                            }
+                            await ReplyAsync($"> :x: Sorry, this map difficulty isn't in any levels.");
                         }
                     }
                     else
-                        await ReplyAsync(
-                            "> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                        await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
                 }
                 else
-                    await ReplyAsync(
-                        "> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+                    await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
             }
         }
 

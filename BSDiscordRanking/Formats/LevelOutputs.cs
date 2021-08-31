@@ -24,6 +24,8 @@ namespace BSDiscordRanking.Formats
         }
 
         public string image { get; set; }
+        
+        public float weighting { get; set; }
     }
 
     public class SongFormat
