@@ -18,7 +18,6 @@ namespace BSDiscordRanking.Discord.Modules
     [CheckChannel]
     public class UserModule : ModuleBase<SocketCommandContext>
     {
-    
         [Command("getinfo")]
         public async Task GetInfo(string p_Arg)
         {
@@ -28,7 +27,7 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: Sorry, the minimum for searching a map is 3 characters (excluding '_').");
                 return;
             }
-            
+
             var l_Maps = new List<Tuple<SongFormat, int>>();
             new LevelController().FetchLevel();
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
@@ -36,7 +35,7 @@ namespace BSDiscordRanking.Discord.Modules
                 var l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    if (l_Map.name.Replace(" ","").Replace("_", "").Contains(p_Arg, StringComparison.OrdinalIgnoreCase))
+                    if (l_Map.name.Replace(" ", "").Replace("_", "").Contains(p_Arg, StringComparison.OrdinalIgnoreCase))
                     {
                         l_Maps.Add(new Tuple<SongFormat, int>(l_Map, l_LevelID));
                     }
@@ -48,7 +47,7 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: Sorry, no maps was found.");
                 return;
             }
-            
+
             foreach (var l_GroupedMaps in l_Maps.GroupBy(p_Maps => p_Maps.Item1.hash))
             {
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -63,7 +62,7 @@ namespace BSDiscordRanking.Discord.Modules
                 }
 
                 var l_Map = l_GroupedMaps.First().Item1;
-                
+
                 l_EmbedBuilder.WithDescription("Ranked difficulties:");
                 l_EmbedBuilder.WithTitle(l_Map.name);
                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
@@ -71,8 +70,8 @@ namespace BSDiscordRanking.Discord.Modules
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             }
         }
-        
-        
+
+
         [Command("link")]
         public async Task LinkUser(string p_ScoreSaberArg = "")
         {
@@ -102,7 +101,7 @@ namespace BSDiscordRanking.Discord.Modules
             else
                 await ReplyAsync("> :x: Please enter a ScoreSaber link/id.");
         }
-        
+
         [Command("unlink")]
         public async Task UnLinkUser(string p_DiscordID = "")
         {
@@ -145,12 +144,13 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
-                
+
                 if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
                 {
                     await ReplyAsync(
                         $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
                 }
+
                 UserController.UpdatePlayerLevel(Context);
             }
         }
@@ -164,7 +164,17 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (p_Level < 0)
                 {
-                    p_Level = new Player(UserController.GetPlayer(Context.User.Id.ToString())).GetPlayerLevel()+1;
+                    int l_PlayerLevel = new Player(UserController.GetPlayer(Context.User.Id.ToString())).GetPlayerLevel();
+                    int l_LevelTemp = int.MaxValue;
+                    foreach (var l_ID in LevelController.GetLevelControllerCache().LevelID)
+                    {
+                        if (l_ID > l_PlayerLevel && l_ID <= l_LevelTemp)
+                        {
+                            l_LevelTemp = l_ID;
+                        }
+                    }
+
+                    p_Level = l_LevelTemp;
                     l_CheckForLastGGP = true;
                 }
             }
@@ -288,7 +298,7 @@ namespace BSDiscordRanking.Discord.Modules
                             }
                         }
                     }
-                    
+
                     l_Player.ReWriteStats();
 
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -305,12 +315,12 @@ namespace BSDiscordRanking.Discord.Modules
                             var l_EmbedValue = $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}{l_BigGgp}";
                             if (l_SongDifficulty.minScoreRequirement != 0)
                                 l_EmbedValue += $" - MinScore: {l_SongDifficulty.minScoreRequirement}";
-                            
+
                             if (!l_Passed[l_Y])
-                                l_EmbedBuilder.AddField(l_Song.name, l_EmbedValue , true);
+                                l_EmbedBuilder.AddField(l_Song.name, l_EmbedValue, true);
                             else
                                 l_EmbedBuilder.AddField($"~~{l_Song.name}~~", $"~~{l_EmbedValue}~~", true);
-                            
+
                             if (l_NumbedOfEmbed % 2 != 0)
                             {
                                 if (l_Y % 2 == 0)
@@ -459,7 +469,7 @@ namespace BSDiscordRanking.Discord.Modules
                 }
             }
 
-            for (var l_Index = (p_Page-1)*10; l_Index < (p_Page-1)*10+10; l_Index++)
+            for (var l_Index = (p_Page - 1) * 10; l_Index < (p_Page - 1) * 10 + 10; l_Index++)
             {
                 try
                 {
@@ -482,8 +492,6 @@ namespace BSDiscordRanking.Discord.Modules
             }
             else
                 await ReplyAsync("> :x: Sorry, this page doesn't exist");
-
-
         }
 
         [Command("help")]

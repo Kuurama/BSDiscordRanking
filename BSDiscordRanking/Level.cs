@@ -77,7 +77,7 @@ namespace BSDiscordRanking
                                 playlistDescription = new string(""),
                                 syncURL = null,
                                 image = new string(""),
-                                weighting = 0
+                                weighting = 0f
                             };
                             Console.WriteLine($"Level {m_LevelID} Created (Empty Format), contained null");
                         }
@@ -101,7 +101,7 @@ namespace BSDiscordRanking
                         playlistDescription = new string(""),
                         syncURL = null,
                         image = new string(""),
-                        weighting = 0
+                        weighting = 0f
                     };
                     Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Created (Empty Format)");
                 }
@@ -170,8 +170,6 @@ namespace BSDiscordRanking
                 {
                     if (m_Level != null)
                     {
-                        m_Level.weighting = new float();
-                        m_Level.weighting = 0;
                         if (m_Level.songs.Count > 0)
                         {
                             File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(m_Level));
