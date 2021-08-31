@@ -11,6 +11,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
+using static BSDiscordRanking.Controllers.ConfigController;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Controllers
@@ -87,11 +88,11 @@ namespace BSDiscordRanking.Controllers
         {
             if (!UserExist(p_Context.User.Id.ToString())) return;
             int l_PlayerLevel = new Player(GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
-            foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles)
+            foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
             {
                 if (l_Role.LevelID == l_PlayerLevel)
                     ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                else if (l_Role.LevelID < l_PlayerLevel && ConfigController.GetConfig().GiveOldRoles)
+                else if (l_Role.LevelID < l_PlayerLevel && GetConfig().GiveOldRoles)
                     ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                 Thread.Sleep(20); // Discord API limit
             }
@@ -99,16 +100,43 @@ namespace BSDiscordRanking.Controllers
             SocketGuildUser l_User = p_Context.User as SocketGuildUser;
             foreach (SocketRole l_UserRole in l_User.Roles)
             {
-                foreach (RoleFormat l_Role in new RoleController().m_RoleController.Roles)
+                foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
                 {
                     if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID > l_PlayerLevel)
                         ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                    else if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel && !ConfigController.GetConfig().GiveOldRoles)
+                    else if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel && !GetConfig().GiveOldRoles)
                         ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                     Thread.Sleep(20); // Discord API limit
                 }
             }
         }
+
+        public static void GiveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context)
+        {
+            foreach (var l_Role in RoleController.ReadRolesDB().Roles)
+            {
+                foreach (var l_GuildRole in p_Context.Guild.Roles)
+                {
+                    if (string.Equals(l_Role.RoleName, $"{GetConfig().RolePrefix} Ranked", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.Equals(l_Role.RoleName, l_GuildRole.Name, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var l_User = p_Context.Guild.GetUser(p_DiscordID);
+                            if (l_User != null)
+                                l_User.AddRoleAsync(l_GuildRole);
+                            else
+                            {
+                                Console.WriteLine("Can't find this user, make him type a message straight before using the command!");
+                                return;
+                            }
+
+                            Console.WriteLine($"'{GetConfig().RolePrefix} Ranked' Role added!");
+                        }
+                    }
+                }
+            }
+        }
+
 
         private static void GenerateDB()
         {

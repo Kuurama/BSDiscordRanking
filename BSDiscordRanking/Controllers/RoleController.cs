@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        private static RolesFormat ReadRolesDB()
+        public static RolesFormat ReadRolesDB()
         {
             if (File.Exists("roles.json"))
             {

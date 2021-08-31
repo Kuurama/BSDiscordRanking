@@ -6,6 +6,7 @@ using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
+using Discord.Rest;
 using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules
@@ -55,6 +56,11 @@ namespace BSDiscordRanking.Discord.Modules
         public async Task CreateRoles()
         {
             new RoleController().CreateAllRoles(Context, false);
+        }
+        [Command("allowuser")]
+        public async Task AllowUser(ulong p_DiscordID)
+        {
+            UserController.GiveBSDRRole(p_DiscordID, Context);
         }
 
         [Command("addmap")]
