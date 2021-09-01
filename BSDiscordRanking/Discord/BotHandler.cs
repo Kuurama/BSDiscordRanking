@@ -15,7 +15,7 @@ namespace BSDiscordRanking.Discord
     
         public static string m_Prefix;
         private DiscordSocketClient m_Client;
-        private CommandService m_Commands;
+        public static CommandService m_Commands;
 
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
@@ -55,11 +55,11 @@ namespace BSDiscordRanking.Discord
             {
                 if (l_Message.HasStringPrefix(l_Prefix, ref l_ArgPos))
                 {
-                    var l_Result = await m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
-                    if (!l_Result.IsSuccess) Console.WriteLine(l_Result.ErrorReason);
-                    if (l_Result.Error.Equals(CommandError.UnmetPrecondition))
+                    var l_Result = m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
+                    if (!l_Result.Result.IsSuccess) Console.WriteLine(l_Result.Result.ErrorReason);
+                    if (l_Result.Result.Error.Equals(CommandError.UnmetPrecondition))
                         if (l_Message != null)
-                            await l_Message.Channel.SendMessageAsync(l_Result.ErrorReason);
+                            await l_Message.Channel.SendMessageAsync(l_Result.Result.ErrorReason);
                 }
             }
 

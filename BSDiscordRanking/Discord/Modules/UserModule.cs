@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
@@ -139,19 +140,23 @@ namespace BSDiscordRanking.Discord.Modules
             else
             {
                 l_Player.FetchScores(Context);
-                int l_FetchPass = await l_Player.FetchPass(Context);
-                if (l_FetchPass >= 1)
-                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
+                var l_FetchPass = l_Player.FetchPass(Context);
+                if (l_FetchPass.Result >= 1)
+                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass.Result} new maps!");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
 
-                if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
+                if (l_OldPlayerLevel != l_Player.GetPlayerLevel())
                 {
-                    await ReplyAsync($"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+                    if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
+                        await ReplyAsync($"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+                    else
+                        await ReplyAsync($"> :warning: You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
+                    await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while.");
+                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context);
+
                 }
-                await ReplyAsync("> :warning: The bot will pause for some time to adjust the player's role, please don't spam any command before seeing the confirmation message (about 20sec)");
-                UserController.UpdatePlayerLevel(Context);
-                await ReplyAsync($"> You can now type again ^^ (if your roles are incorrect => redo a {ConfigController.GetConfig().CommandPrefix[0]}!scan)");
+                
             }
         }
 
@@ -164,7 +169,8 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (p_Level < 0)
                 {
-                    int l_PlayerLevel = new Player(UserController.GetPlayer(Context.User.Id.ToString())).GetPlayerLevel();
+                    int l_PlayerLevel =
+                        new Player(UserController.GetPlayer(Context.User.Id.ToString())).GetPlayerLevel();
                     int l_LevelTemp = int.MaxValue;
                     foreach (var l_ID in LevelController.GetLevelControllerCache().LevelID)
                     {
@@ -214,9 +220,12 @@ namespace BSDiscordRanking.Discord.Modules
                                         {
                                             foreach (var l_PlayerPassDifficulty in l_PlayerPass.difficulties)
                                             {
-                                                if (l_SongDifficulty.characteristic == l_PlayerPassDifficulty.characteristic && l_SongDifficulty.name == l_PlayerPassDifficulty.name)
+                                                if (l_SongDifficulty.characteristic ==
+                                                    l_PlayerPassDifficulty.characteristic && l_SongDifficulty.name ==
+                                                    l_PlayerPassDifficulty.name)
                                                 {
-                                                    Console.WriteLine($"Pass detected on {l_Song.name} {l_SongDifficulty.name}");
+                                                    Console.WriteLine(
+                                                        $"Pass detected on {l_Song.name} {l_SongDifficulty.name}");
                                                     l_NumberOfPass++;
                                                     l_Passed.Insert(l_I, true);
                                                     break;
@@ -339,7 +348,8 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                     }
 
-                    l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
+                    l_EmbedBuilder.WithFooter(
+                        $"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
                     l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1);
@@ -351,14 +361,13 @@ namespace BSDiscordRanking.Discord.Modules
             }
             else if (l_CheckForLastGGP)
             {
-                await ReplyAsync("> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
+                await ReplyAsync(
+                    "> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
             }
             else
             {
                 await ReplyAsync("> :x: This level does not exist.");
             }
-
-            /// if (UserController.UserExist(Context.User.Id.ToString())) UserController.UpdatePlayerLevel(Context); /// Make the player update all his roles, too heavy for a ggp
         }
 
         [Command("getplaylist")]
