@@ -433,7 +433,7 @@ namespace BSDiscordRanking.Discord.Modules
                 l_EmbedBuilder.AddField($"Diamond trophies:", $"<:diamond:874215133289795584>: {l_Diamonds}", true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                UserController.UpdatePlayerLevel(Context);
+                // UserController.UpdatePlayerLevel(Context); /// Seems too heavy for !profile
             }
         }
 

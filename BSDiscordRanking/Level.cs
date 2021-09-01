@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -36,10 +37,6 @@ namespace BSDiscordRanking
             CreateDirectory(); /// Make the Level file's directory.
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
             ///////////////////////////////////////////////////////////////////////////////////////
-
-
-            //AddMap("41D7C7B621D397DB0723B55F75AB2EF6BE1891E8", "Standard", "ExpertPlus");
-            //AddMap("B76F546A682122155BE11739438FCAE6CFE2C2CF", "Standard", "Easy");
         }
 
 
@@ -81,13 +78,17 @@ namespace BSDiscordRanking
                             };
                             Console.WriteLine($"Level {m_LevelID} Created (Empty Format), contained null");
                         }
-                        else
+                        else if (m_Level.songs != null)
                         {
                             Console.WriteLine($"Level {m_LevelID} Loaded");
                             foreach (var l_Songs in m_Level.songs)
                             {
                                 l_Songs.hash = l_Songs.hash.ToUpper();
                             }
+                        }
+                        else
+                        {
+                            m_Level.songs = new List<SongFormat>();
                         }
                     }
                 }
