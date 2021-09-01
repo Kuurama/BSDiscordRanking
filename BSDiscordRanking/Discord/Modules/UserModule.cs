@@ -13,6 +13,8 @@ using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.VisualBasic;
+using static System.String;
 
 namespace BSDiscordRanking.Discord.Modules
 {
@@ -20,6 +22,7 @@ namespace BSDiscordRanking.Discord.Modules
     public class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("getinfo")]
+        [Summary("Shows information about a map and its difficulties.")]
         public async Task GetInfo(string p_Arg)
         {
             p_Arg = p_Arg.Replace("_", "");
@@ -74,12 +77,13 @@ namespace BSDiscordRanking.Discord.Modules
 
 
         [Command("link")]
+        [Summary("Links your Discord account to your ScoreSaber one.")]
         public async Task LinkUser(string p_ScoreSaberArg = "")
         {
-            if (!string.IsNullOrEmpty(p_ScoreSaberArg))
+            if (!IsNullOrEmpty(p_ScoreSaberArg))
             {
                 p_ScoreSaberArg = Regex.Match(p_ScoreSaberArg, @"\d+").Value;
-                if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
+                if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
                     UserController.AccountExist(p_ScoreSaberArg) && !UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
                 {
                     UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
@@ -88,7 +92,7 @@ namespace BSDiscordRanking.Discord.Modules
                 }
                 else if (!UserController.AccountExist(p_ScoreSaberArg))
                     await ReplyAsync("> :x: Sorry, but please enter a correct Scoresaber Link/ID.");
-                else if (!string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                else if (!IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                     await ReplyAsync(
                         $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
                 else if (UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
@@ -104,9 +108,10 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("unlink")]
+        [Summary("Unlinks your discord accounts from your ScoreSaber one.")]
         public async Task UnLinkUser(string p_DiscordID = "")
         {
-            if (!string.IsNullOrEmpty(p_DiscordID))
+            if (!IsNullOrEmpty(p_DiscordID))
             {
                 if (Context.User is SocketGuildUser l_User)
                 {
@@ -118,7 +123,7 @@ namespace BSDiscordRanking.Discord.Modules
             }
             else
             {
-                if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                 {
                     await ReplyAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
                 }
@@ -131,6 +136,8 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("scan")]
+        [Alias("dc")]
+        [Summary("Scans all your scores & passes. Also update your rank.")]
         public async Task Scan_Scores()
         {
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
@@ -162,6 +169,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("ggp")]
         [Alias("getgrindpool")]
+        [Summary("Shows the maps in a level.")]
         public async Task GetGrindPool(int p_Level = -1)
         {
             bool l_CheckForLastGGP = false;
@@ -372,6 +380,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("getplaylist")]
         [Alias("gpl")]
+        [Summary("Sends the desired Level's playlist file. Use `all` instead of the level id to get the whole level folder.")]
         public async Task GetPlaylist(string p_Level)
         {
             if (int.TryParse(p_Level, out _))
@@ -404,6 +413,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("profile")]
         [Alias("stats")]
+        [Summary("Sends your profile information (Level, passes etc).")]
         public async Task Profile()
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
@@ -447,6 +457,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("ping")]
+        [Summary("Shows the latency to Discord & ScoreSaber")]
         public async Task Ping()
         {
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -460,6 +471,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("leaderboard")]
         [Alias("ld")]
+        [Summary("Shows the leaderboard.")]
         public async Task Leaderboard(int p_Page = default)
         {
             bool l_PageExist = false;
@@ -504,36 +516,40 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("help")]
+        [Summary("Shows all the commands & their summaries.")]
         public async Task Help()
         {
             bool l_IsAdmin = false;
             if (Context.User is SocketGuildUser l_User)
-                if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.GetConfig().BotManagementRoleID))
-                    l_IsAdmin = true;
+                if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID)) l_IsAdmin = true;
 
-            EmbedBuilder l_Builder = new EmbedBuilder();
-            l_Builder.WithTitle("User Commands");
-            l_Builder.AddField(BotHandler.m_Prefix + "help", "This message.", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "link **[id]**", "Links your ScoreSaber account.", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "unlink", "Unlinks your ScoreSaber account", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "ggp *[level]*", "Display the maps to grind for the [level].", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "scan", "Scans all your latest scores.", true);
-            l_Builder.AddField(BotHandler.m_Prefix + "gpl *[level]*", "Send the playlist file. Use \"all\" to get playlist folder.", true);
-            if (!l_IsAdmin)
-                l_Builder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
-            l_Builder.WithColor(Color.Blue);
-            await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
 
-            if (l_IsAdmin)
+            int i = 0;
+            foreach (var l_Module in BotHandler.m_Commands.Modules)
             {
-                EmbedBuilder l_ModBuilder = new EmbedBuilder();
-                l_ModBuilder.WithTitle("Admins Commands");
-                l_ModBuilder.AddField(BotHandler.m_Prefix + "addmap [level] [key] [Standard/Lawless..] [ExpertPlus/Hard..]", "Add a map to a level", true);
-                l_ModBuilder.AddField(BotHandler.m_Prefix + "reset-config", "Reset the config file, **the bot will stop!**", true);
-                l_ModBuilder.AddField(BotHandler.m_Prefix + "unlink **[player]**", "TODO: Unlinks the ScoreSaber account of a player", true);
-                l_ModBuilder.WithColor(Color.Red);
-                l_ModBuilder.WithFooter("Bot made by Julien#1234 & Kuurama#3423");
-                await Context.Channel.SendMessageAsync("", false, l_ModBuilder.Build());
+                EmbedBuilder l_Builder = new EmbedBuilder();
+                l_Builder.WithTitle(l_Module.Name);
+                foreach (var l_Command in l_Module.Commands)
+                {
+                    string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_Command.Name;
+                    foreach (var l_Parameter in l_Command.Parameters)
+                    {
+                        l_Title += " [" + l_Parameter.Name.Replace("p_", "") + "]";
+                    }
+                    l_Builder.AddField(l_Title, l_Command.Summary, true);
+                    l_Builder.WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Julien#1234 & Kuurama#3423");
+                }
+                
+                if (l_Module.Name.Contains("Admin"))
+                {
+                    if (!l_IsAdmin)
+                        continue;
+                    l_Builder.WithColor(Color.Red);
+                    l_Builder.Footer = null;
+                }
+                
+                await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
+                i++;
             }
         }
     }
