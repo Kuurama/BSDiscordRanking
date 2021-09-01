@@ -608,7 +608,7 @@ namespace BSDiscordRanking
                                                                     if (!l_OldDiffExist)
                                                                     {
                                                                         /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y - 1}\n".Length)
+                                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}``*** in Level **{l_Y - 1}**\n".Length)
                                                                         {
                                                                             l_MessagesIndex++;
                                                                         }
@@ -618,7 +618,7 @@ namespace BSDiscordRanking
                                                                             l_Messages.Add(""); /// Initialize the next used index.
                                                                         }
 
-                                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y - 1}\n";
+                                                                        l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}``*** in Level **{l_Y - 1}**\n";
                                                                         l_Passes++;
                                                                         l_PassesPerLevel++;
                                                                         SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1); /// Mean the Player passed that level.
@@ -656,7 +656,7 @@ namespace BSDiscordRanking
 
                                                             if (!l_WasStored)
                                                             {
-                                                                if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y + 1}\n".Length)
+                                                                if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}``*** in Level **{l_Y + 1}**\n".Length)
                                                                 {
                                                                     l_MessagesIndex++;
                                                                 }
@@ -667,7 +667,7 @@ namespace BSDiscordRanking
                                                                 }
 
                                                                 /// Display new pass (new diff passed while there was already a passed diff) 2/2
-                                                                l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed {l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName} in Level {l_Y + 1}\n"; /// Display new pass 2/2
+                                                                l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_Difficulty.characteristic} - {l_Score.songName}``*** in Level **{l_Y + 1}**\n"; /// Display new pass 2/2
                                                                 l_Passes++;
                                                                 l_PassesPerLevel++;
                                                                 SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1); /// Mean the Player passed that level.

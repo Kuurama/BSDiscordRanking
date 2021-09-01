@@ -6,14 +6,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.VisualBasic;
 using static System.String;
 
 namespace BSDiscordRanking.Discord.Modules
@@ -22,7 +20,7 @@ namespace BSDiscordRanking.Discord.Modules
     public class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("getinfo")]
-        [Summary("Shows information about a map and its difficulties.")]
+        [Summary("Shows informations about available maps found.")]
         public async Task GetInfo(string p_Arg)
         {
             p_Arg = p_Arg.Replace("_", "");
@@ -77,7 +75,7 @@ namespace BSDiscordRanking.Discord.Modules
 
 
         [Command("link")]
-        [Summary("Links your Discord account to your ScoreSaber one.")]
+        [Summary("Links your Discord account to your ScoreSaber's one.")]
         public async Task LinkUser(string p_ScoreSaberArg = "")
         {
             if (!IsNullOrEmpty(p_ScoreSaberArg))
@@ -108,7 +106,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("unlink")]
-        [Summary("Unlinks your discord accounts from your ScoreSaber one.")]
+        [Summary("Unlinks your discord accounts from your ScoreSaber's one.")]
         public async Task UnLinkUser(string p_DiscordID = "")
         {
             if (!IsNullOrEmpty(p_DiscordID))
@@ -169,7 +167,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("ggp")]
         [Alias("getgrindpool")]
-        [Summary("Shows the maps in a level.")]
+        [Summary("Shows the Level's maps while displaying your passes, not giving a specific level will display the next available level you might want to grind.")]
         public async Task GetGrindPool(int p_Level = -1)
         {
             bool l_CheckForLastGGP = false;
@@ -413,7 +411,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("profile")]
         [Alias("stats")]
-        [Summary("Sends your profile information (Level, passes etc).")]
+        [Summary("Sends your profile's informations (Level, Passes, Trophies etc).")]
         public async Task Profile()
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
@@ -457,7 +455,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("ping")]
-        [Summary("Shows the latency to Discord & ScoreSaber")]
+        [Summary("Shows the latency from Discord & ScoreSaber")]
         public async Task Ping()
         {
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();

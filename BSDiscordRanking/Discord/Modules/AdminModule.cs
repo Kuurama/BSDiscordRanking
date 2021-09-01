@@ -16,7 +16,7 @@ namespace BSDiscordRanking.Discord.Modules
     {
         [Command("loggingchannel")]
         [Alias("logchannel")]
-        [Summary("Set this channel to send logs messages (Map Added/Deleted etc).")]
+        [Summary("Set this channel as a logs's message sending channel (Map Added/Deleted etc).")]
         public async Task SetChannel()
         {
             ConfigController.GetConfig();
@@ -27,7 +27,7 @@ namespace BSDiscordRanking.Discord.Modules
 
 
         [Command("addchannel")]
-        [Summary("Allows users to send commands it this channel.")]
+        [Summary("Allow the bot to answer player's commands in this channel.")]
         public async Task AddChannel()
         {
             ConfigController.m_ConfigFormat.AuthorizedChannels ??= new List<ulong>();
@@ -43,7 +43,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("removechannel")]
-        [Summary("Remove permission of users to send commands in this channel.")]
+        [Summary("Remove the bot's permission to answer player's commands in this channel.")]
         public async Task RemoveChannel()
         {
             foreach (var l_Channel in ConfigController.m_ConfigFormat.AuthorizedChannels.Where(l_Channel => Context.Message.Channel.Id == l_Channel))
@@ -56,21 +56,21 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("createroles")]
-        [Summary("Creates or updates level roles.")]
+        [Summary("Creates or updates level's roles. (discord roles)")]
         public async Task CreateRoles()
         {
             new RoleController().CreateAllRoles(Context, false);
         }
         
         [Command("allowuser")]
-        [Summary("Gives user the Ranked role (Lv.0).")]
+        [Summary("Gives user the matching Ranked role.")]
         public async Task AllowUser(ulong p_DiscordID)
         {
             UserController.GiveBSDRRole(p_DiscordID, Context);
         }
 
         [Command("addmap")]
-        [Summary("Adds or updates a map of a Level.")]
+        [Summary("Adds a map or updates it from a desired level.")]
         public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", int p_MinScoreRequirement = 0)
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
@@ -134,7 +134,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("removemap")]
-        [Summary("Remove a map from a level.")]
+        [Summary("Searches then removes a map difficulty from the levels.")]
         public async Task RemoveMap(string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
         {
             if (string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
@@ -192,7 +192,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("resetscorerequirement")]
-        [Summary("Sets all maps score requirement from a level to 0.")]
+        [Summary("Sets all maps's score requirement from a level to 0.")]
         public async Task ResetScoreRequirement(int p_Level)
         {
             if (p_Level >= 0)
