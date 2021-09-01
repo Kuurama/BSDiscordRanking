@@ -428,8 +428,11 @@ namespace BSDiscordRanking
                                         foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
                                         {
                                             if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                            {
                                                 l_DifficultyAlreadyExist = true;
-                                            l_InSongFormat = l_Difficulty;
+                                                l_InSongFormat = l_Difficulty;
+                                                break;
+                                            }
                                         }
 
                                         if (l_DifficultyAlreadyExist)

@@ -176,7 +176,7 @@ namespace BSDiscordRanking.Controllers
                 Level l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    if (p_Hash.ToUpper() == l_Map.hash)
+                    if (String.Equals(p_Hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase))
                     {
                         foreach (var l_Difficulty in l_Map.difficulties)
                         {

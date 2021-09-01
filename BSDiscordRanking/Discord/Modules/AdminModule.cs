@@ -151,7 +151,7 @@ namespace BSDiscordRanking.Discord.Modules
                     {
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
                         LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0);
-                        if (l_MapExistCheck.Level >= 0)
+                        if (l_MapExistCheck.MapExist)
                         {
                             Level l_Level = new Level(l_MapExistCheck.Level);
                             l_Level.RemoveMap(p_Code, p_Characteristic, p_DifficultyName, Context);
@@ -184,10 +184,11 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                     }
                     else
-                        await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+                        await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                        
                 }
                 else
-                    await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                    await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
             }
         }
 
