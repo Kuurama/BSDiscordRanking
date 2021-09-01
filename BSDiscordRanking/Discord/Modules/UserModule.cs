@@ -468,7 +468,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("leaderboard")]
-        [Alias("ld")]
+        [Alias("ld", "leaderboards")]
         [Summary("Shows the leaderboard.")]
         public async Task Leaderboard(int p_Page = default)
         {
