@@ -72,9 +72,9 @@ namespace BSDiscordRanking
                             m_Level = new LevelFormat()
                             {
                                 songs = new List<SongFormat>(),
-                                playlistTitle = new string(""),
-                                playlistAuthor = new string(""),
-                                playlistDescription = new string(""),
+                                playlistTitle = new string($"Lvl {m_LevelID}"),
+                                playlistAuthor = new string("Kuurama&Julien"),
+                                playlistDescription = new string("BSCC Playlist"),
                                 syncURL = null,
                                 image = new string(""),
                                 weighting = 0f
@@ -96,9 +96,9 @@ namespace BSDiscordRanking
                     m_Level = new LevelFormat()
                     {
                         songs = new List<SongFormat>(),
-                        playlistTitle = new string(""),
-                        playlistAuthor = new string(""),
-                        playlistDescription = new string(""),
+                        playlistTitle = new string($"Lvl {m_LevelID}"),
+                        playlistAuthor = new string("Kuurama&Julien"),
+                        playlistDescription = new string("BSCC Playlist"),
                         syncURL = null,
                         image = new string(""),
                         weighting = 0f

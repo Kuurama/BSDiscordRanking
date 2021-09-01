@@ -143,15 +143,15 @@ namespace BSDiscordRanking.Discord.Modules
                 if (l_FetchPass >= 1)
                     await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass} new maps!");
                 else
-                    await ReplyAsync($"> :x: Sorry, you didn't pass any new map.");
+                    await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
 
                 if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
                 {
-                    await ReplyAsync(
-                        $"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+                    await ReplyAsync($"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
                 }
-
+                await ReplyAsync("> :warning: The bot will pause for some time to adjust the player's role, please don't spam any command before seeing the confirmation message (about 20sec)");
                 UserController.UpdatePlayerLevel(Context);
+                await ReplyAsync($"> You can now type again ^^ (if your roles are incorrect => redo a {ConfigController.GetConfig().CommandPrefix[0]}!scan)");
             }
         }
 
