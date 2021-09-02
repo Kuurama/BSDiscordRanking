@@ -498,6 +498,7 @@ namespace BSDiscordRanking
                 float l_Points = 0;
                 int l_NumberOfDifficulties = 0;
                 int l_MessagesIndex = 0;
+                float l_weighting = 0f;
                 string l_DifficultyShown = "";
                 int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
                 Trophy l_Trophy = new Trophy();
@@ -545,6 +546,7 @@ namespace BSDiscordRanking
                 {
                     for (l_Y = 0; l_Y <= l_BiggerLevelID; l_Y++)
                     {
+                        l_weighting = 0f;
                         l_LevelExist = false;
                         foreach (var l_ID in l_ExistingLevelID)
                         {
@@ -557,7 +559,8 @@ namespace BSDiscordRanking
 
                         if (l_LevelExist)
                         {
-                            foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
+                            l_weighting = l_Levels[l_Y].m_Level.weighting;
+                                foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
                             {
                                 foreach (var l_Score in m_PlayerScore.scores)
                                 {
@@ -750,7 +753,7 @@ namespace BSDiscordRanking
 
                         SetGrindInfo(l_Y + 1, null, -1, l_Trophy, -1);
                         l_TotalAmountOfPass += l_PassesPerLevel;
-                        l_Points += (l_Y+1) * 4 * l_PassesPerLevel; /// Current RPL formula from BSCC (Level*4)
+                        l_Points += l_weighting * 0.375f * l_PassesPerLevel; /// Current RPL formula from BSCC
                         l_PassesPerLevel = 0;
                         l_NumberOfDifficulties = 0;
                     }

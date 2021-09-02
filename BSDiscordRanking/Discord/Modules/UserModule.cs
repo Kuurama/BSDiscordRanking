@@ -435,11 +435,16 @@ namespace BSDiscordRanking.Discord.Modules
                     l_Diamonds += l_Trophy.Diamond;
                 }
 
+                LeaderboardController l_LeaderboardController = new LeaderboardController();
+                int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => 
+                    p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
                 l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
                 l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
-                l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank);
+                l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
+                l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex+1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                 l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
                 l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
