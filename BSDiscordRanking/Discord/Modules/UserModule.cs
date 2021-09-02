@@ -133,17 +133,17 @@ namespace BSDiscordRanking.Discord.Modules
                 l_Player.FetchScores(Context);
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
-                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass.Result} new maps!");
+                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!profile`` command.");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
 
                 if (l_OldPlayerLevel != l_Player.GetPlayerLevel())
                 {
                     if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
-                        await ReplyAsync($"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}");
+                        await ReplyAsync($"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!ggp`` command.");
                     else
                         await ReplyAsync($"> :warning: You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
-                    await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while.");
+                    await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. The Bot should now be responsive again.");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context);
                 }
             }
@@ -458,18 +458,26 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
-        
+
         [Command("getstarted")]
-        [Summary("Displays informations about how you could use the bot.")]
+        [Summary("Displays informations about how you could get started using the bot.")]
         public async Task GetStarted()
         {
-            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-            l_EmbedBuilder.AddField("Discord: ", new Ping().Send("discord.com").RoundtripTime + "ms");
-            l_EmbedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
-            l_EmbedBuilder.WithFooter("#LoveArche",
-                "https://images.genius.com/d4b8905048993e652aba3d8e105b5dbf.1000x1000x1.jpg");
-            l_EmbedBuilder.WithColor(Color.Blue);
-            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+            var l_Builder = new EmbedBuilder()
+                .WithTitle("How to get started with the ranking bot? :thinking:")
+                .WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Kuurama#3423 & Julien#1234")
+                .AddField("Step 1", $"The first command you wanna use is the link command:\n```{ConfigController.GetConfig().CommandPrefix[0]}link [ScoreSaberLink]```")
+                .AddField("Step 2", "Once you account is linked, (that mean the bot registered your score saber ID on the database),\n" +
+                                    "You might want to scan your profile first:\n" +
+                                    "> Use the scan command to start the download of your scoresaber's infos/scores and check if you already passed maps from the different map pools:\n" +
+                                    $"```{ConfigController.GetConfig().CommandPrefix[0]}scan```")
+                .AddField("Oh that's it?", $"> Yes, but there is much more to discover!\n\nYou can try the help command to find new command to try!\n```{ConfigController.GetConfig().CommandPrefix[0]}help```")
+                .AddField("How to see the map pools?", $"To see the map pool you are at:\n```{ConfigController.GetConfig().CommandPrefix[0]}ggp``` \nor by adding a pool number:\n```{ConfigController.GetConfig().CommandPrefix[0]}ggp [PoolNumber]```to see a specific pool.", true)
+                .AddField("How do i get the maps?", $"To get a specific playlist's pool:\n```{ConfigController.GetConfig().CommandPrefix[0]}gpl [MapPoolNumber]```\n(stand for getplaylist) or even:```{ConfigController.GetConfig().CommandPrefix[0]}gpl all``` to get all the playlist pools!", true)
+                .AddField("About the 'ranking'?", $"There is a leaderboard using the ``{ConfigController.GetConfig().CommandPrefix[0]}ld`` command!\nEach pass you do give you ``RPL``, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
+                .AddField("How do i look at my profile?", $"```{ConfigController.GetConfig().CommandPrefix[0]}profile```");
+            var l_Embed = l_Builder.Build();
+            await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
         }
 
         [Command("leaderboard")]

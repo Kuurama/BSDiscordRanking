@@ -237,7 +237,7 @@ namespace BSDiscordRanking
             {
                 if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while!");
+                    p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot may be unresponsive during the process.");
                     if (m_HavePlayerInfo) /// Check if Player have Player's Info
                     {
                         if (m_PlayerScore != null)

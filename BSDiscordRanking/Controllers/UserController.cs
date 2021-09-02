@@ -114,7 +114,7 @@ namespace BSDiscordRanking.Controllers
             await p_Context.Channel.SendMessageAsync($"> :white_check_mark: Your roles are now updated.");
         }
 
-        public static bool GiveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context)
+        public static bool GiveRemoveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context, bool p_Remove)
         {
             foreach (var l_Role in RoleController.ReadRolesDB().Roles)
             {
@@ -131,11 +131,15 @@ namespace BSDiscordRanking.Controllers
                                 {
                                     if (l_UserRole.Id == l_Role.RoleID)
                                     {
-                                        return false;
+                                        if (p_Remove)
+                                            l_User.RemoveRoleAsync(l_GuildRole);
+                                        else
+                                            return false;
                                     }
                                 }
 
-                                l_User.AddRoleAsync(l_GuildRole);
+                                if (!p_Remove)
+                                    l_User.AddRoleAsync(l_GuildRole);
                             }
                             else
                             {

@@ -66,16 +66,30 @@ namespace BSDiscordRanking.Discord.Modules
         [Summary("Gives user the matching Ranked role.")]
         public async Task AllowUser(ulong p_DiscordID)
         {
-            if (UserController.GiveBSDRRole(p_DiscordID, Context))
+            if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context,false))
             {
-                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to check the pins for answers, use the {ConfigController.GetConfig().CommandPrefix[0]}!getstarted command to get started.");
+                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to check the pins for answers, use the ``{ConfigController.GetConfig().CommandPrefix[0]}!getstarted`` command to get started.\nps: if you don't like being here you can still ask to be removed.");
             }
             else
             {
-                await ReplyAsync($"This player can't be found/already have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role");
+                await ReplyAsync($"This player can't be found/already have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role.");
             }
         }
-
+        
+        [Command("rejectuser")]
+        [Summary("Removes user it's matching Ranked role.")]
+        public async Task RemoveUser(ulong p_DiscordID)
+        {
+            if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context, true))
+            {
+                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role removed from user <@{p_DiscordID}>.");
+            }
+            else
+            {
+                await ReplyAsync($"This player can't be found/do not have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role.");
+            }
+        }
+        
         [Command("addmap")]
         [Summary("Adds a map or updates it from a desired level.")]
         public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", int p_MinScoreRequirement = 0)
