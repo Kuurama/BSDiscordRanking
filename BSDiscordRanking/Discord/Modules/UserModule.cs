@@ -78,7 +78,10 @@ namespace BSDiscordRanking.Discord.Modules
         [Summary("Links your Discord account to your ScoreSaber's one.")]
         public async Task LinkUser(string p_ScoreSaberArg = "")
         {
-            if (!IsNullOrEmpty(p_ScoreSaberArg))
+            if (!IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                await ReplyAsync(
+                    $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
+            else if (!IsNullOrEmpty(p_ScoreSaberArg))
             {
                 p_ScoreSaberArg = Regex.Match(p_ScoreSaberArg, @"\d+").Value;
                 if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
@@ -90,9 +93,6 @@ namespace BSDiscordRanking.Discord.Modules
                 }
                 else if (!UserController.AccountExist(p_ScoreSaberArg))
                     await ReplyAsync("> :x: Sorry, but please enter a correct Scoresaber Link/ID.");
-                else if (!IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
-                    await ReplyAsync(
-                        $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
                 else if (UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
                 {
                     await ReplyAsync(
@@ -159,9 +159,7 @@ namespace BSDiscordRanking.Discord.Modules
                         await ReplyAsync($"> :warning: You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
                     await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while.");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context);
-
                 }
-                
             }
         }
 
@@ -436,14 +434,17 @@ namespace BSDiscordRanking.Discord.Modules
                 }
 
                 LeaderboardController l_LeaderboardController = new LeaderboardController();
-                int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => 
+                int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
                     p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
                 EmbedBuilder l_EmbedBuilder = new();
                 l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
                 l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
                 l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
-                l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex+1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
+                if (l_FindIndex == -1)
+                    l_EmbedBuilder.AddField("Server Rank", ":medal: #0 - 0 RPL", true);
+                else
+                    l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                 l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
                 l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
@@ -524,7 +525,8 @@ namespace BSDiscordRanking.Discord.Modules
         {
             bool l_IsAdmin = false;
             if (Context.User is SocketGuildUser l_User)
-                if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID)) l_IsAdmin = true;
+                if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID))
+                    l_IsAdmin = true;
 
 
             int i = 0;
@@ -539,10 +541,11 @@ namespace BSDiscordRanking.Discord.Modules
                     {
                         l_Title += " [" + l_Parameter.Name.Replace("p_", "") + "]";
                     }
+
                     l_Builder.AddField(l_Title, l_Command.Summary, true);
                     l_Builder.WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Julien#1234 & Kuurama#3423");
                 }
-                
+
                 if (l_Module.Name.Contains("Admin"))
                 {
                     if (!l_IsAdmin)
@@ -550,7 +553,7 @@ namespace BSDiscordRanking.Discord.Modules
                     l_Builder.WithColor(Color.Red);
                     l_Builder.Footer = null;
                 }
-                
+
                 await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
                 i++;
             }
