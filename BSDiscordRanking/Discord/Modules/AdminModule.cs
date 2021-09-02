@@ -66,7 +66,14 @@ namespace BSDiscordRanking.Discord.Modules
         [Summary("Gives user the matching Ranked role.")]
         public async Task AllowUser(ulong p_DiscordID)
         {
-            UserController.GiveBSDRRole(p_DiscordID, Context);
+            if (UserController.GiveBSDRRole(p_DiscordID, Context))
+            {
+                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to check the pins for answers, use the {ConfigController.GetConfig().CommandPrefix[0]}!getstarted command to get started.");
+            }
+            else
+            {
+                await ReplyAsync($"This player can't be found/already have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role");
+            }
         }
 
         [Command("addmap")]
@@ -189,6 +196,35 @@ namespace BSDiscordRanking.Discord.Modules
                 }
                 else
                     await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+            }
+        }
+        
+        [Command("unlink")]
+        [Summary("Unlinks your discord accounts from your ScoreSaber's one.")]
+        public async Task UnLinkUser(string p_DiscordID = "")
+        {
+            if (!String.IsNullOrEmpty(p_DiscordID))
+            {
+                if (Context.User is SocketGuildUser l_User)
+                {
+                    if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.GetConfig().BotManagementRoleID))
+                    {
+                        UserController.RemovePlayer(p_DiscordID);
+                        await ReplyAsync($"> :white_check_mark: Player <@{p_DiscordID}> was successfully unlinked!");
+                    }
+                }
+            }
+            else
+            {
+                if (String.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                {
+                    await ReplyAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                }
+                else
+                {
+                    UserController.RemovePlayer(Context.User.Id.ToString());
+                    await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
+                }
             }
         }
 

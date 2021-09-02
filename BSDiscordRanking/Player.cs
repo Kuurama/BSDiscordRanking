@@ -613,7 +613,7 @@ namespace BSDiscordRanking
                                                                     {
                                                                         l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
                                                                         /// Display new pass (new diff passed while there was already a passed diff) 1/2
-                                                                        if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`",@"\`").Replace("*",@"\*")}``*** in Level **{l_Y - 1}**\n".Length)
+                                                                        if (l_Messages[l_MessagesIndex].Length > 1900 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`",@"\`").Replace("*",@"\*")}``*** in Level **{l_Y - 1}**\n".Length)
                                                                         {
                                                                             l_MessagesIndex++;
                                                                         }
@@ -662,7 +662,7 @@ namespace BSDiscordRanking
                                                             if (!l_WasStored)
                                                             {
                                                                 l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
-                                                                if (l_Messages[l_MessagesIndex].Length > 2000 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`",@"\`").Replace("*",@"\*")}``*** in Level **{l_Y + 1}**\n".Length)
+                                                                if (l_Messages[l_MessagesIndex].Length > 1900 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`",@"\`").Replace("*",@"\*")}``*** in Level **{l_Y + 1}**\n".Length)
                                                                 {
                                                                     l_MessagesIndex++;
                                                                 }

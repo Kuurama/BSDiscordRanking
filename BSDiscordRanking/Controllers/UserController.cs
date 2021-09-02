@@ -110,10 +110,11 @@ namespace BSDiscordRanking.Controllers
                     Thread.Sleep(60); // Discord API limit
                 }
             }
+
             await p_Context.Channel.SendMessageAsync($"> :white_check_mark: Your roles are now updated.");
         }
 
-        public static void GiveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context)
+        public static bool GiveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context)
         {
             foreach (var l_Role in RoleController.ReadRolesDB().Roles)
             {
@@ -125,18 +126,30 @@ namespace BSDiscordRanking.Controllers
                         {
                             var l_User = p_Context.Guild.GetUser(p_DiscordID);
                             if (l_User != null)
+                            {
+                                foreach (var l_UserRole in l_User.Roles)
+                                {
+                                    if (l_UserRole.Id == l_Role.RoleID)
+                                    {
+                                        return false;
+                                    }
+                                }
+
                                 l_User.AddRoleAsync(l_GuildRole);
+                            }
                             else
                             {
                                 Console.WriteLine("Can't find this user, make him type a message straight before using the command!");
-                                return;
+                                return false;
                             }
 
-                            Console.WriteLine($"'{GetConfig().RolePrefix} Ranked' Role added!");
+                            return true;
                         }
                     }
                 }
             }
+
+            return false;
         }
 
 

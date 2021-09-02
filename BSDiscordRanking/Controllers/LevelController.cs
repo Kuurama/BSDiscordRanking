@@ -174,6 +174,7 @@ namespace BSDiscordRanking.Controllers
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
+                Console.WriteLine(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
                     if (String.Equals(p_Hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase))
@@ -187,11 +188,9 @@ namespace BSDiscordRanking.Controllers
                                 if (l_Difficulty.minScoreRequirement != p_MinScoreRequirement)
                                     l_MapExistFormat.DifferentMinScore = true;
                                 l_MapExistFormat.Level = l_LevelID;
-                                break;
+                                return l_MapExistFormat;
                             }
                         }
-
-                        return l_MapExistFormat;
                     }
                 }
             }

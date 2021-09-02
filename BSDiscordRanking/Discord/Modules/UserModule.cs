@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -21,10 +20,10 @@ namespace BSDiscordRanking.Discord.Modules
     {
         [Command("getinfo")]
         [Summary("Shows informations about available maps found.")]
-        public async Task GetInfo(string p_Arg)
+        public async Task GetInfo(string p_SearchArg)
         {
-            p_Arg = p_Arg.Replace("_", "");
-            if (p_Arg.Length < 3)
+            p_SearchArg = p_SearchArg.Replace("_", "");
+            if (p_SearchArg.Length < 3)
             {
                 await ReplyAsync("> :x: Sorry, the minimum for searching a map is 3 characters (excluding '_').");
                 return;
@@ -37,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules
                 var l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    if (l_Map.name.Replace(" ", "").Replace("_", "").Contains(p_Arg, StringComparison.OrdinalIgnoreCase))
+                    if (l_Map.name.Replace(" ", "").Replace("_", "").Contains(p_SearchArg, StringComparison.OrdinalIgnoreCase))
                     {
                         l_Maps.Add(new Tuple<SongFormat, int>(l_Map, l_LevelID));
                     }
@@ -76,24 +75,24 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("link")]
         [Summary("Links your Discord account to your ScoreSaber's one.")]
-        public async Task LinkUser(string p_ScoreSaberArg = "")
+        public async Task LinkUser(string p_ScoreSaberLink = "")
         {
             if (!IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                 await ReplyAsync(
                     $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
-            else if (!IsNullOrEmpty(p_ScoreSaberArg))
+            else if (!IsNullOrEmpty(p_ScoreSaberLink))
             {
-                p_ScoreSaberArg = Regex.Match(p_ScoreSaberArg, @"\d+").Value;
+                p_ScoreSaberLink = Regex.Match(p_ScoreSaberLink, @"\d+").Value;
                 if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
-                    UserController.AccountExist(p_ScoreSaberArg) && !UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
+                    UserController.AccountExist(p_ScoreSaberLink) && !UserController.SSIsAlreadyLinked(p_ScoreSaberLink))
                 {
-                    UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberArg);
+                    UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberLink);
                     await ReplyAsync(
                         $"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
                 }
-                else if (!UserController.AccountExist(p_ScoreSaberArg))
+                else if (!UserController.AccountExist(p_ScoreSaberLink))
                     await ReplyAsync("> :x: Sorry, but please enter a correct Scoresaber Link/ID.");
-                else if (UserController.SSIsAlreadyLinked(p_ScoreSaberArg))
+                else if (UserController.SSIsAlreadyLinked(p_ScoreSaberLink))
                 {
                     await ReplyAsync(
                         $"> :x: Sorry but this account is already linked to an other user.\nIf you entered the correct id and you didn't linked it on an other discord account\nPlease Contact an administrator.");
@@ -107,29 +106,16 @@ namespace BSDiscordRanking.Discord.Modules
 
         [Command("unlink")]
         [Summary("Unlinks your discord accounts from your ScoreSaber's one.")]
-        public async Task UnLinkUser(string p_DiscordID = "")
+        public async Task UnLinkUser()
         {
-            if (!IsNullOrEmpty(p_DiscordID))
+            if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
             {
-                if (Context.User is SocketGuildUser l_User)
-                {
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.GetConfig().BotManagementRoleID))
-                    {
-                        UserController.RemovePlayer(p_DiscordID);
-                    }
-                }
+                await ReplyAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
             }
             else
             {
-                if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
-                {
-                    await ReplyAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
-                }
-                else
-                {
-                    UserController.RemovePlayer(Context.User.Id.ToString());
-                    await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
-                }
+                UserController.RemovePlayer(Context.User.Id.ToString());
+                await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
             }
         }
 
@@ -472,6 +458,19 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
+        
+        [Command("getstarted")]
+        [Summary("Displays informations about how you could use the bot.")]
+        public async Task GetStarted()
+        {
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            l_EmbedBuilder.AddField("Discord: ", new Ping().Send("discord.com").RoundtripTime + "ms");
+            l_EmbedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
+            l_EmbedBuilder.WithFooter("#LoveArche",
+                "https://images.genius.com/d4b8905048993e652aba3d8e105b5dbf.1000x1000x1.jpg");
+            l_EmbedBuilder.WithColor(Color.Blue);
+            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+        }
 
         [Command("leaderboard")]
         [Alias("ld", "leaderboards")]
@@ -543,7 +542,7 @@ namespace BSDiscordRanking.Discord.Modules
                     }
 
                     l_Builder.AddField(l_Title, l_Command.Summary, true);
-                    l_Builder.WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Julien#1234 & Kuurama#3423");
+                    l_Builder.WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Kuurama#3423 & Julien#1234");
                 }
 
                 if (l_Module.Name.Contains("Admin"))
