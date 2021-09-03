@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
@@ -267,7 +268,18 @@ namespace BSDiscordRanking
                         bool l_ScoreRequirementEdit = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name };
+                            StringBuilder l_SBMapName = new StringBuilder(m_BeatSaver.name);
+                            string l_NewMapName = m_BeatSaver.name;
+                            do
+                            {
+                                if (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0])
+                                    l_SBMapName.Remove(l_NewMapName.Length-1, 1);
+                                if (l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0])
+                                    l_SBMapName.Remove(0, 1);
+                                l_NewMapName = l_SBMapName.ToString();
+                            } while (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0] || l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0]);
+
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, name = l_NewMapName };
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
