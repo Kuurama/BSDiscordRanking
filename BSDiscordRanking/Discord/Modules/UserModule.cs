@@ -458,6 +458,13 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
+        
+        [Command("progress")]
+        [Summary("Sends our Trello's link.")]
+        public async Task SendTrello()
+        {
+            await Context.Channel.SendMessageAsync("Here is our Trello : https://trello.com/b/L3YNfpU1/bsdr-management\nTo suggest changes, please write them in the suggestions channel.", false);
+        }
 
         [Command("getstarted")]
         [Summary("Displays informations about how you could get started using the bot.")]
