@@ -68,7 +68,7 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context,false))
             {
-                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to check the pins for answers, use the ``{ConfigController.GetConfig().CommandPrefix[0]}!getstarted`` command to get started.\nps: if you don't like being here you can still ask to be removed.");
+                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to check the pins for answers, use the ``{ConfigController.GetConfig().CommandPrefix[0]}getstarted`` command to get started.\nps: if you don't like being here you can still ask to be removed.");
             }
             else
             {
