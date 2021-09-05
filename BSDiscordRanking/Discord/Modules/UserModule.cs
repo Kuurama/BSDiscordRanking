@@ -127,7 +127,7 @@ namespace BSDiscordRanking.Discord.Modules
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             int l_OldPlayerLevel = l_Player.GetPlayerLevel();
             if (!UserController.UserExist(Context.User.Id.ToString()))
-                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
             else
             {
                 l_Player.FetchScores(Context);
@@ -400,7 +400,7 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
             {
-                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
             }
             else
             {
@@ -458,12 +458,211 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
-        
-        [Command("progress")]
+
+        [Command("trello")]
         [Summary("Sends our Trello's link.")]
         public async Task SendTrello()
         {
             await Context.Channel.SendMessageAsync("Here is our Trello : https://trello.com/b/L3YNfpU1/bsdr-management\nTo suggest changes, please write them in the suggestions channel.", false);
+        }
+
+        private string GenerateProgressBar(int p_Value, int p_MaxValue, int p_Size)
+        {
+            float l_Percentage = (float)p_Value / p_MaxValue;
+            int l_Progress = (int)Math.Round(p_Size * l_Percentage);
+            int l_EmptyProgress = p_Size - l_Progress;
+            string l_ProgressText = "";
+            for (int l_I = 0; l_I < l_Progress; l_I++)
+            {
+                l_ProgressText += "▇";
+            }
+
+            for (int l_I = 0; l_I < l_EmptyProgress; l_I++)
+            {
+                l_ProgressText += "—";
+            }
+
+            return $"[{l_ProgressText}]";
+        }
+
+        [Command("progress")]
+        [Summary("Shows your progress on a specific map pools.")]
+        public async Task Progress(string p_LevelID)
+        {
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+            {
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+            }
+            else
+            {
+                int l_LevelID;
+                try
+                {
+                    if (p_LevelID == null)
+                    {
+                        await Context.Channel.SendMessageAsync($"Please enter a Level number: ``{ConfigController.GetConfig().CommandPrefix[0]}progress <Level>``");
+                        return;
+                    }
+
+                    l_LevelID = int.Parse(p_LevelID);
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync($"Please enter a correct Level Number: ``{ConfigController.GetConfig().CommandPrefix[0]}progress <Level>``");
+                    return;
+                }
+
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                PlayerPassPerLevelFormat l_PlayerPassPerLevel = l_Player.GetPlayerPassPerLevel();
+                if (l_PlayerPassPerLevel == null)
+                {
+                    Console.WriteLine($"Player {UserController.GetPlayer(Context.User.Id.ToString())} : l_PlayerPassPerLevel is null");
+                }
+                else
+                {
+                    foreach (var l_PerLevelFormat in l_PlayerPassPerLevel.Levels)
+                    {
+                        if (l_LevelID == l_PerLevelFormat.LevelID)
+                        {
+                            if (l_PerLevelFormat.NumberOfMapDiffInLevel == 0)
+                            {
+                                await Context.Channel.SendMessageAsync($"Sorry but the level {l_PerLevelFormat.LevelID} doesn't contain any map.");
+                                return;
+                            }
+
+                            var l_Builder = new EmbedBuilder()
+                                .AddField("Pool", $"Level {l_PerLevelFormat.LevelID}", true)
+                                .AddField("Progress Bar", GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10), true)
+                                .AddField("Progress Amount", $"{Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
+                            var l_Embed = l_Builder.Build();
+                            await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                            return;
+                        }
+                    }
+
+                    await Context.Channel.SendMessageAsync($"Sorry but the level {p_LevelID} doesn't exist.");
+                }
+            }
+        }
+
+        [Command("progress")]
+        [Summary("Shows your progress through the map pools.")]
+        public async Task Progress()
+        {
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+            {
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+            }
+            else
+            {
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                PlayerPassPerLevelFormat l_PlayerPassPerLevel = l_Player.GetPlayerPassPerLevel();
+
+                if (l_PlayerPassPerLevel == null)
+                {
+                    Console.WriteLine($"Player {UserController.GetPlayer(Context.User.Id.ToString())} : l_PlayerPassPerLevel is null");
+                    return;
+                }
+                else
+                {
+                    int l_MessagesIndex = 0;
+                    List<string> l_Messages = new List<string> { "" };
+                    if (l_PlayerPassPerLevel.Levels != null)
+                    {
+                        var l_Builder = new EmbedBuilder()
+                            .WithTitle($"{l_Player.m_PlayerFull.playerInfo.playerName}'s Progress Tracker")
+                            .WithDescription("Here is your current progress through the map pools:")
+                            .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                        foreach (var l_PerLevelFormat in l_PlayerPassPerLevel.Levels)
+                        {
+                            if (l_PerLevelFormat.NumberOfMapDiffInLevel > 0)
+                            {
+                                if (l_Messages[l_MessagesIndex].Length >
+                                    900 -
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
+                                        .Length)
+                                {
+                                    l_MessagesIndex++;
+                                }
+
+                                if (l_Messages.Count < l_MessagesIndex + 1)
+                                {
+                                    l_Messages.Add(""); /// Initialize the next used index.
+                                }
+
+                                l_Messages[l_MessagesIndex] +=
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
+                                    Environment.NewLine;
+                            }
+                        }
+
+                        foreach (var l_Message in l_Messages)
+                        {
+                            l_Builder.AddField("\u200B", l_Message);
+                        }
+
+                        await Context.Channel.SendMessageAsync(null, embed: l_Builder.Build()).ConfigureAwait(false);
+                    }
+                }
+            }
+        }
+
+        [Command("trophy")]
+        [Summary("Shows your trophy on a Level.")]
+        public async Task ShowTrophy(string p_LevelID = null)
+        {
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+            {
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+            }
+            else
+            {
+                int l_LevelID;
+                try
+                {
+                    if (p_LevelID == null)
+                    {
+                        await Context.Channel.SendMessageAsync($"Please enter a Level number: ``{ConfigController.GetConfig().CommandPrefix[0]}trophy <Level>``");
+                        return;
+                    }
+
+                    l_LevelID = int.Parse(p_LevelID);
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync($"Please enter a correct Level Number: ``{ConfigController.GetConfig().CommandPrefix[0]}trophy <Level>``");
+                    return;
+                }
+
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                PlayerPassPerLevelFormat l_PlayerPassPerLevel = l_Player.GetPlayerPassPerLevel();
+                if (l_PlayerPassPerLevel == null)
+                {
+                    Console.WriteLine($"Player {UserController.GetPlayer(Context.User.Id.ToString())} : l_PlayerPassPerLevel is null");
+                }
+                else
+                {
+                    foreach (var l_PerLevelFormat in l_PlayerPassPerLevel.Levels)
+                    {
+                        if (l_LevelID == l_PerLevelFormat.LevelID)
+                        {
+                            if (l_PerLevelFormat.NumberOfMapDiffInLevel == 0)
+                            {
+                                await Context.Channel.SendMessageAsync($"Sorry but the level {l_PerLevelFormat.LevelID} doesn't contain any map.");
+                                return;
+                            }
+
+                            var l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {l_PerLevelFormat.TrophyString}",
+                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
+                            var l_Embed = l_Builder.Build();
+                            await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                            return;
+                        }
+                    }
+
+                    await Context.Channel.SendMessageAsync($"Sorry but the level {p_LevelID} doesn't exist.");
+                }
+            }
         }
 
         [Command("getstarted")]
@@ -480,8 +679,11 @@ namespace BSDiscordRanking.Discord.Modules
                                     $"```{ConfigController.GetConfig().CommandPrefix[0]}scan```")
                 .AddField("Oh that's it?", $"> Yes, but there is much more to discover!\n\nYou can try the help command to find new command to try!\n```{ConfigController.GetConfig().CommandPrefix[0]}help```")
                 .AddField("How to see the map pools?", $"To see the map pool you are at:\n```{ConfigController.GetConfig().CommandPrefix[0]}ggp``` \nor by adding a pool number:\n```{ConfigController.GetConfig().CommandPrefix[0]}ggp [PoolNumber]```to see a specific pool.", true)
-                .AddField("How do i get the maps?", $"To get a specific playlist's pool:\n```{ConfigController.GetConfig().CommandPrefix[0]}gpl [MapPoolNumber]```\n(stand for getplaylist) or even:```{ConfigController.GetConfig().CommandPrefix[0]}gpl all``` to get all the playlist pools! The playlist you get are always up to date.", true)
-                .AddField("About the 'ranking'?", $"There is a leaderboard using the ``{ConfigController.GetConfig().CommandPrefix[0]}ld`` command! (or use ``{ConfigController.GetConfig().CommandPrefix[0]}!leaderboard``)\nEach pass you do give you ``RPL``, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
+                .AddField("How do i get the maps?",
+                    $"To get a specific playlist's pool:\n```{ConfigController.GetConfig().CommandPrefix[0]}gpl [MapPoolNumber]```\n(stand for getplaylist) or even:```{ConfigController.GetConfig().CommandPrefix[0]}gpl all``` to get all the playlist pools! The playlist you get are always up to date.",
+                    true)
+                .AddField("About the 'ranking'?",
+                    $"There is a leaderboard using the ``{ConfigController.GetConfig().CommandPrefix[0]}ld`` command! (or use ``{ConfigController.GetConfig().CommandPrefix[0]}!leaderboard``)\nEach pass you do give you ``RPL``, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
                 .AddField("How do i look at my profile?", $"```{ConfigController.GetConfig().CommandPrefix[0]}profile```");
             var l_Embed = l_Builder.Build();
             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);

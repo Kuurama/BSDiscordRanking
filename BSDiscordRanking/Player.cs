@@ -505,7 +505,7 @@ namespace BSDiscordRanking
                 List<string> l_Messages = new List<string> { "" };
                 List<int> l_ExistingLevelID = new List<int>();
                 int l_BiggerLevelID = 0;
-                new LevelController().FetchLevel();
+                var l_LevelController = new LevelController(); /// Constructor make levelcontroller FetchLevel()
                 LoadLevelControllerCache();
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
                 m_PlayerPass = new PlayerPassFormat
@@ -1059,6 +1059,141 @@ namespace BSDiscordRanking
                     songs = new List<SongFormat>()
                 };
             }
+        }
+
+        public PlayerPassPerLevelFormat GetPlayerPassPerLevel()
+        {
+            PlayerPassPerLevelFormat l_PlayerPassPerLevelFormat = new PlayerPassPerLevelFormat()
+            {
+                Levels = new List<InPassPerLevelFormat>()
+            };
+            List<int> l_ExistingLevelID = new List<int>();
+            int l_BiggerLevelID = 0;
+            var l_LevelController = new LevelController(); /// Constructor make levelcontroller FetchLevel()
+            LoadLevelControllerCache();
+            PlayerPassFormat l_OldPlayerPass = ReturnPass();
+            List<Level> l_Levels = new List<Level>();
+            foreach (var l_LevelID in m_LevelController.LevelID)
+            {
+                l_ExistingLevelID.Add(l_LevelID); /// List of the current existing levels ID
+                if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
+            }
+
+            bool l_LevelExist;
+            for (int l_I = 0; l_I < l_BiggerLevelID; l_I++)
+            {
+                l_LevelExist = false;
+                foreach (var l_ID in l_ExistingLevelID)
+                {
+                    if (l_ID - 1 == l_I)
+                        l_LevelExist = true;
+                }
+
+                if (l_LevelExist)
+                {
+                    l_Levels.Add(new Level(l_I + 1));
+                }
+                else
+                {
+                    l_Levels.Add(null);
+                }
+            }
+
+            for (int l_Y = 0; l_Y <= l_BiggerLevelID; l_Y++)
+            {
+                l_LevelExist = false;
+                foreach (var l_ID in l_ExistingLevelID)
+                {
+                    if (l_ID - 1 == l_Y)
+                    {
+                        l_LevelExist = true;
+                        break;
+                    }
+                }
+
+                if (!l_LevelExist)
+                    continue;
+                
+                int l_NumberOfPass = 0;
+                int l_NumberOfMapDiffInLevel = 0;
+                int l_Plastic = 0;
+                int l_Silver = 0;
+                int l_Gold = 0;
+                int l_Diamond = 0;
+                string l_TrophyString = "";
+                foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
+                {
+                    if (l_Song.difficulties != null)
+                    {
+                        foreach (var l_Difficulty in l_Song.difficulties)
+                        {
+                            l_NumberOfMapDiffInLevel++;
+                        }
+                    }
+                    foreach (var l_OldPlayerScore in l_OldPlayerPass.songs)
+                    {
+                        if (String.Equals(l_Song.hash, l_OldPlayerScore.hash, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            if (l_Song.difficulties != null && l_OldPlayerScore.difficulties != null)
+                            {
+                                foreach (var l_Difficulty in l_Song.difficulties)
+                                {
+                                    foreach (var l_OldPlayerScoreDiff in l_OldPlayerScore.difficulties)
+                                    {
+                                        if (l_Difficulty.characteristic == l_OldPlayerScoreDiff.characteristic && l_Difficulty.name == l_OldPlayerScoreDiff.name)
+                                        {
+                                            l_NumberOfPass++;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // ReSharper disable once IntDivisionByZero
+                if (l_NumberOfMapDiffInLevel != 0)
+                {
+                    switch (l_NumberOfPass * 100 / l_NumberOfMapDiffInLevel)
+                    {
+                        case 0:
+                        {
+                            l_TrophyString = "";
+                            break;
+                        }
+                        case <= 39:
+                        {
+                            l_Plastic = 1;
+                            break;
+                        }
+                        case <= 69:
+                        {
+                            l_Silver = 1;
+                            l_TrophyString = "<:silver:874215133197500446>";
+                            break;
+                        }
+                        case <= 99:
+                        {
+                            l_Gold = 1;
+                            l_TrophyString = "<:gold:874215133147197460>";
+                            break;
+                        }
+
+                        case 100:
+                        {
+                            l_Diamond = 1;
+                            l_TrophyString = "<:diamond:874215133289795584>";
+                            break;
+                        }
+                    }
+                }
+                l_PlayerPassPerLevelFormat.Levels.Add(new InPassPerLevelFormat{LevelID = l_Y+1, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy{Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond}, TrophyString = l_TrophyString});
+            }
+
+            if (l_PlayerPassPerLevelFormat.Levels == null)
+                return null;
+
+            return l_PlayerPassPerLevelFormat;
         }
 
         public void SetGrindInfo(int p_LevelID, List<bool> p_Passed, int p_NumberOfPass, Trophy p_Trophy, float p_Points)

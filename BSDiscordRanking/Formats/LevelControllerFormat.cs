@@ -6,4 +6,5 @@ namespace BSDiscordRanking.Formats
     {
         public List<int> LevelID { get; set; }
     }
+    
 }
