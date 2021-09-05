@@ -625,7 +625,7 @@ namespace BSDiscordRanking
                                                                     if (m_PlayerStats.IsFirstScan <= 0)
                                                                     {
                                                                         if (l_Messages[l_MessagesIndex].Length +
-                                                                            $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y - 1}** (+{l_Weighting * 0.375f} RPL)\n".Length
+                                                                            $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y - 1}** (+{l_Weighting * 0.375f} RPL)\n".Length
                                                                             > 1900)
                                                                         {
                                                                             l_MessagesIndex++;
@@ -639,7 +639,7 @@ namespace BSDiscordRanking
                                                                         /// Display new pass (new diff passed while there was already a passed diff) 1/2
 
                                                                         l_Messages[l_MessagesIndex] +=
-                                                                            $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y - 1}** (+{l_Weighting * 0.375f} RPL)\n";
+                                                                            $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y - 1}** (+{l_Weighting * 0.375f} RPL)\n";
                                                                     }
 
                                                                     l_Passes++;
@@ -683,7 +683,7 @@ namespace BSDiscordRanking
                                                             if (m_PlayerStats.IsFirstScan <= 0)
                                                             {
                                                                 if (l_Messages[l_MessagesIndex].Length >
-                                                                    1900 - $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y + 1}** (+{l_Weighting * 0.375f} RPL)\n".Length)
+                                                                    1900 - $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y + 1}** (+{l_Weighting * 0.375f} RPL)\n".Length)
                                                                 {
                                                                     l_MessagesIndex++;
                                                                 }
@@ -696,7 +696,7 @@ namespace BSDiscordRanking
                                                                 /// Display new pass (new diff passed while there was already a passed diff) 2/2
 
                                                                 l_Messages[l_MessagesIndex] +=
-                                                                    $"<:clap:868195856560582707> Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y + 1}** (+{l_Weighting * 0.375f} RPL)\n"; /// Display new pass 2/2
+                                                                    $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y + 1}** (+{l_Weighting * 0.375f} RPL)\n"; /// Display new pass 2/2
                                                             }
 
                                                             l_Passes++;
@@ -782,7 +782,7 @@ namespace BSDiscordRanking
 
                             /// Display new pass (new diff passed while there was already a passed diff) 2/2
 
-                            l_Messages[l_MessagesIndex] += $"<:clap:868195856560582707> You passed ``{l_PassesPerLevel}/{l_NumberOfDifficulties}`` maps in Level **{l_Y + 1}** (+{l_Weighting * 0.375f * l_PassesPerLevel} RPL)\n";
+                            l_Messages[l_MessagesIndex] += $":white_check_mark: You passed ``{l_PassesPerLevel}/{l_NumberOfDifficulties}`` maps in Level **{l_Y + 1}** (+{l_Weighting * 0.375f * l_PassesPerLevel} RPL)\n";
                         }
 
                         l_Trophy.Plastic = l_Plastic;
@@ -1207,6 +1207,7 @@ namespace BSDiscordRanking
                         case <= 39:
                         {
                             l_Plastic = 1;
+                            l_TrophyString = "<:plastic:874215132874571787>";
                             break;
                         }
                         case <= 69:

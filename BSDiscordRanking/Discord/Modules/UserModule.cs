@@ -133,16 +133,16 @@ namespace BSDiscordRanking.Discord.Modules
                 l_Player.FetchScores(Context);
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
-                    await ReplyAsync($"> :white_check_mark: Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!profile`` command.");
+                    await ReplyAsync($"> 🎉 Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!profile`` command.");
                 else
                     await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
 
                 if (l_OldPlayerLevel != l_Player.GetPlayerLevel())
                 {
                     if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
-                        await ReplyAsync($"> :white_check_mark: Congratulations! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!ggp`` command.");
+                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!ggp`` command.");
                     else
-                        await ReplyAsync($"> :warning: You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
+                        await ReplyAsync($"> <:NotStonks:884057234886238208> You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
                     await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. The Bot should now be responsive again.");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context);
                 }

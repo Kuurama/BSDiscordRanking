@@ -111,7 +111,7 @@ namespace BSDiscordRanking.Controllers
                 }
             }
 
-            await p_Context.Channel.SendMessageAsync($"> :white_check_mark: Your roles are now updated.");
+            await p_Context.Channel.SendMessageAsync($"> :ok_hand: Your roles are now updated.");
         }
 
         public static bool GiveRemoveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context, bool p_Remove)
