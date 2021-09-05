@@ -148,7 +148,7 @@ namespace BSDiscordRanking.Discord.Modules
                         await ReplyAsync($"> <:Stonks:884058036371595294> GG! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}ggp`` command.");
                     else
                         await ReplyAsync($"> <:NotStonks:884057234886238208> You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
-                    await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. The Bot should now be responsive again.");
+                    await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. ``(The bot should now be responsive again)``");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context);
                 }
             }
