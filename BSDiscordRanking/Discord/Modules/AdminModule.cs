@@ -6,7 +6,6 @@ using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules

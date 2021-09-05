@@ -133,7 +133,7 @@ namespace BSDiscordRanking.Discord.Modules
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
-                    await ReplyAsync($"> 🎉 Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!profile`` command.");
+                    await ReplyAsync($"> 🎉 Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}profile`` command.");
                 else
                 {
                     if (l_FirsScan)
