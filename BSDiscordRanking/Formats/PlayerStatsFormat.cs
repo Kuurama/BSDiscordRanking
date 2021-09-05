@@ -14,6 +14,8 @@ namespace BSDiscordRanking.Formats
         //diamond 100% 4
         
         public int Points { get; set; }
+        
+        public int IsFirstScan { get; set; }
     }
 
     public class Trophy

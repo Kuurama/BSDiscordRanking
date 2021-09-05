@@ -125,7 +125,7 @@ namespace BSDiscordRanking.Discord.Modules
         public async Task Scan_Scores()
         {
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
-            int l_OldPlayerLevel = l_Player.GetPlayerLevel();
+            int l_OldPlayerLevel = l_Player.GetPlayerLevel(); /// By doing so, as a result => loadstats() inside too.
             if (!UserController.UserExist(Context.User.Id.ToString()))
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
             else
@@ -342,7 +342,7 @@ namespace BSDiscordRanking.Discord.Modules
                         $"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
-                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1);
+                    l_Player.SetGrindInfo(p_Level, l_Passed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1, -1);
                 }
                 catch (Exception l_Exception)
                 {
@@ -577,10 +577,9 @@ namespace BSDiscordRanking.Discord.Modules
                         {
                             if (l_PerLevelFormat.NumberOfMapDiffInLevel > 0)
                             {
-                                if (l_Messages[l_MessagesIndex].Length >
-                                    900 -
+                                if (l_Messages[l_MessagesIndex].Length +
                                     $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
-                                        .Length)
+                                        .Length > 900)
                                 {
                                     l_MessagesIndex++;
                                 }
