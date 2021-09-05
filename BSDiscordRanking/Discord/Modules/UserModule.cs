@@ -130,17 +130,22 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
             else
             {
-                l_Player.FetchScores(Context);
+                bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
                     await ReplyAsync($"> 🎉 Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!profile`` command.");
                 else
-                    await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
+                {
+                    if (l_FirsScan)
+                        await ReplyAsync($"> Oh, Seems like you didn't pass any maps from the pools.");
+                    else
+                        await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
+                }
 
                 if (l_OldPlayerLevel != l_Player.GetPlayerLevel())
                 {
                     if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
-                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}!ggp`` command.");
+                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}ggp`` command.");
                     else
                         await ReplyAsync($"> <:NotStonks:884057234886238208> You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
                     await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. The Bot should now be responsive again.");
@@ -682,7 +687,8 @@ namespace BSDiscordRanking.Discord.Modules
                     $"To get a specific playlist's pool:\n```{ConfigController.GetConfig().CommandPrefix[0]}gpl [MapPoolNumber]```\n(stand for getplaylist) or even:```{ConfigController.GetConfig().CommandPrefix[0]}gpl all``` to get all the playlist pools! The playlist you get are always up to date.",
                     true)
                 .AddField("About the 'ranking'?",
-                    $"There is a leaderboard using the ``{ConfigController.GetConfig().CommandPrefix[0]}ld`` command! (or use ``{ConfigController.GetConfig().CommandPrefix[0]}!leaderboard``)\nEach pass you do give you ``RPL``, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
+                    $"There is a leaderboard using the ``{ConfigController.GetConfig().CommandPrefix[0]}ld`` command! (or use ``{ConfigController.GetConfig().CommandPrefix[0]}leaderboard``)\nEach pass you do give you ``RPL``, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
+                .AddField("To see your progress through the ranking:", $"Type ``{ConfigController.GetConfig().CommandPrefix[0]}progress``")
                 .AddField("How do i look at my profile?", $"```{ConfigController.GetConfig().CommandPrefix[0]}profile```");
             var l_Embed = l_Builder.Build();
             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);

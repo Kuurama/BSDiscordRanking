@@ -216,7 +216,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void FetchScores(SocketCommandContext p_Context = null)
+        public bool FetchScores(SocketCommandContext p_Context = null)
         {
             /// If First Launch : It get ALL the player's score from the api then cache it to a score file. (mean there isn't any cache file yet)
             /// This Method Get the Player's Scores from the api, then call ReWriteScore() to Serialize them into a cache's file.
@@ -237,15 +237,16 @@ namespace BSDiscordRanking
             {
                 if (m_ErrorNumber < ERROR_LIMIT)
                 {
-                    if (m_PlayerStats.IsFirstScan <= 0)
+                    if (m_PlayerStats.IsFirstScan > 0)
                     {
                         if (p_Context != null)
-                            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot will be unresponsive during the process.");
+                            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> First Time Fetching player scores (downloading all of your passes once), this step will take a while! The bot will be unresponsive during the process.");
                     }
+
                     else
                     {
                         if (p_Context != null)
-                            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> First Time Fetching player scores (downloading all of your passes), this step will take a while! The bot will be unresponsive during the process.");
+                            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot will be unresponsive during the process.");
                     }
 
                     if (m_HavePlayerInfo) /// Check if Player have Player's Info
@@ -370,6 +371,11 @@ namespace BSDiscordRanking
                             m_ErrorNumber = 6;
                         }
                     }
+
+                    if (m_PlayerStats.IsFirstScan > 0)
+                        return true;
+                    else
+                        return false;
                 }
                 else
                 {
@@ -377,6 +383,8 @@ namespace BSDiscordRanking
                     Console.WriteLine("Please Contact an Administrator.");
                 }
             }
+
+            return false;
         }
 
         private void ReWriteScore()

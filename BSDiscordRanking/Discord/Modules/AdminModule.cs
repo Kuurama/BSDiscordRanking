@@ -61,21 +61,22 @@ namespace BSDiscordRanking.Discord.Modules
         {
             new RoleController().CreateAllRoles(Context, false);
         }
-        
+
         [Command("allowuser")]
         [Summary("Gives user the matching Ranked role.")]
         public async Task AllowUser(ulong p_DiscordID)
         {
-            if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context,false))
+            if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context, false))
             {
-                await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the ``{ConfigController.GetConfig().CommandPrefix[0]}getstarted`` command to get started.\nps: if you don't like being here you can still ask to be removed.");
+                await ReplyAsync(
+                    $"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the ``{ConfigController.GetConfig().CommandPrefix[0]}getstarted`` command to get started.\nps: if you don't like being here you can still ask to be removed.");
             }
             else
             {
                 await ReplyAsync($"This player can't be found/already have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role.");
             }
         }
-        
+
         [Command("rejectuser")]
         [Summary("Removes user it's matching Ranked role.")]
         public async Task RemoveUser(ulong p_DiscordID)
@@ -89,10 +90,46 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync($"This player can't be found/do not have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role.");
             }
         }
-        
+
+        private int ScoreFromAcc(float p_Acc = 0f, int p_NoteCount = 0)
+        {
+            /// Made by MoreOwO :3
+
+            /// Calculate maxScore
+
+            int l_MaxScore;
+
+            switch (p_NoteCount)
+            {
+                case <= 0:
+                    return 0;
+                case 1:
+                    l_MaxScore = 115;
+                    break;
+                case <= 5:
+                    l_MaxScore = 115 + ((p_NoteCount - 1) * 2 * 115);
+                    break;
+
+                case <13:
+                    l_MaxScore = 1035 + ((p_NoteCount - 5) * 4 * 115);
+                    break;
+                case 13:
+                    l_MaxScore = 4715;
+                    break;
+                case > 13:
+                    l_MaxScore = (p_NoteCount * 8 * 115) - 7245;
+                    break;
+            }
+
+            if ((int)p_Acc == 0)
+                return 0;
+
+            return (int)Math.Round(l_MaxScore * (p_Acc / 100));
+        }
+
         [Command("addmap")]
         [Summary("Adds a map or updates it from a desired level.")]
-        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", int p_MinScoreRequirement = 0)
+        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f)
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -107,43 +144,61 @@ namespace BSDiscordRanking.Discord.Modules
                     {
                         Level l_Level = new Level(p_Level);
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
-                        LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, p_MinScoreRequirement);
-                        if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
+                        int l_NumberOfNote = 0;
+                        bool l_DiffExist = false;
+                        foreach (var l_Diff in l_Map.versions[^1].diffs)
                         {
-                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement, Context);
-                            if (!l_Level.m_MapAdded)
+                            if (l_Diff.characteristic == p_Characteristic && l_Diff.difficulty == p_DifficultyName)
                             {
-                                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                                l_EmbedBuilder.WithTitle("Map Added:");
-                                l_EmbedBuilder.WithDescription(l_Map.name);
-                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
-                                l_EmbedBuilder.AddField("Level:", p_Level, true);
-                                l_EmbedBuilder.AddField("ScoreRequirement:", p_MinScoreRequirement, true);
-                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
-                                l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
-                                l_EmbedBuilder.WithColor(Color.Blue);
-                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                l_NumberOfNote = l_Diff.notes;
+                                l_DiffExist = true;
                             }
                         }
-                        else if (l_MapExistCheck.DifferentMinScore)
+
+                        if (l_DiffExist)
                         {
-                            l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, p_MinScoreRequirement, Context);
-                            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                            l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
-                            l_EmbedBuilder.WithDescription(l_Map.name);
-                            l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
-                            l_EmbedBuilder.AddField("Level:", p_Level, true);
-                            l_EmbedBuilder.AddField("New ScoreRequirement:", p_MinScoreRequirement, true);
-                            l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
-                            l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                            l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
-                            l_EmbedBuilder.WithColor(Color.Blue);
-                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote));
+                            if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
+                            {
+                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), Context);
+                                if (!l_Level.m_MapAdded)
+                                {
+                                    EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                                    l_EmbedBuilder.WithTitle("Map Added:");
+                                    l_EmbedBuilder.WithDescription(l_Map.name);
+                                    l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
+                                    l_EmbedBuilder.AddField("Level:", p_Level, true);
+                                    l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
+                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
+                                    l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                    l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                    l_EmbedBuilder.WithColor(Color.Blue);
+                                    await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                }
+                            }
+                            else if (l_MapExistCheck.DifferentMinScore)
+                            {
+                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), Context);
+                                        EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                                        l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
+                                        l_EmbedBuilder.WithDescription(l_Map.name);
+                                        l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
+                                        l_EmbedBuilder.AddField("Level:", p_Level, true);
+                                        l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
+                                        l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
+                                        l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                        l_EmbedBuilder.WithColor(Color.Blue);
+                                        await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                            }
+                            else
+                            {
+                                await ReplyAsync($"> :x: Sorry, this map & difficulty already exist into level {l_MapExistCheck.Level}.");
+                            }
                         }
                         else
                         {
-                            await ReplyAsync($"> :x: Sorry, this map & difficulty already exist into level {l_MapExistCheck.Level}.");
+                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync($"The diff {p_DifficultyName} - {p_Characteristic} doesn't exist in this BeatMap", false);
                         }
                     }
                     else
@@ -206,13 +261,12 @@ namespace BSDiscordRanking.Discord.Modules
                     }
                     else
                         await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
-                        
                 }
                 else
                     await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
             }
         }
-        
+
         [Command("unlink")]
         [Summary("Unlinks your discord accounts from your ScoreSaber's one.")]
         public async Task UnLinkUser(string p_DiscordID = "")
