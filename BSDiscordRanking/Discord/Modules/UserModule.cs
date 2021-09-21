@@ -376,7 +376,7 @@ namespace BSDiscordRanking.Discord.Modules
                 string l_Path = Level.GetPath() + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
                 if (File.Exists(l_Path))
 
-                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
+                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's the complete playlist! (up to date)");
                 else
 
                     await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
@@ -388,7 +388,7 @@ namespace BSDiscordRanking.Discord.Modules
                 try
                 {
                     ZipFile.CreateFromDirectory(Level.GetPath(), "levels.zip");
-                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
+                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's a playlist folder containing all the playlist's pools! (up to date)");
                 }
                 catch
                 {
@@ -404,31 +404,36 @@ namespace BSDiscordRanking.Discord.Modules
             PlayerPassFormat l_PlayerPass = new Player(p_ScoreSaberID).ReturnPass();
             Level l_Level = new Level(p_Level);
             LevelFormat l_LevelFormat = l_Level.GetLevelData();
-
-            for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
+            if (l_LevelFormat.songs.Count > 0)
             {
                 foreach (var l_PlayerPassSong in l_PlayerPass.songs)
                 {
-                    if (l_LevelFormat.songs.Count > 0)
+                    for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
                     {
-                        if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash, StringComparison.CurrentCultureIgnoreCase))
+                        if (l_LevelFormat.songs.Count > 0)
                         {
-                            if (l_LevelFormat.songs[l_I].difficulties.Count > 0)
+                            if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                for (int l_Y = l_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
+                                foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
                                 {
-                                    foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
+                                    if (l_LevelFormat.songs.Count > 0)
                                     {
-                                        if (l_LevelFormat.songs[l_I].difficulties[l_Y].characteristic == l_PlayerPassSongDifficulty.characteristic && l_LevelFormat.songs[l_I].difficulties[l_Y].name == l_PlayerPassSongDifficulty.name)
+                                        for (int l_Y = l_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
                                         {
-                                            /// Here remove diff or map if it's the only ranked diff
-                                            if (l_PlayerPassSong.difficulties.Count <= 1)
+                                            if (l_LevelFormat.songs[l_I].difficulties.Count > 0 && l_LevelFormat.songs.Count > 0)
                                             {
-                                                l_LevelFormat.songs.Remove(l_LevelFormat.songs[l_I]);
-                                            }
-                                            else
-                                            {
-                                                l_LevelFormat.songs[l_I].difficulties.Remove(l_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                                if (l_LevelFormat.songs[l_I].difficulties[l_Y].characteristic == l_PlayerPassSongDifficulty.characteristic && l_LevelFormat.songs[l_I].difficulties[l_Y].name == l_PlayerPassSongDifficulty.name)
+                                                {
+                                                    /// Here remove diff or map if it's the only ranked diff
+                                                    if (l_LevelFormat.songs[l_I].difficulties.Count <= 1)
+                                                    {
+                                                        l_LevelFormat.songs.Remove(l_LevelFormat.songs[l_I]);
+                                                    }
+                                                    else
+                                                    {
+                                                        l_LevelFormat.songs[l_I].difficulties.Remove(l_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -534,7 +539,7 @@ namespace BSDiscordRanking.Discord.Modules
                         if (File.Exists(l_PathFile))
                             await Context.Channel.SendFileAsync(l_PathFile, $"> :white_check_mark: Here's your personal playlist! <@{Context.User.Id.ToString()}>");
                         else
-                            await ReplyAsync("> Sorry but you already passed all the maps in that playlist.");
+                            await ReplyAsync("> :x: Sorry but you already passed all the maps in that playlist.");
 
                         DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
                     }
@@ -552,7 +557,7 @@ namespace BSDiscordRanking.Discord.Modules
 
                     try
                     {
-                        if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Length <= 0)
+                        if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Length > 0)
                         {
                             ZipFile.CreateFromDirectory(l_Path, $"{ORIGINAL_PATH}{l_FileName}.zip");
                             await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's your personal playlist folder! <@{Context.User.Id.ToString()}>");
@@ -561,7 +566,7 @@ namespace BSDiscordRanking.Discord.Modules
                         {
                             await ReplyAsync("Sorry but you already passed all the maps from all pools, good job!");
                         }
-                        
+
                         DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
                     }
                     catch
@@ -599,10 +604,18 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
                     return;
                 }
-                else if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
+
+                if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
                 {
-                    await ReplyAsync("> Sorry, This Score Saber account isn't registered on the bot.");
-                    return;
+                    bool l_IsAdmin = false;
+                    if (Context.User is SocketGuildUser l_User)
+                        if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID))
+                            l_IsAdmin = true;
+                    if (!l_IsAdmin)
+                    {
+                        await ReplyAsync("> Sorry, This Score Saber account isn't registered on the bot.");
+                        return;
+                    }
                 }
             }
             else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
@@ -633,7 +646,7 @@ namespace BSDiscordRanking.Discord.Modules
 
             LeaderboardController l_LeaderboardController = new LeaderboardController();
             int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
-                p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
+                p_X.ScoreSaberID == UserController.GetPlayer(p_DiscordOrScoreSaberID));
             EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
@@ -670,17 +683,17 @@ namespace BSDiscordRanking.Discord.Modules
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
 
-        [Command("trello")]
-        [Summary("Sends our Trello's link.")]
-        public async Task SendTrello()
+        [Command("lvl9")]
+        [Summary("Sends tips.")]
+        public async Task SendTipsLVL9()
         {
-            await Context.Channel.SendMessageAsync("Here is our Trello : https://trello.com/b/L3YNfpU1/bsdr-management\nTo suggest changes, please write them in the suggestions channel.", false);
+            await Context.Channel.SendMessageAsync("Here.. (take it, but it's secret) : ||http://prntscr.com/soylt9||", false);
         }
 
         private string GenerateProgressBar(int p_Value, int p_MaxValue, int p_Size)
         {
-            float l_Percentage = (float) p_Value / p_MaxValue;
-            int l_Progress = (int) Math.Round(p_Size * l_Percentage);
+            float l_Percentage = (float)p_Value / p_MaxValue;
+            int l_Progress = (int)Math.Round(p_Size * l_Percentage);
             int l_EmptyProgress = p_Size - l_Progress;
             string l_ProgressText = "";
             for (int l_I = 0; l_I < l_Progress; l_I++)
@@ -744,7 +757,7 @@ namespace BSDiscordRanking.Discord.Modules
                             var l_Builder = new EmbedBuilder()
                                 .AddField("Pool", $"Level {l_PerLevelFormat.LevelID}", true)
                                 .AddField("Progress Bar", GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10), true)
-                                .AddField("Progress Amount", $"{Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
+                                .AddField("Progress Amount", $"{Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
                             var l_Embed = l_Builder.Build();
                             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             return;
@@ -777,7 +790,7 @@ namespace BSDiscordRanking.Discord.Modules
                 else
                 {
                     int l_MessagesIndex = 0;
-                    List<string> l_Messages = new List<string> {""};
+                    List<string> l_Messages = new List<string> { "" };
                     if (l_PlayerPassPerLevel.Levels != null)
                     {
                         var l_Builder = new EmbedBuilder()
@@ -789,7 +802,7 @@ namespace BSDiscordRanking.Discord.Modules
                             if (l_PerLevelFormat.NumberOfMapDiffInLevel > 0)
                             {
                                 if (l_Messages[l_MessagesIndex].Length +
-                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
                                         .Length > 900)
                                 {
                                     l_MessagesIndex++;
@@ -801,7 +814,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 }
 
                                 l_Messages[l_MessagesIndex] +=
-                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
                                     Environment.NewLine;
                             }
                         }
@@ -863,7 +876,7 @@ namespace BSDiscordRanking.Discord.Modules
                             }
 
                             var l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {l_PerLevelFormat.TrophyString}",
-                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
+                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
                             var l_Embed = l_Builder.Build();
                             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             return;
