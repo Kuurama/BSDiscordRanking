@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -24,7 +23,7 @@ namespace BSDiscordRanking
         public bool m_MapDeleted;
 
         /// Keep the underscore at the beginning to avoid issue with the controller.
-        private const string PATH = @".\Levels\";
+        private const string PATH = @"./Levels/";
 
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
@@ -270,7 +269,7 @@ namespace BSDiscordRanking
                         {
                             StringBuilder l_SBMapName = new StringBuilder(m_BeatSaver.name);
                             string l_NewMapName = m_BeatSaver.name;
-                            do
+                            do /// Might want to implement Trim()
                             {
                                 if (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0])
                                     l_SBMapName.Remove(l_NewMapName.Length-1, 1);

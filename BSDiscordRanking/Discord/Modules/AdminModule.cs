@@ -313,6 +313,16 @@ namespace BSDiscordRanking.Discord.Modules
             await ReplyAsync("> :white_check_mark: After the bot finished to reset the config, it will stops.");
             ConfigController.CreateConfig();
         }
+        
+        [Command("shutdown")]
+        [Summary("Shutdown the bot.")]
+#pragma warning disable 1998
+        public async Task Shutdown()
+#pragma warning restore 1998
+        {
+            await ReplyAsync("**Shutting Down the bot**");
+            Environment.Exit(0);
+        }
 
         private class RequireManagerRoleAttribute : PreconditionAttribute
         {

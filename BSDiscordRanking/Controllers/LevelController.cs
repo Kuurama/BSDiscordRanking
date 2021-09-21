@@ -10,7 +10,7 @@ namespace BSDiscordRanking.Controllers
     public class LevelController
     {
         private LevelControllerFormat m_LevelController;
-        private const string PATH = @".\";
+        private const string PATH = @"./";
         private const string FILENAME = "LevelController";
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
@@ -117,10 +117,14 @@ namespace BSDiscordRanking.Controllers
             {
                 try
                 {
+                    Console.WriteLine("before Fetch");
                     new LevelController().FetchLevel();
-                    using (StreamReader l_SR = new StreamReader($@"{PATH}\{FILENAME}.json "))
+                    Console.WriteLine("After Fetch");
+                    using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
                     {
+                        Console.WriteLine("Before deserialize");
                         LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
+                        Console.WriteLine("After deserialize");
                         if (l_LevelController == null) /// json contain "null"
                         {
                             Console.WriteLine("Error LevelControllerCache contain null");

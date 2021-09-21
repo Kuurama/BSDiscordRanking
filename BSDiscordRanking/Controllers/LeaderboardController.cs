@@ -10,8 +10,8 @@ namespace BSDiscordRanking.Controllers
 {
     public class LeaderboardController
     {
-        private const string PATH = @".\";
-        private const string FILENAME = @"\Leaderboard";
+        private const string PATH = @"./";
+        private const string FILENAME = @"Leaderboard";
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
         public LeaderboardControllerFormat m_Leaderboard;

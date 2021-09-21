@@ -33,7 +33,7 @@ namespace BSDiscordRanking
             m_PlayerID = p_PlayerID;
             if (m_PlayerID != null)
             {
-                m_Path = @$".\Players\{m_PlayerID}\";
+                m_Path = @$"./Players/{m_PlayerID}/";
                 Console.WriteLine($"Selected Path is {m_Path}");
             }
             else
@@ -193,7 +193,7 @@ namespace BSDiscordRanking
 
                     try
                     {
-                        using (StreamReader l_SR = new StreamReader(m_Path + @"\score.json"))
+                        using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
                         {
                             m_PlayerScore = JsonSerializer.Deserialize<ApiScores>(l_SR.ReadToEnd());
                             Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
@@ -402,7 +402,7 @@ namespace BSDiscordRanking
                     {
                         if (m_PlayerScore != null)
                         {
-                            File.WriteAllText(m_Path + @"\score.json", JsonSerializer.Serialize(m_PlayerScore));
+                            File.WriteAllText(m_Path + "score.json", JsonSerializer.Serialize(m_PlayerScore));
                             try
                             {
                                 Console.WriteLine(
@@ -452,7 +452,7 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    File.Delete(m_Path + @"\score.json");
+                    File.Delete(m_Path + "score.json");
                 }
                 catch (Exception l_Exception)
                 {
@@ -850,7 +850,7 @@ namespace BSDiscordRanking
                 {
                     try
                     {
-                        using (StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json"))
+                        using (StreamReader l_SR = new StreamReader($@"{m_Path}pass.json"))
                         {
                             l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                             if (l_PlayerPass == null) /// json contain "null"
@@ -898,7 +898,7 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($@"{LevelController.GetPath()}\{LevelController.GetFileName()}.json "))
+                    using (StreamReader l_SR = new StreamReader($"{LevelController.GetPath()}{LevelController.GetFileName()}.json"))
                     {
                         m_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
                         if (m_LevelController == null) /// json contain "null"
@@ -924,7 +924,7 @@ namespace BSDiscordRanking
                     {
                         if (m_PlayerPass != null)
                         {
-                            File.WriteAllText($@"{m_Path}\pass.json", JsonSerializer.Serialize(m_PlayerPass));
+                            File.WriteAllText($@"{m_Path}pass.json", JsonSerializer.Serialize(m_PlayerPass));
                             try
                             {
                                 Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.songs.Count} song(s) are stored (song number <= number of scores : multiple diff)");
@@ -955,9 +955,9 @@ namespace BSDiscordRanking
             }
         }
 
-        public void ResetTrophy()
+        private void ResetTrophy()
         {
-            if (m_PlayerStats?.Trophy != null)
+            if (m_PlayerStats.Trophy != null)
             {
                 m_PlayerStats.Trophy.Clear();
                 m_PlayerStats.Trophy = new List<Trophy>()
@@ -973,9 +973,9 @@ namespace BSDiscordRanking
             }
         }
 
-        public void ResetLevels()
+        private void ResetLevels()
         {
-            if (m_PlayerStats?.LevelIsPassed != null)
+            if (m_PlayerStats.LevelIsPassed != null)
             {
                 m_PlayerStats.LevelIsPassed.Clear();
                 m_PlayerStats.LevelIsPassed = new List<bool>();
@@ -992,7 +992,7 @@ namespace BSDiscordRanking
                     {
                         if (m_PlayerStats != null)
                         {
-                            File.WriteAllText($@"{m_Path}\stats.json", JsonSerializer.Serialize(m_PlayerStats));
+                            File.WriteAllText($@"{m_Path}stats.json", JsonSerializer.Serialize(m_PlayerStats));
 
                             Console.WriteLine($"Stats's file of {m_PlayerFull.playerInfo.playerName} Updated");
                         }
@@ -1027,7 +1027,7 @@ namespace BSDiscordRanking
                 CreateDirectory();
                 try
                 {
-                    using StreamReader l_SR = new StreamReader($@"{m_Path}\stats.json");
+                    using StreamReader l_SR = new StreamReader($@"{m_Path}stats.json");
                     m_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
@@ -1087,7 +1087,7 @@ namespace BSDiscordRanking
                 CreateDirectory();
                 try
                 {
-                    using StreamReader l_SR = new StreamReader($@"{m_Path}\pass.json");
+                    using StreamReader l_SR = new StreamReader($@"{m_Path}pass.json");
                     m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                     return m_PlayerPass;
                 }
@@ -1267,24 +1267,23 @@ namespace BSDiscordRanking
                         m_PlayerStats.LevelIsPassed ??= new List<bool>();
                         bool l_LevelIsPassed = false;
 
-                        if (p_Passed != null)
+
+                        // ReSharper disable once PossibleNullReferenceException
+                        foreach (var l_Pass in p_Passed)
                         {
-                            foreach (var l_Pass in p_Passed)
-                            {
-                                if (l_Pass) l_LevelIsPassed = true;
-                            }
-
-                            for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
-                            {
-                                if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
-                                {
-                                    m_PlayerStats.LevelIsPassed.Add(false);
-                                    Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
-                                }
-                            }
-
-                            m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
+                            if (l_Pass) l_LevelIsPassed = true;
                         }
+
+                        for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
+                        {
+                            if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
+                            {
+                                m_PlayerStats.LevelIsPassed.Add(false);
+                                Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
+                            }
+                        }
+
+                        m_PlayerStats.LevelIsPassed[p_LevelID - 1] = l_LevelIsPassed;
                     }
 
                     if (p_NumberOfPass >= 0)

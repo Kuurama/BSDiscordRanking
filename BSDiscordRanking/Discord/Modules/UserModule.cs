@@ -133,13 +133,13 @@ namespace BSDiscordRanking.Discord.Modules
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
-                    await ReplyAsync($"> 🎉 Congratulations! You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}profile`` command.");
+                    await ReplyAsync($"> 🎉 Congratulations! <@{Context.User.Id.ToString()}> You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}profile`` command.");
                 else
                 {
                     if (l_FirsScan)
-                        await ReplyAsync($"> Oh, Seems like you didn't pass any maps from the pools.");
+                        await ReplyAsync($"> Oh <@{Context.User.Id.ToString()}>, Seems like you didn't pass any maps from the pools.");
                     else
-                        await ReplyAsync($"> :x: Sorry, you didn't pass any new maps.");
+                        await ReplyAsync($"> :x: Sorry <@{Context.User.Id.ToString()}>, you didn't pass any new maps.");
                 }
 
                 if (l_OldPlayerLevel != l_Player.GetPlayerLevel())
@@ -372,7 +372,7 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (int.TryParse(p_Level, out _))
             {
-                string l_Path = Level.GetPath() + $"/{p_Level}{Level.SUFFIX_NAME}.bplist";
+                string l_Path = Level.GetPath() + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
                 if (File.Exists(l_Path))
 
                     await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
@@ -386,7 +386,7 @@ namespace BSDiscordRanking.Discord.Modules
                     File.Delete("levels.zip");
                 try
                 {
-                    ZipFile.CreateFromDirectory("./Levels/", "levels.zip");
+                    ZipFile.CreateFromDirectory(Level.GetPath(), "levels.zip");
                     await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's your playlist folder!");
                 }
                 catch

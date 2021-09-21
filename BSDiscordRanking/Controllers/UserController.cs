@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
-using Discord.Rest;
 using Discord.WebSocket;
-using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
 using static BSDiscordRanking.Controllers.ConfigController;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -111,7 +109,7 @@ namespace BSDiscordRanking.Controllers
                 }
             }
 
-            await p_Context.Channel.SendMessageAsync($"> :ok_hand: Your roles are now updated.\n(if you lost levels, you can still do the w1RR command on the other bscc bot to get them all back)");
+            await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{p_Context.User.Id.ToString()}> Your roles are now updated.\n(if you lost levels, you can still do the w1RR command on the other bscc bot to get them all back)");
         }
 
         public static bool GiveRemoveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context, bool p_Remove)
