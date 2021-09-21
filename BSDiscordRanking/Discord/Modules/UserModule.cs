@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
@@ -91,7 +92,7 @@ namespace BSDiscordRanking.Discord.Modules
                         $"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
                 }
                 else if (!UserController.AccountExist(p_ScoreSaberLink))
-                    await ReplyAsync("> :x: Sorry, but please enter a correct Scoresaber Link/ID.");
+                    await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
                 else if (UserController.SSIsAlreadyLinked(p_ScoreSaberLink))
                 {
                     await ReplyAsync(
@@ -403,26 +404,33 @@ namespace BSDiscordRanking.Discord.Modules
             PlayerPassFormat l_PlayerPass = new Player(p_ScoreSaberID).ReturnPass();
             Level l_Level = new Level(p_Level);
             LevelFormat l_LevelFormat = l_Level.GetLevelData();
-            foreach (var l_LevelSong in l_LevelFormat.songs)
+
+            for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
             {
                 foreach (var l_PlayerPassSong in l_PlayerPass.songs)
                 {
-                    if (String.Equals(l_LevelSong.hash, l_PlayerPassSong.hash, StringComparison.CurrentCultureIgnoreCase))
+                    if (l_LevelFormat.songs.Count > 0)
                     {
-                        foreach (var l_LevelSongDifficulty in l_LevelSong.difficulties)
+                        if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash, StringComparison.CurrentCultureIgnoreCase))
                         {
-                            foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
+                            if (l_LevelFormat.songs[l_I].difficulties.Count > 0)
                             {
-                                if (l_LevelSongDifficulty.characteristic == l_PlayerPassSongDifficulty.characteristic && l_LevelSongDifficulty.name == l_PlayerPassSongDifficulty.name)
+                                for (int l_Y = l_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
                                 {
-                                    /// Here remove diff or map if it's the only ranked diff
-                                    if (l_PlayerPassSong.difficulties.Count <= 1)
+                                    foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
                                     {
-                                        l_LevelFormat.songs.Remove(l_LevelSong);
-                                    }
-                                    else
-                                    {
-                                        l_LevelSong.difficulties.Remove(l_LevelSongDifficulty);
+                                        if (l_LevelFormat.songs[l_I].difficulties[l_Y].characteristic == l_PlayerPassSongDifficulty.characteristic && l_LevelFormat.songs[l_I].difficulties[l_Y].name == l_PlayerPassSongDifficulty.name)
+                                        {
+                                            /// Here remove diff or map if it's the only ranked diff
+                                            if (l_PlayerPassSong.difficulties.Count <= 1)
+                                            {
+                                                l_LevelFormat.songs.Remove(l_LevelFormat.songs[l_I]);
+                                            }
+                                            else
+                                            {
+                                                l_LevelFormat.songs[l_I].difficulties.Remove(l_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -431,66 +439,138 @@ namespace BSDiscordRanking.Discord.Modules
                 }
             }
 
+            if (l_LevelFormat.songs.Count <= 0)
+                return; /// Do not create the file if it's empty.
+            l_Level.CreateDirectory(p_Path);
             l_Level.ReWritePlaylist(true, p_Path, l_LevelFormat); /// Write the personal playlist file in the PATH folder.
+        }
+
+        private static string RemoveSpecialCharacters(string p_Str)
+        {
+            StringBuilder l_SB = new StringBuilder();
+            foreach (char l_C in p_Str)
+            {
+                if (l_C is >= '0' and <= '9' or >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_')
+                {
+                    l_SB.Append(l_C);
+                }
+            }
+
+            return l_SB.ToString();
+        }
+
+        private void DeleteUnpassedPlaylist(string p_OriginalPath, string p_FileName)
+        {
+            ///// Delete all personnal files before generating new ones /////////
+            string l_Path = p_OriginalPath + p_FileName + "/";
+            if (File.Exists(p_OriginalPath + p_FileName + ".zip"))
+                File.Delete(p_OriginalPath + p_FileName + ".zip");
+
+            DirectoryInfo l_Directory = new DirectoryInfo(l_Path);
+            foreach (FileInfo l_File in l_Directory.EnumerateFiles())
+            {
+                l_File.Delete();
+            }
+
+            foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories())
+            {
+                l_Dir.Delete(true);
+            }
+
+            Directory.Delete(p_OriginalPath + p_FileName + "/");
+            ///////////////////////////////////////////////////////////////////////
         }
 
         [Command("getunpassedplaylist")]
         [Alias("gupl")]
         [Summary("Sends Playlist only containing the maps you didn't pass. Use `all` instead of the level id to get the whole level folder.")]
-        private void GetUnpassedPlaylist(string p_Level)
+        public async Task GetUnpassedPlaylist(string p_Level)
         {
-            const string PATH = "./PersonalLevels/";
-            const string FILENAME = "PersonalLevels";
             if (!UserController.UserExist(Context.User.Id.ToString()))
-                Context.Channel.SendMessageAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+                await Context.Channel.SendMessageAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
             else
             {
+                const string ORIGINAL_PATH = "./PersonalLevels/";
+                if (!Directory.Exists(ORIGINAL_PATH))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(ORIGINAL_PATH);
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"Exception Occured creating directory : {ORIGINAL_PATH}");
+                        return;
+                    }
+                }
+
+                string l_PlayerName = new Player(UserController.GetPlayer(Context.User.Id.ToString())).m_PlayerFull.playerInfo.playerName;
+                string l_FileName = RemoveSpecialCharacters(l_PlayerName);
+                string l_Path = ORIGINAL_PATH + l_FileName + "/";
+                if (!Directory.Exists(l_Path))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(l_Path);
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"Exception Occured creating directory : {l_Path}");
+                        return;
+                    }
+                }
+
                 if (int.TryParse(p_Level, out _))
                 {
-                    string l_Path = PATH + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
-                    
-                    if (File.Exists(l_Path)) /// Mean there is already a personnal playlist file.
-                        File.Delete(l_Path);
+                    if (LevelController.GetLevelControllerCache().LevelID.Contains(int.Parse(p_Level)))
+                    {
+                        string l_PathFile = l_Path + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
 
-                    CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), int.Parse(p_Level), PATH);
-                    Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
-                    Context.Channel.SendMessageAsync("> :x: This level does not exist.");
+                        if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
+                            File.Delete(l_PathFile);
+
+
+                        CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), int.Parse(p_Level), l_Path);
+                        if (File.Exists(l_PathFile))
+                            await Context.Channel.SendFileAsync(l_PathFile, $"> :white_check_mark: Here's your personal playlist! <@{Context.User.Id.ToString()}>");
+                        else
+                            await ReplyAsync("> Sorry but you already passed all the maps in that playlist.");
+
+                        DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
+                    }
                 }
                 else if (p_Level == "all")
                 {
-                    ///// Delete all personnal files before generating new ones /////////
-                    if (File.Exists("PersonalLevels.zip"))
-                        File.Delete("PersonalLevels.zip");
-
-                    DirectoryInfo l_Directory = new DirectoryInfo(PATH);
-                    foreach (FileInfo l_File in l_Directory.EnumerateFiles())
-                    {
-                        l_File.Delete();
-                    }
-
-                    foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories())
-                    {
-                        l_Dir.Delete(true);
-                    }
-                    ///////////////////////////////////////////////////////////////////////
-
                     foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
                     {
-                        CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), l_LevelID, PATH);
+                        CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), l_LevelID, l_Path);
                     }
 
                     try
                     {
-                        ZipFile.CreateFromDirectory(PATH, $"{FILENAME}.zip");
-                        Context.Channel.SendFileAsync($"{FILENAME}.zip", "> :white_check_mark: Here's your playlist folder!");
+                        if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Length <= 0)
+                        {
+                            ZipFile.CreateFromDirectory(l_Path, $"{ORIGINAL_PATH}{l_FileName}.zip");
+                            await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's your personal playlist folder! <@{Context.User.Id.ToString()}>");
+                        }
+                        else
+                        {
+                            await ReplyAsync("Sorry but you already passed all the maps from all pools, good job!");
+                        }
+                        
+                        DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
                     }
                     catch
                     {
-                        Context.Channel.SendMessageAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
+                        await Context.Channel.SendMessageAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
                     }
                 }
                 else
-                    Context.Channel.SendMessageAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
+                    await Context.Channel.SendMessageAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
             }
         }
 
@@ -505,14 +585,27 @@ namespace BSDiscordRanking.Discord.Modules
         [Command("profile")]
         [Alias("stats")]
         [Summary("Sends someone else profile's informations (Level, Passes, Trophies etc).")]
-        public async Task Profile(string p_DiscordID)
+        public async Task Profile(string p_DiscordOrScoreSaberID)
         {
-            await SendProfile(Context.User.Id.ToString(), true);
+            await SendProfile(p_DiscordOrScoreSaberID, true);
         }
 
-        private async Task SendProfile(string p_DiscordID, bool p_IsSomeoneElse)
+        private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
-            if (!UserController.UserExist(p_DiscordID))
+            if (p_DiscordOrScoreSaberID.Length == 16 || p_DiscordOrScoreSaberID.Length == 17)
+            {
+                if (!UserController.AccountExist(p_DiscordOrScoreSaberID))
+                {
+                    await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
+                    return;
+                }
+                else if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
+                {
+                    await ReplyAsync("> Sorry, This Score Saber account isn't registered on the bot.");
+                    return;
+                }
+            }
+            else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
             {
                 await Context.Channel.SendMessageAsync(p_IsSomeoneElse
                     ? "> :x: Sorry, this person doesn't have any account linked."
@@ -520,46 +613,48 @@ namespace BSDiscordRanking.Discord.Modules
             }
             else
             {
-                Player l_Player = new Player(UserController.GetPlayer(p_DiscordID));
-                var l_PlayerStats = l_Player.GetStats();
-
-                int l_Plastics = 0;
-                int l_Silvers = 0;
-                int l_Golds = 0;
-                int l_Diamonds = 0;
-                foreach (var l_Trophy in l_PlayerStats.Trophy)
-                {
-                    l_Plastics += l_Trophy.Plastic;
-                    l_Silvers += l_Trophy.Silver;
-                    l_Golds += l_Trophy.Gold;
-                    l_Diamonds += l_Trophy.Diamond;
-                }
-
-                LeaderboardController l_LeaderboardController = new LeaderboardController();
-                int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
-                    p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
-                EmbedBuilder l_EmbedBuilder = new();
-                l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
-                l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
-                l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
-                l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
-                if (l_FindIndex == -1)
-                    l_EmbedBuilder.AddField("Server Rank", ":medal: #0 - 0 RPL", true);
-                else
-                    l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
-                l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField($"Plastic trophies:", $"<:plastic:874215132874571787>: {l_Plastics}", true);
-                l_EmbedBuilder.AddField($"Silver trophies:", $"<:silver:874215133197500446>: {l_Silvers}", true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                l_EmbedBuilder.AddField($"Gold trophies:", $"<:gold:874215133147197460>: {l_Golds}", true);
-                l_EmbedBuilder.AddField($"Diamond trophies:", $"<:diamond:874215133289795584>: {l_Diamonds}", true);
-                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                // UserController.UpdatePlayerLevel(Context); /// Seems too heavy for !profile
+                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
             }
+
+            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            var l_PlayerStats = l_Player.GetStats();
+
+            int l_Plastics = 0;
+            int l_Silvers = 0;
+            int l_Golds = 0;
+            int l_Diamonds = 0;
+            foreach (var l_Trophy in l_PlayerStats.Trophy)
+            {
+                l_Plastics += l_Trophy.Plastic;
+                l_Silvers += l_Trophy.Silver;
+                l_Golds += l_Trophy.Gold;
+                l_Diamonds += l_Trophy.Diamond;
+            }
+
+            LeaderboardController l_LeaderboardController = new LeaderboardController();
+            int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
+                p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
+            EmbedBuilder l_EmbedBuilder = new();
+            l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
+            l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
+            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+            l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
+            if (l_FindIndex == -1)
+                l_EmbedBuilder.AddField("Server Rank", ":medal: #0 - 0 RPL", true);
+            else
+                l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
+            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+            l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
+            l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
+            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+            l_EmbedBuilder.AddField($"Plastic trophies:", $"<:plastic:874215132874571787>: {l_Plastics}", true);
+            l_EmbedBuilder.AddField($"Silver trophies:", $"<:silver:874215133197500446>: {l_Silvers}", true);
+            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+            l_EmbedBuilder.AddField($"Gold trophies:", $"<:gold:874215133147197460>: {l_Golds}", true);
+            l_EmbedBuilder.AddField($"Diamond trophies:", $"<:diamond:874215133289795584>: {l_Diamonds}", true);
+            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+            // UserController.UpdatePlayerLevel(Context); /// Seems too heavy for !profile
         }
 
         [Command("ping")]

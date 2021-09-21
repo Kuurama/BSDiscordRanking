@@ -197,7 +197,7 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                         else
                         {
-                            await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync($"The diff {p_DifficultyName} - {p_Characteristic} doesn't exist in this BeatMap", false);
+                            await Context.Channel.SendMessageAsync($"The diff {p_DifficultyName} - {p_Characteristic} doesn't exist in this BeatMap", false);
                         }
                     }
                     else

@@ -73,7 +73,7 @@ namespace BSDiscordRanking
                                 playlistDescription = new string("BSCC Playlist"),
                                 syncURL = null,
                                 image = new string(""),
-                                weighting = 0f
+                                weighting = 1f
                             };
                             Console.WriteLine($"Level {m_LevelID} Created (Empty Format), contained null");
                         }
@@ -101,7 +101,7 @@ namespace BSDiscordRanking
                         playlistDescription = new string("BSCC Playlist"),
                         syncURL = null,
                         image = new string(""),
-                        weighting = 0f
+                        weighting = 1f
                     };
                     Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Created (Empty Format)");
                 }
@@ -127,7 +127,7 @@ namespace BSDiscordRanking
             ReWritePlaylist(false);
         }
 
-        private void CreateDirectory(string p_Path = PATH)
+        public void CreateDirectory(string p_Path = PATH)
         {
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
@@ -173,7 +173,7 @@ namespace BSDiscordRanking
 
                     if (m_Level != null)
                     {
-                        if (m_Level.songs.Count > 0)
+                        if (m_Level.songs.Count > 0 || p_WriteDifferentFormat)
                         {
                             File.WriteAllText($"{p_Path}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(p_LevelFormat));
                             Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
