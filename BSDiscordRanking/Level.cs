@@ -16,7 +16,7 @@ namespace BSDiscordRanking
     public class Level
     {
         public LevelFormat m_Level;
-        public BeatSaverFormat m_BeatSaver;
+        private BeatSaverFormat m_BeatSaver;
         private int m_LevelID;
         public const string SUFFIX_NAME = "_Level";
         public bool m_MapAdded;
@@ -38,7 +38,6 @@ namespace BSDiscordRanking
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
             ///////////////////////////////////////////////////////////////////////////////////////
         }
-
 
         private void LoadLevel()
         {
@@ -125,22 +124,22 @@ namespace BSDiscordRanking
                 }
             }
 
-            ReWritePlaylist();
+            ReWritePlaylist(false);
         }
 
-        private void CreateDirectory()
+        private void CreateDirectory(string p_Path = PATH)
         {
             /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
             if (m_ErrorNumber < ERROR_LIMIT)
             {
-                if (!Directory.Exists(PATH))
+                if (!Directory.Exists(p_Path))
                 {
                     try
                     {
-                        Directory.CreateDirectory(PATH);
-                        Console.WriteLine($"Directory {PATH} Created");
+                        Directory.CreateDirectory(p_Path);
+                        Console.WriteLine($"Directory {p_Path} Created");
                     }
                     catch (Exception l_Exception)
                     {
@@ -156,7 +155,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private void ReWritePlaylist()
+        public void ReWritePlaylist(bool p_WriteDifferentFormat, string p_Path = PATH, LevelFormat p_LevelFormat = null)
         {
             /// This Method Serialise the data from m_Level and create a playlist file depending on the path parameter
             /// and it's PrefixName parameter (Prefix is usefull to sort playlist in the game).
@@ -169,11 +168,14 @@ namespace BSDiscordRanking
             {
                 try
                 {
+                    if (!p_WriteDifferentFormat)
+                        p_LevelFormat = m_Level;
+
                     if (m_Level != null)
                     {
                         if (m_Level.songs.Count > 0)
                         {
-                            File.WriteAllText($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(m_Level));
+                            File.WriteAllText($"{p_Path}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(p_LevelFormat));
                             Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
                             new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
                         }
@@ -187,20 +189,22 @@ namespace BSDiscordRanking
                     {
                         Console.WriteLine("Seems like you forgot to load the Level, Attempting to load..");
                         LoadLevel();
-                        ReWritePlaylist();
+                        ReWritePlaylist(p_WriteDifferentFormat, p_Path, p_LevelFormat);
                     }
                 }
                 catch
+
                 {
                     Console.WriteLine(
                         "An error occured While attempting to Write the Playlist file. (missing directory?)");
                     Console.WriteLine("Attempting to create the directory..");
                     m_ErrorNumber++;
-                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                    CreateDirectory(p_Path); /// m_ErrorNumber will increase again if the directory creation fail.
                     Thread.Sleep(200);
-                    ReWritePlaylist();
+                    ReWritePlaylist(false, p_Path, p_LevelFormat);
                 }
             }
+
             else
             {
                 Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
@@ -248,7 +252,7 @@ namespace BSDiscordRanking
             SocketCommandContext p_Context)
         {
             /// <summary>
-            /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist() Method to update the file.
+            /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
             /// It use the Hash, the Selected Characteristic (Standard, Lawless, etc)
             /// and the choosed Difficulty Name (Easy, Normal, Hard, Expert, ExpertPlus);
             ///
@@ -272,19 +276,19 @@ namespace BSDiscordRanking
                             do /// Might want to implement Trim()
                             {
                                 if (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0])
-                                    l_SBMapName.Remove(l_NewMapName.Length-1, 1);
+                                    l_SBMapName.Remove(l_NewMapName.Length - 1, 1);
                                 if (l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0])
                                     l_SBMapName.Remove(0, 1);
                                 l_NewMapName = l_SBMapName.ToString();
                             } while (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0] || l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0]);
 
-                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, name = l_NewMapName };
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = l_NewMapName};
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
                                 name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = p_MinScoreRequirement
                             };
-                            l_SongFormat.difficulties = new List<InSongFormat> { l_InSongFormat };
+                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -326,7 +330,7 @@ namespace BSDiscordRanking
                                         if (l_ScoreRequirementEdit)
                                         {
                                             p_Context.Channel.SendMessageAsync($"> :ballot_box_with_check: Min Score Requirement changed to {l_InSongFormat.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
-                                            ReWritePlaylist();
+                                            ReWritePlaylist(false);
                                         }
                                         else if (l_DifficultyAlreadyExist)
                                         {
@@ -336,21 +340,21 @@ namespace BSDiscordRanking
                                         {
                                             m_Level.songs[l_I].difficulties.Add(l_InSongFormat);
                                             p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
-                                            ReWritePlaylist();
+                                            ReWritePlaylist(false);
                                         }
                                     }
                                     else
                                     {
                                         m_Level.songs.Add(l_SongFormat);
                                         p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
-                                        ReWritePlaylist();
+                                        ReWritePlaylist(false);
                                     }
                                 }
                                 else
                                 {
                                     m_Level.songs.Add(l_SongFormat);
                                     p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
-                                    ReWritePlaylist();
+                                    ReWritePlaylist(false);
                                 }
                             }
                             else
@@ -388,7 +392,7 @@ namespace BSDiscordRanking
             SocketCommandContext p_SocketCommandContext)
         {
             /// <summary>
-            /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist() Method to update the file.
+            /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
             /// It use the Hash, the Selected Characteristic (Standard, Lawless, etc)
             /// and the choosed Difficulty Name (Easy, Normal, Hard, Expert, ExpertPlus);
             ///
@@ -406,13 +410,13 @@ namespace BSDiscordRanking
                         bool l_DifficultyAlreadyExist = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name };
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
 
                             InSongFormat l_InSongFormat = new InSongFormat
                             {
                                 name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = 0
                             };
-                            l_SongFormat.difficulties = new List<InSongFormat> { l_InSongFormat };
+                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -456,24 +460,24 @@ namespace BSDiscordRanking
 
                                             p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
                                             m_MapDeleted = true;
-                                            ReWritePlaylist();
+                                            ReWritePlaylist(false);
                                         }
                                         else
                                         {
                                             p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
-                                            ReWritePlaylist();
+                                            ReWritePlaylist(false);
                                         }
                                     }
                                     else
                                     {
                                         p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
-                                        ReWritePlaylist();
+                                        ReWritePlaylist(false);
                                     }
                                 }
                                 else
                                 {
                                     p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
-                                    ReWritePlaylist();
+                                    ReWritePlaylist(false);
                                 }
                             }
                             else
@@ -516,6 +520,11 @@ namespace BSDiscordRanking
         public static string GetPath()
         {
             return PATH;
+        }
+
+        public LevelFormat GetLevelData()
+        {
+            return m_Level;
         }
 
         public static BeatSaverFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext)

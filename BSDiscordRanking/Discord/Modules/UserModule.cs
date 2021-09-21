@@ -398,6 +398,102 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
         }
 
+        private void CreateUnpassedPlaylist(string p_ScoreSaberID, int p_Level, string p_Path)
+        {
+            PlayerPassFormat l_PlayerPass = new Player(p_ScoreSaberID).ReturnPass();
+            Level l_Level = new Level(p_Level);
+            LevelFormat l_LevelFormat = l_Level.GetLevelData();
+            foreach (var l_LevelSong in l_LevelFormat.songs)
+            {
+                foreach (var l_PlayerPassSong in l_PlayerPass.songs)
+                {
+                    if (String.Equals(l_LevelSong.hash, l_PlayerPassSong.hash, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        foreach (var l_LevelSongDifficulty in l_LevelSong.difficulties)
+                        {
+                            foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
+                            {
+                                if (l_LevelSongDifficulty.characteristic == l_PlayerPassSongDifficulty.characteristic && l_LevelSongDifficulty.name == l_PlayerPassSongDifficulty.name)
+                                {
+                                    /// Here remove diff or map if it's the only ranked diff
+                                    if (l_PlayerPassSong.difficulties.Count <= 1)
+                                    {
+                                        l_LevelFormat.songs.Remove(l_LevelSong);
+                                    }
+                                    else
+                                    {
+                                        l_LevelSong.difficulties.Remove(l_LevelSongDifficulty);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            l_Level.ReWritePlaylist(true, p_Path, l_LevelFormat); /// Write the personal playlist file in the PATH folder.
+        }
+
+        [Command("getunpassedplaylist")]
+        [Alias("gupl")]
+        [Summary("Sends Playlist only containing the maps you didn't pass. Use `all` instead of the level id to get the whole level folder.")]
+        private void GetUnpassedPlaylist(string p_Level)
+        {
+            const string PATH = "./PersonalLevels/";
+            const string FILENAME = "PersonalLevels";
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+                Context.Channel.SendMessageAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+            else
+            {
+                if (int.TryParse(p_Level, out _))
+                {
+                    string l_Path = PATH + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
+                    
+                    if (File.Exists(l_Path)) /// Mean there is already a personnal playlist file.
+                        File.Delete(l_Path);
+
+                    CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), int.Parse(p_Level), PATH);
+                    Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's your playlist!");
+                    Context.Channel.SendMessageAsync("> :x: This level does not exist.");
+                }
+                else if (p_Level == "all")
+                {
+                    ///// Delete all personnal files before generating new ones /////////
+                    if (File.Exists("PersonalLevels.zip"))
+                        File.Delete("PersonalLevels.zip");
+
+                    DirectoryInfo l_Directory = new DirectoryInfo(PATH);
+                    foreach (FileInfo l_File in l_Directory.EnumerateFiles())
+                    {
+                        l_File.Delete();
+                    }
+
+                    foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories())
+                    {
+                        l_Dir.Delete(true);
+                    }
+                    ///////////////////////////////////////////////////////////////////////
+
+                    foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+                    {
+                        CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), l_LevelID, PATH);
+                    }
+
+                    try
+                    {
+                        ZipFile.CreateFromDirectory(PATH, $"{FILENAME}.zip");
+                        Context.Channel.SendFileAsync($"{FILENAME}.zip", "> :white_check_mark: Here's your playlist folder!");
+                    }
+                    catch
+                    {
+                        Context.Channel.SendMessageAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
+                    }
+                }
+                else
+                    Context.Channel.SendMessageAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
+            }
+        }
+
         [Command("profile")]
         [Alias("stats")]
         [Summary("Sends your profile's informations (Level, Passes, Trophies etc).")]

@@ -834,7 +834,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private PlayerPassFormat ReturnPass()
+        public PlayerPassFormat ReturnPass()
         {
             /// This method return the Serialised version of the current saved Player's pass, ruturn an empty on if none.
             PlayerPassFormat l_PlayerPass = new PlayerPassFormat();
