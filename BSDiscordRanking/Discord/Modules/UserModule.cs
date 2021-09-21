@@ -646,7 +646,7 @@ namespace BSDiscordRanking.Discord.Modules
 
             LeaderboardController l_LeaderboardController = new LeaderboardController();
             int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
-                p_X.ScoreSaberID == UserController.GetPlayer(p_DiscordOrScoreSaberID));
+                p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
             EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
