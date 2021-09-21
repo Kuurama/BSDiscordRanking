@@ -403,13 +403,28 @@ namespace BSDiscordRanking.Discord.Modules
         [Summary("Sends your profile's informations (Level, Passes, Trophies etc).")]
         public async Task Profile()
         {
-            if (!UserController.UserExist(Context.User.Id.ToString()))
+            await SendProfile(Context.User.Id.ToString(), false);
+        }
+
+        [Command("profile")]
+        [Alias("stats")]
+        [Summary("Sends someone else profile's informations (Level, Passes, Trophies etc).")]
+        public async Task Profile(string p_DiscordID)
+        {
+            await SendProfile(Context.User.Id.ToString(), true);
+        }
+
+        private async Task SendProfile(string p_DiscordID, bool p_IsSomeoneElse)
+        {
+            if (!UserController.UserExist(p_DiscordID))
             {
-                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+                await Context.Channel.SendMessageAsync(p_IsSomeoneElse
+                    ? "> :x: Sorry, this person doesn't have any account linked."
+                    : $"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
             }
             else
             {
-                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                Player l_Player = new Player(UserController.GetPlayer(p_DiscordID));
                 var l_PlayerStats = l_Player.GetStats();
 
                 int l_Plastics = 0;
@@ -473,8 +488,8 @@ namespace BSDiscordRanking.Discord.Modules
 
         private string GenerateProgressBar(int p_Value, int p_MaxValue, int p_Size)
         {
-            float l_Percentage = (float)p_Value / p_MaxValue;
-            int l_Progress = (int)Math.Round(p_Size * l_Percentage);
+            float l_Percentage = (float) p_Value / p_MaxValue;
+            int l_Progress = (int) Math.Round(p_Size * l_Percentage);
             int l_EmptyProgress = p_Size - l_Progress;
             string l_ProgressText = "";
             for (int l_I = 0; l_I < l_Progress; l_I++)
@@ -538,7 +553,7 @@ namespace BSDiscordRanking.Discord.Modules
                             var l_Builder = new EmbedBuilder()
                                 .AddField("Pool", $"Level {l_PerLevelFormat.LevelID}", true)
                                 .AddField("Progress Bar", GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10), true)
-                                .AddField("Progress Amount", $"{Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
+                                .AddField("Progress Amount", $"{Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
                             var l_Embed = l_Builder.Build();
                             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             return;
@@ -571,7 +586,7 @@ namespace BSDiscordRanking.Discord.Modules
                 else
                 {
                     int l_MessagesIndex = 0;
-                    List<string> l_Messages = new List<string> { "" };
+                    List<string> l_Messages = new List<string> {""};
                     if (l_PlayerPassPerLevel.Levels != null)
                     {
                         var l_Builder = new EmbedBuilder()
@@ -583,7 +598,7 @@ namespace BSDiscordRanking.Discord.Modules
                             if (l_PerLevelFormat.NumberOfMapDiffInLevel > 0)
                             {
                                 if (l_Messages[l_MessagesIndex].Length +
-                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
                                         .Length > 900)
                                 {
                                     l_MessagesIndex++;
@@ -595,7 +610,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 }
 
                                 l_Messages[l_MessagesIndex] +=
-                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
                                     Environment.NewLine;
                             }
                         }
@@ -657,7 +672,7 @@ namespace BSDiscordRanking.Discord.Modules
                             }
 
                             var l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {l_PerLevelFormat.TrophyString}",
-                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
+                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
                             var l_Embed = l_Builder.Build();
                             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             return;
