@@ -517,6 +517,7 @@ namespace BSDiscordRanking
                 int l_NumberOfDifficulties = 0;
                 int l_MessagesIndex = 0;
                 float l_Weighting = 0f;
+                int l_PoolID = 0;
                 string l_DifficultyShown = "";
                 int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
                 Trophy l_Trophy = new Trophy();
@@ -578,6 +579,7 @@ namespace BSDiscordRanking
                         if (!l_LevelExist)
                             continue;
                         l_Weighting = l_Levels[l_Y].m_Level.weighting;
+                        l_PoolID = l_Levels[l_Y].m_LevelID;
                         foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
                         {
                             foreach (var l_Score in m_PlayerScore.scores)
@@ -633,7 +635,7 @@ namespace BSDiscordRanking
                                                                     if (m_PlayerStats.IsFirstScan <= 0)
                                                                     {
                                                                         if (l_Messages[l_MessagesIndex].Length +
-                                                                            $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y - 1}** (+{l_Weighting * 0.375f} RPL)\n".Length
+                                                                            $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n".Length
                                                                             > 1900)
                                                                         {
                                                                             l_MessagesIndex++;
@@ -647,7 +649,7 @@ namespace BSDiscordRanking
                                                                         /// Display new pass (new diff passed while there was already a passed diff) 1/2
 
                                                                         l_Messages[l_MessagesIndex] +=
-                                                                            $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y - 1}** (+{l_Weighting * 0.375f} RPL)\n";
+                                                                            $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n";
                                                                     }
 
                                                                     l_Passes++;
@@ -691,7 +693,7 @@ namespace BSDiscordRanking
                                                             if (m_PlayerStats.IsFirstScan <= 0)
                                                             {
                                                                 if (l_Messages[l_MessagesIndex].Length >
-                                                                    1900 - $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y + 1}** (+{l_Weighting * 0.375f} RPL)\n".Length)
+                                                                    1900 - $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n".Length)
                                                                 {
                                                                     l_MessagesIndex++;
                                                                 }
@@ -704,7 +706,7 @@ namespace BSDiscordRanking
                                                                 /// Display new pass (new diff passed while there was already a passed diff) 2/2
 
                                                                 l_Messages[l_MessagesIndex] +=
-                                                                    $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_Y + 1}** (+{l_Weighting * 0.375f} RPL)\n"; /// Display new pass 2/2
+                                                                    $":white_check_mark: Passed ***``{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}``*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n"; /// Display new pass 2/2
                                                             }
 
                                                             l_Passes++;

@@ -17,7 +17,7 @@ namespace BSDiscordRanking
     {
         public LevelFormat m_Level;
         private BeatSaverFormat m_BeatSaver;
-        private int m_LevelID;
+        public int m_LevelID;
         public const string SUFFIX_NAME = "_Level";
         public bool m_MapAdded;
         public bool m_MapDeleted;
