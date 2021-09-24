@@ -584,7 +584,7 @@ namespace BSDiscordRanking
                         {
                             foreach (var l_Score in m_PlayerScore.scores)
                             {
-                                if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS"))
+                                if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS") && !l_Score.mods.Contains("NB"))
                                 {
                                     if (String.Equals(l_Song.hash, l_Score.songHash, StringComparison.CurrentCultureIgnoreCase))
                                     {
