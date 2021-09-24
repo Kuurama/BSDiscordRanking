@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
@@ -13,10 +14,7 @@ namespace BSDiscordRanking.Controllers
 
         private void WriteRolesDB()
         {
-            if (!File.Exists("./roles.json"))
-            {
-                File.WriteAllText($"./roles.json", System.Text.Json.JsonSerializer.Serialize(m_RoleController));
-            }
+            File.WriteAllText($"./roles.json", System.Text.Json.JsonSerializer.Serialize(m_RoleController));
         }
 
         public static RolesFormat ReadRolesDB()
@@ -29,7 +27,7 @@ namespace BSDiscordRanking.Controllers
                     return l_RolesFormat;
                 }
             }
-            return new RolesFormat() {Roles = new List<RoleFormat>()};
+            return new RolesFormat {Roles = new List<RoleFormat>()};
         }
         
         public async void CreateAllRoles(SocketCommandContext p_Context, bool Overwrite)
@@ -40,8 +38,9 @@ namespace BSDiscordRanking.Controllers
                 if (!RoleExist($"Lv.{l_LevelID}") || Overwrite)
                 {
                     var l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
-                    m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
+                    m_RoleController.Roles.Add(new RoleFormat{RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
                 }
+                Thread.Sleep(60);
             }
             if (!RoleExist($"{ConfigController.GetConfig().RolePrefix} Ranked") || Overwrite)
             {
@@ -50,7 +49,7 @@ namespace BSDiscordRanking.Controllers
                 m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = 0});
             }
             WriteRolesDB(); 
-        }   
+        }
 
         private bool RoleExist(string p_Name)
         { 

@@ -524,7 +524,7 @@ namespace BSDiscordRanking
                 List<string> l_Messages = new List<string> { "" };
                 List<int> l_ExistingLevelID = new List<int>();
                 int l_BiggerLevelID = 0;
-                var l_LevelController = new LevelController(); /// Constructor make levelcontroller FetchLevel()
+                var l_LevelController = new LevelController(); /// Constructor makes levelcontroller FetchLevel()
                 LoadLevelControllerCache();
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
                 m_PlayerPass = new PlayerPassFormat
@@ -975,7 +975,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private void ResetLevels()
+        public void ResetLevels()
         {
             if (m_PlayerStats.LevelIsPassed != null)
             {
@@ -1264,7 +1264,7 @@ namespace BSDiscordRanking
                         m_PlayerStats.IsFirstScan = p_IsFirstScan;
                     }
 
-                    if (p_Passed != null || p_LevelID >= 0)
+                    if (p_Passed != null && p_LevelID >= 0)
                     {
                         m_PlayerStats.LevelIsPassed ??= new List<bool>();
                         bool l_LevelIsPassed = false;
@@ -1273,7 +1273,11 @@ namespace BSDiscordRanking
                         // ReSharper disable once PossibleNullReferenceException
                         foreach (var l_Pass in p_Passed)
                         {
-                            if (l_Pass) l_LevelIsPassed = true;
+                            if (l_Pass)
+                            {
+                                l_LevelIsPassed = true;
+                                break;
+                            }
                         }
 
                         for (int l_LevelID = 0; l_LevelID < p_LevelID; l_LevelID++)
@@ -1281,7 +1285,6 @@ namespace BSDiscordRanking
                             if (m_PlayerStats.LevelIsPassed.Count < p_LevelID)
                             {
                                 m_PlayerStats.LevelIsPassed.Add(false);
-                                Console.WriteLine(m_PlayerStats.LevelIsPassed.Count);
                             }
                         }
 

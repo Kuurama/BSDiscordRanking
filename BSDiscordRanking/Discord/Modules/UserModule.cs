@@ -134,7 +134,7 @@ namespace BSDiscordRanking.Discord.Modules
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
-                    await ReplyAsync($"> 🎉 Congratulations! <@{Context.User.Id.ToString()}> You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}profile`` command.");
+                    await ReplyAsync($"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result} new maps!\n> To see your profile, try the ``{ConfigController.GetConfig().CommandPrefix[0]}profile`` command.");
                 else
                 {
                     if (l_FirsScan)
@@ -143,14 +143,15 @@ namespace BSDiscordRanking.Discord.Modules
                         await ReplyAsync($"> :x: Sorry <@{Context.User.Id.ToString()}>, you didn't pass any new maps.");
                 }
 
+                int l_NewPlayerLevel = l_Player.GetPlayerLevel();
                 if (l_OldPlayerLevel != l_Player.GetPlayerLevel())
                 {
-                    if (l_OldPlayerLevel < l_Player.GetPlayerLevel())
-                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! You are now Level {l_Player.GetPlayerLevel()}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}ggp`` command.");
+                    if (l_OldPlayerLevel < l_NewPlayerLevel)
+                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! You are now Level {l_NewPlayerLevel}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}ggp`` command.");
                     else
-                        await ReplyAsync($"> <:NotStonks:884057234886238208> You lost levels. You are now Level {l_Player.GetPlayerLevel()}");
+                        await ReplyAsync($"> <:NotStonks:884057234886238208> You lost levels. You are now Level {l_NewPlayerLevel}");
                     await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. ``(The bot should now be responsive again)``");
-                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context);
+                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, Context.User.Id, l_NewPlayerLevel);
                 }
             }
         }
@@ -597,7 +598,7 @@ namespace BSDiscordRanking.Discord.Modules
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
-            if (p_DiscordOrScoreSaberID.Length == 16 || p_DiscordOrScoreSaberID.Length == 17)
+            if (p_DiscordOrScoreSaberID.Length is 16 or 17)
             {
                 if (!UserController.AccountExist(p_DiscordOrScoreSaberID))
                 {
@@ -618,15 +619,15 @@ namespace BSDiscordRanking.Discord.Modules
                     }
                 }
             }
-            else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
+            else if (UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
+            }
+            else
             {
                 await Context.Channel.SendMessageAsync(p_IsSomeoneElse
                     ? "> :x: Sorry, this person doesn't have any account linked."
                     : $"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
-            }
-            else
-            {
-                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
             }
 
             Player l_Player = new Player(p_DiscordOrScoreSaberID);

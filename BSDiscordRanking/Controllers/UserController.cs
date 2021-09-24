@@ -83,47 +83,53 @@ namespace BSDiscordRanking.Controllers
             return false;
         }
 
-        public static async Task UpdatePlayerLevel(SocketCommandContext p_Context)
+        public static async Task UpdatePlayerLevel(SocketCommandContext p_Context, ulong p_DiscordID, int p_Level)
         {
-            if (!UserExist(p_Context.User.Id.ToString())) return;
-            int l_PlayerLevel = new Player(GetPlayer(p_Context.User.Id.ToString())).GetPlayerLevel();
-            foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
-            {
-                if (l_Role.LevelID == l_PlayerLevel)
-                    await ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                else if (l_Role.LevelID < l_PlayerLevel && GetConfig().GiveOldRoles)
-                    await ((IGuildUser)p_Context.User).AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                Thread.Sleep(60); // Discord API limit
-            }
-
-            SocketGuildUser l_User = p_Context.User as SocketGuildUser;
-            foreach (SocketRole l_UserRole in l_User.Roles)
+            if (!UserExist(p_DiscordID.ToString())) return;
+            SocketGuildUser l_User = p_Context.Guild.GetUser(p_DiscordID);
+            if (l_User != null)
             {
                 foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
                 {
-                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID > l_PlayerLevel)
-                        await ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                    else if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != l_PlayerLevel && !GetConfig().GiveOldRoles)
-                        await ((IGuildUser)p_Context.User).RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                    if (l_Role.LevelID == p_Level)
+                        await l_User.AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                    else if (l_Role.LevelID < p_Level && GetConfig().GiveOldRoles)
+                        await l_User.AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                     Thread.Sleep(60); // Discord API limit
                 }
-            }
 
-            await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{p_Context.User.Id.ToString()}> Your roles are now updated.\n(if you lost levels, you can still do the w1RR command on the other bscc bot to get them all back)");
+                foreach (SocketRole l_UserRole in l_User.Roles)
+                {
+                    foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
+                    {
+                        if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID > p_Level)
+                            await l_User.RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                        else if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != p_Level && !GetConfig().GiveOldRoles)
+                            await l_User.RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                        Thread.Sleep(60); // Discord API limit
+                    }
+                }
+
+                await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{l_User.Id.ToString()}>, Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level (or use w1RR on the other bot to get them all back).");
+            }
+            else
+            {
+                Console.WriteLine("Can't find this user, make him type a message straight before using the command!");
+            }
         }
 
         public static bool GiveRemoveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context, bool p_Remove)
         {
-            foreach (var l_Role in RoleController.ReadRolesDB().Roles)
+            var l_User = p_Context.Guild.GetUser(p_DiscordID);
+            if (l_User != null)
             {
-                foreach (var l_GuildRole in p_Context.Guild.Roles)
+                foreach (var l_Role in RoleController.ReadRolesDB().Roles)
                 {
-                    if (string.Equals(l_Role.RoleName, $"{GetConfig().RolePrefix} Ranked", StringComparison.OrdinalIgnoreCase))
+                    foreach (var l_GuildRole in p_Context.Guild.Roles)
                     {
-                        if (string.Equals(l_Role.RoleName, l_GuildRole.Name, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(l_Role.RoleName, $"{GetConfig().RolePrefix} Ranked", StringComparison.OrdinalIgnoreCase))
                         {
-                            var l_User = p_Context.Guild.GetUser(p_DiscordID);
-                            if (l_User != null)
+                            if (string.Equals(l_Role.RoleName, l_GuildRole.Name, StringComparison.OrdinalIgnoreCase))
                             {
                                 foreach (var l_UserRole in l_User.Roles)
                                 {
@@ -138,17 +144,17 @@ namespace BSDiscordRanking.Controllers
 
                                 if (!p_Remove)
                                     l_User.AddRoleAsync(l_GuildRole);
-                            }
-                            else
-                            {
-                                Console.WriteLine("Can't find this user, make him type a message straight before using the command!");
-                                return false;
-                            }
 
-                            return true;
+                                return true;
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                Console.WriteLine("Can't find this user, make him type a message straight before using the command!");
+                return false;
             }
 
             return false;
@@ -181,6 +187,19 @@ namespace BSDiscordRanking.Controllers
                 if (p_DisID == l_User.DiscordID)
                 {
                     return l_User.ScoreSaberID;
+                }
+            }
+
+            return null;
+        }
+        
+        public static string GetDiscordID(string p_ScoreSaberID)
+        {
+            foreach (var l_User in m_Users)
+            {
+                if (p_ScoreSaberID == l_User.ScoreSaberID)
+                {
+                    return l_User.DiscordID;
                 }
             }
 

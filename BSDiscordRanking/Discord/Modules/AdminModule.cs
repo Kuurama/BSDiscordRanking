@@ -21,7 +21,7 @@ namespace BSDiscordRanking.Discord.Modules
             ConfigController.GetConfig();
             ConfigController.m_ConfigFormat.LoggingChannel = Context.Channel.Id;
             ConfigController.ReWriteConfig();
-            ReplyAsync("> :white_check_mark: This channel is now used as log-channel.");
+            await ReplyAsync("> :white_check_mark: This channel is now used as log-channel.");
         }
 
 
@@ -178,17 +178,17 @@ namespace BSDiscordRanking.Discord.Modules
                             else if (l_MapExistCheck.DifferentMinScore)
                             {
                                 l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), Context);
-                                        EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                                        l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
-                                        l_EmbedBuilder.WithDescription(l_Map.name);
-                                        l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
-                                        l_EmbedBuilder.AddField("Level:", p_Level, true);
-                                        l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
-                                        l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
-                                        l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
-                                        l_EmbedBuilder.WithColor(Color.Blue);
-                                        await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                                l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
+                                l_EmbedBuilder.WithDescription(l_Map.name);
+                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
+                                l_EmbedBuilder.AddField("Level:", p_Level, true);
+                                l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
+                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
+                                l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                l_EmbedBuilder.WithColor(Color.Blue);
+                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                             }
                             else
                             {
@@ -295,6 +295,117 @@ namespace BSDiscordRanking.Discord.Modules
             }
         }
 
+        [Command("setlevel")]
+        [Summary("Set a specific Level to someone + change his stats and roles.")]
+        public async Task SetLevelRole(string p_DiscordOrScoreSaberID, int p_Level)
+        {
+            if (!UserController.UserExist(p_DiscordOrScoreSaberID))
+                return;
+            Player l_Player = new Player(UserController.GetPlayer(p_DiscordOrScoreSaberID));
+            l_Player.LoadStats();
+            l_Player.ResetLevels();
+            for (int l_I = 0; l_I < p_Level; l_I++)
+            {
+                l_Player.m_PlayerStats.LevelIsPassed.Add(true);
+            }
+            l_Player.ReWriteStats();
+            SocketGuildUser l_User = Context.Guild.GetUser(Convert.ToUInt64(p_DiscordOrScoreSaberID));
+            await ReplyAsync($"> :clock1: The bot will now update {l_User.Username}'s roles. This step can take a while. ``(The bot should now be responsive again)``"); 
+            var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_User.Id, p_Level);
+        }
+
+        [Command("scan")]
+        [Alias("dc")]
+        [Summary("Scans a specific score saber account and add it to the database.")]
+        public async Task Scan_Scores(string p_DiscordOrScoreSaberID)
+        {
+            bool l_IsDiscordLinked = false;
+            string l_ScoreSaberOrDiscordName = "";
+            string l_DiscordID = "";
+            SocketGuildUser l_User = null;
+            if (p_DiscordOrScoreSaberID.Length is 16 or 17)
+            {
+                if (!UserController.AccountExist(p_DiscordOrScoreSaberID))
+                {
+                    await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
+                    return;
+                }
+
+                if (UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
+                {
+                    l_User = Context.Guild.GetUser(Convert.ToUInt64(UserController.GetDiscordID(p_DiscordOrScoreSaberID)));
+                    l_IsDiscordLinked = true;
+                    l_DiscordID = l_User.Id.ToString();
+                    l_ScoreSaberOrDiscordName = l_User.Username;
+                }
+            }
+            else if (UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                l_User = Context.Guild.GetUser(Convert.ToUInt64(p_DiscordOrScoreSaberID));
+                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
+                if (l_User != null)
+                {
+                    l_IsDiscordLinked = true;
+                    l_DiscordID = l_User.Id.ToString();
+                    l_ScoreSaberOrDiscordName = l_User.Username;
+                }
+                else
+                {
+                    await ReplyAsync("> :x: This Discord User isn't accessible yet.");
+                    return;
+                }
+            }
+            else
+                await Context.Channel.SendMessageAsync("> :x: Sorry, this person doesn't have any account linked.");
+
+            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            if (!l_IsDiscordLinked)
+            {
+                l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.playerInfo.playerName;
+            }
+
+            int l_OldPlayerLevel = l_Player.GetPlayerLevel(); /// By doing so, as a result => loadstats() inside too.
+
+            bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
+            var l_FetchPass = l_Player.FetchPass(Context);
+            if (l_FetchPass.Result >= 1)
+            {
+                if (l_IsDiscordLinked)
+                {
+                    await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result} new maps!\n");
+                }
+            }
+            else
+            {
+                if (l_FirsScan)
+                    await ReplyAsync($"> Oh, it seems like {l_ScoreSaberOrDiscordName} didn't pass any maps from the pools.");
+                else
+                    await ReplyAsync($"> :x: Sorry but {l_ScoreSaberOrDiscordName} didn't pass any new maps.");
+            }
+
+            int l_NewPlayerLevel = l_Player.GetPlayerLevel();
+            if (l_OldPlayerLevel != l_NewPlayerLevel)
+            {
+                if (l_OldPlayerLevel < l_NewPlayerLevel)
+                    if (l_IsDiscordLinked)
+                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! <@{l_DiscordID}>, You are now Level {l_NewPlayerLevel}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}ggp`` command.");
+                    else
+                        await ReplyAsync($"> <:Stonks:884058036371595294> {l_ScoreSaberOrDiscordName} is now Level {l_NewPlayerLevel}.\n");
+                else if (l_IsDiscordLinked)
+                    await ReplyAsync($"> <:NotStonks:884057234886238208> <@{l_DiscordID}>, You lost levels. You are now Level {l_NewPlayerLevel}");
+                else
+                    await ReplyAsync($"> <:NotStonks:884057234886238208> {l_ScoreSaberOrDiscordName} lost levels. they are now Level {l_NewPlayerLevel}");
+                if (l_IsDiscordLinked)
+                {
+                    await ReplyAsync($"> :clock1: The bot will now update {l_ScoreSaberOrDiscordName}'s roles. This step can take a while. ``(The bot should now be responsive again)``");
+                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_User.Id, l_NewPlayerLevel);
+                }
+            }
+
+            if (!l_IsDiscordLinked)
+                await ReplyAsync($"> :white_check_mark: {l_ScoreSaberOrDiscordName}'s info added/updated");
+        }
+
         [Command("resetscorerequirement")]
         [Summary("Sets all maps's score requirement from a level to 0.")]
         public async Task ResetScoreRequirement(int p_Level)
@@ -313,7 +424,7 @@ namespace BSDiscordRanking.Discord.Modules
             await ReplyAsync("> :white_check_mark: After the bot finished to reset the config, it will stops.");
             ConfigController.CreateConfig();
         }
-        
+
         [Command("shutdown")]
         [Summary("Shutdown the bot.")]
 #pragma warning disable 1998
