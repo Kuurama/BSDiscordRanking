@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
@@ -30,7 +31,7 @@ namespace BSDiscordRanking.Controllers
             return new RolesFormat {Roles = new List<RoleFormat>()};
         }
         
-        public async void CreateAllRoles(SocketCommandContext p_Context, bool Overwrite)
+        public async Task CreateAllRoles(SocketCommandContext p_Context, bool Overwrite)
         {
             ReadRolesDB();
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)

@@ -58,7 +58,7 @@ namespace BSDiscordRanking.Discord.Modules
         [Summary("Creates or updates level's roles. (discord roles)")]
         public async Task CreateRoles()
         {
-            new RoleController().CreateAllRoles(Context, false);
+            await new RoleController().CreateAllRoles(Context, false);
         }
 
         [Command("allowuser")]
