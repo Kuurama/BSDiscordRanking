@@ -598,14 +598,14 @@ namespace BSDiscordRanking.Discord.Modules
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
-            if (p_DiscordOrScoreSaberID.Length is 16 or 17)
-            {
-                if (!UserController.AccountExist(p_DiscordOrScoreSaberID))
-                {
-                    await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
-                    return;
-                }
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
 
+            if (UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
+            }
+            else if (l_IsScoreSaberAccount)
+            {
                 if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
                 {
                     bool l_IsAdmin = false;
@@ -619,23 +619,21 @@ namespace BSDiscordRanking.Discord.Modules
                     }
                 }
             }
-            else if (UserController.UserExist(p_DiscordOrScoreSaberID))
+            else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
             {
-                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
-            }
-            else
-            {
-                await Context.Channel.SendMessageAsync(p_IsSomeoneElse
-                    ? "> :x: Sorry, this person doesn't have any account linked."
+                await ReplyAsync(p_IsSomeoneElse
+                    ? "> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID."
                     : $"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+                return;
             }
-
+            
             Player l_Player = new Player(p_DiscordOrScoreSaberID);
             var l_PlayerStats = l_Player.GetStats();
 
             int l_Plastics = 0;
             int l_Silvers = 0;
             int l_Golds = 0;
+
             int l_Diamonds = 0;
             foreach (var l_Trophy in l_PlayerStats.Trophy)
             {
@@ -646,8 +644,10 @@ namespace BSDiscordRanking.Discord.Modules
             }
 
             LeaderboardController l_LeaderboardController = new LeaderboardController();
+
             int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
                 p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
+
             EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
@@ -656,6 +656,7 @@ namespace BSDiscordRanking.Discord.Modules
             if (l_FindIndex == -1)
                 l_EmbedBuilder.AddField("Server Rank", ":medal: #0 - 0 RPL", true);
             else
+
                 l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
@@ -680,6 +681,7 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
             l_EmbedBuilder.WithFooter("#LoveArche",
                 "https://images.genius.com/d4b8905048993e652aba3d8e105b5dbf.1000x1000x1.jpg");
+
             l_EmbedBuilder.WithColor(Color.Blue);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
@@ -696,8 +698,11 @@ namespace BSDiscordRanking.Discord.Modules
             float l_Percentage = (float)p_Value / p_MaxValue;
             int l_Progress = (int)Math.Round(p_Size * l_Percentage);
             int l_EmptyProgress = p_Size - l_Progress;
+
             string l_ProgressText = "";
-            for (int l_I = 0; l_I < l_Progress; l_I++)
+            for (int l_I = 0;
+                l_I < l_Progress;
+                l_I++)
             {
                 l_ProgressText += "▇";
             }
