@@ -68,7 +68,7 @@ namespace BSDiscordRanking.Discord.Modules
                 l_EmbedBuilder.WithDescription("Ranked difficulties:");
                 l_EmbedBuilder.WithTitle(l_Map.name);
                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
-                l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).versions[^1].key}");
+                l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).id}");
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             }
         }

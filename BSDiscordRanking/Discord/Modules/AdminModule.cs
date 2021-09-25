@@ -168,7 +168,7 @@ namespace BSDiscordRanking.Discord.Modules
                                     l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                     l_EmbedBuilder.AddField("Level:", p_Level, true);
                                     l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
-                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
+                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                                     l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                     l_EmbedBuilder.WithColor(Color.Blue);
@@ -184,7 +184,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
                                 l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
-                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.versions[^1].key}", false);
+                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithColor(Color.Blue);
@@ -246,6 +246,7 @@ namespace BSDiscordRanking.Discord.Modules
                                 l_EmbedBuilder.AddField("Map name:", l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
                                 l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
+                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                             }
 
                             l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);

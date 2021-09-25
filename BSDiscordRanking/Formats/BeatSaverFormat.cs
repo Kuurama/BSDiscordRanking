@@ -47,7 +47,7 @@ namespace BSDiscordRanking.Formats
     public class Versions
     {
         public string hash { get; set; }
-        public string key { get; set; }
+        public string key { get; set; } /// This field seems to not exist on newest uploaded maps
         public string state { get; set; }
         public string createdAt { get; set; }
         public int sageScore { get; set; }
