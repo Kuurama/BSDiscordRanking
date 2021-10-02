@@ -75,7 +75,7 @@ namespace BSDiscordRanking.Discord.Modules
 
 
         [Command("link")]
-        [Summary("Links your Discord account to your ScoreSaber's one.")]
+        [Summary("Links your ScoreSaber account to your Discord's one.")]
         public async Task LinkUser(string p_ScoreSaberLink = "")
         {
             if (!IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
@@ -140,7 +140,7 @@ namespace BSDiscordRanking.Discord.Modules
                     if (l_FirsScan)
                         await ReplyAsync($"> Oh <@{Context.User.Id.ToString()}>, Seems like you didn't pass any maps from the pools.");
                     else
-                        await ReplyAsync($"> :x: Sorry <@{Context.User.Id.ToString()}>, you didn't pass any new maps.");
+                        await ReplyAsync($"> :x: Sorry <@{Context.User.Id.ToString()}>, but you didn't pass any new maps.");
                 }
 
                 int l_NewPlayerLevel = l_Player.GetPlayerLevel();

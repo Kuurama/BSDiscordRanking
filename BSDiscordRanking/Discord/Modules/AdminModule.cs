@@ -209,6 +209,7 @@ namespace BSDiscordRanking.Discord.Modules
         }
 
         [Command("removemap")]
+        [Alias("deletemap")]
         [Summary("Searches then removes a map difficulty from the levels.")]
         public async Task RemoveMap(string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard")
         {
@@ -220,9 +221,9 @@ namespace BSDiscordRanking.Discord.Modules
             }
             else
             {
-                if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
+                if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                 {
-                    if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
+                    if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
                     {
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
                         LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0);
@@ -260,71 +261,111 @@ namespace BSDiscordRanking.Discord.Modules
                         }
                     }
                     else
-                        await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                        await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
                 }
                 else
-                    await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+                    await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
             }
         }
 
         [Command("unlink")]
-        [Summary("Unlinks your discord accounts from your ScoreSaber's one.")]
-        public async Task UnLinkUser(string p_DiscordID = "")
+        [Summary("Unlinks a specific discord accounts from your ScoreSaber's one (also work the opposite ID way).")]
+        public async Task UnLinkUser(string p_DiscordOrScoreSaberID = "")
         {
-            if (!String.IsNullOrEmpty(p_DiscordID))
+            if (!String.IsNullOrEmpty(p_DiscordOrScoreSaberID))
             {
-                if (UserController.UserExist(p_DiscordID))
+                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+
+                if (l_IsScoreSaberAccount)
                 {
-                    if (Context.User is SocketGuildUser l_User)
+                    if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
                     {
-                        if (l_User.Roles.Any(p_Role => p_Role.Id == Controllers.ConfigController.GetConfig().BotManagementRoleID))
-                        {
-                            UserController.RemovePlayer(p_DiscordID);
-                            await ReplyAsync($"> :white_check_mark: Player <@{p_DiscordID}> was successfully unlinked!");
-                        }
+                        await ReplyAsync("> :x: Sorry, this Score Saber ID isn't registered on the Bot.");
                     }
+                    else
+                    {
+                        p_DiscordOrScoreSaberID = UserController.GetDiscordID(p_DiscordOrScoreSaberID);
+                    }
+                }
+                else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
+                {
+                    await ReplyAsync($"> :x: Sorry but this account isn't registered on the bot/wrong ScoreSaber ID, and as a result, can't be unlinked");
+                    return;
+                }
+
+                UserController.RemovePlayer(p_DiscordOrScoreSaberID);
+                await ReplyAsync($"> :white_check_mark: Player <@{p_DiscordOrScoreSaberID}> was successfully unlinked!");
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
+                {
+                    await ReplyAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link` instead.");
                 }
                 else
                 {
-                    await ReplyAsync($"> :x: Sorry but this account isn't registered, and as a result, can't be unlinked.");
+                    UserController.RemovePlayer(Context.User.Id.ToString());
+                    await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
                 }
             }
         }
 
+        [Command("link")]
+        [Summary("links a specific Score Saber account to a specific Discord's one.")]
+        public async Task LinkUser(string p_ScoreSaberID = "", string p_DiscordID = "")
+        {
+            if (String.IsNullOrEmpty(p_DiscordID))
+            {
+                p_DiscordID = Context.User.Id.ToString();
+            }
+
+            if (!string.IsNullOrEmpty(UserController.GetPlayer(p_DiscordID)))
+                await ReplyAsync(
+                    $"> :x: Sorry, but this discord account has already been linked. Please use the admin `{BotHandler.m_Prefix}unlink {p_DiscordID}` command.");
+            else if (!string.IsNullOrEmpty(p_ScoreSaberID))
+            {
+                p_ScoreSaberID = System.Text.RegularExpressions.Regex.Match(p_ScoreSaberID, @"\d+").Value;
+                if (string.IsNullOrEmpty(UserController.GetPlayer(p_DiscordID)) &&
+                    UserController.AccountExist(p_ScoreSaberID) && !UserController.SSIsAlreadyLinked(p_ScoreSaberID))
+                {
+                    UserController.AddPlayer(p_DiscordID, p_ScoreSaberID);
+                    await ReplyAsync(
+                        $"> :white_check_mark: <@{p_DiscordID}> 's account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
+                }
+                else if (!UserController.AccountExist(p_ScoreSaberID))
+                    await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
+                else if (UserController.SSIsAlreadyLinked(p_ScoreSaberID))
+                {
+                    await ReplyAsync(
+                        $"> :x: Sorry but this account is already linked to an other user.\nYou should investigate, then unlink the score saber ID using the admin `{BotHandler.m_Prefix}unlink {p_ScoreSaberID}` command.");
+                }
+                else
+                    await ReplyAsync("> :x: Oopsie, unhandled error.");
+            }
+            else
+                await ReplyAsync("> :x: Please enter a ScoreSaber link/id.");
+        }
+
         [Command("setlevel")]
-        [Summary("Set a specific Level to someone + change his stats/roles and leaderboard level.")]
+        [Summary("Set a specific Level to someone + change his stats/roles and leaderboard's level.")]
         public async Task SetLevelRole(string p_DiscordOrScoreSaberID, int p_Level)
         {
             bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
 
             string l_DiscordID = null;
-            
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
                 l_DiscordID = p_DiscordOrScoreSaberID;
                 p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
             }
-            else if (l_IsScoreSaberAccount)
-            {
-                if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
-                {
-                    bool l_IsAdmin = false;
-                    if (Context.User is SocketGuildUser l_User)
-                        if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID))
-                            l_IsAdmin = true;
-                    if (!l_IsAdmin)
-                    {
-                        await ReplyAsync("> Sorry, This Score Saber account isn't registered on the bot.");
-                        return;
-                    }
-                }
-            }
-            else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
+            else if (!UserController.UserExist(p_DiscordOrScoreSaberID) && !l_IsScoreSaberAccount)
             {
                 await ReplyAsync("> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID.");
                 return;
             }
-            
+
+            /// Else => is a correct score saber ID
+
             Player l_Player = new Player(p_DiscordOrScoreSaberID);
             l_Player.LoadStats();
             if (l_Player.m_PlayerStats.IsFirstScan > 0)
@@ -332,19 +373,28 @@ namespace BSDiscordRanking.Discord.Modules
                 await ReplyAsync("> :x: Sorry, but this ScoreSaber account isn't registered on the bot yet, !scan it first.");
                 return;
             }
+
             l_Player.ResetLevels();
             for (int l_I = 0; l_I < p_Level; l_I++)
             {
                 l_Player.m_PlayerStats.LevelIsPassed.Add(true);
             }
+
             l_Player.ReWriteStats();
             new LeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, p_DiscordOrScoreSaberID, -1, p_Level, null);
-
             if (l_DiscordID != null)
             {
                 SocketGuildUser l_MyUser = Context.Guild.GetUser(Convert.ToUInt64(l_DiscordID));
-                await ReplyAsync($"> :clock1: The bot will now update {l_MyUser.Username}'s roles. This step can take a while. ``(The bot should now be responsive again)``"); 
-                var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_MyUser.Id, p_Level);
+                if (l_MyUser != null)
+                {
+                    await ReplyAsync($"> :clock1: The bot will now update {l_MyUser.Username}'s roles. This step can take a while. ``(The bot should now be responsive again)``");
+                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_MyUser.Id, p_Level);
+                }
+
+                else
+                {
+                    await ReplyAsync("> :x: This Discord User isn't accessible yet.");
+                }
             }
             else
             {
@@ -361,7 +411,7 @@ namespace BSDiscordRanking.Discord.Modules
             string l_ScoreSaberOrDiscordName = "";
             string l_DiscordID = "";
             SocketGuildUser l_User = null;
-            
+
             bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))

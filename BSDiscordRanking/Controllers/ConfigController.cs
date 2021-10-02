@@ -19,7 +19,8 @@ namespace BSDiscordRanking.Controllers
                 CommandPrefix = new List<string>()
                 {
                     "!"
-                }
+                },
+                SyncURL = ""
             });
             File.WriteAllText("./config.json", l_Config);
             Console.WriteLine("Blank config file created");

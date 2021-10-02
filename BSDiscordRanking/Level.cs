@@ -19,6 +19,7 @@ namespace BSDiscordRanking
         private BeatSaverFormat m_BeatSaver;
         public int m_LevelID;
         public const string SUFFIX_NAME = "_Level";
+        private string m_SyncURL;
         public bool m_MapAdded;
         public bool m_MapDeleted;
 
@@ -31,12 +32,19 @@ namespace BSDiscordRanking
         public Level(int p_LevelID)
         {
             m_LevelID = p_LevelID;
+            m_SyncURL = !string.IsNullOrEmpty(ConfigController.GetConfig().SyncURL) ? $"{ConfigController.GetConfig().SyncURL}{m_LevelID}{SUFFIX_NAME}.bplist" : null;
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
             CreateDirectory(); /// Make the Level file's directory.
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
             ///////////////////////////////////////////////////////////////////////////////////////
+            /// check is SyncURL Changed
+            if (m_Level.syncURL != m_SyncURL)
+            {
+                m_Level.syncURL = m_SyncURL;
+                ReWritePlaylist(false);
+            }
         }
 
         private void LoadLevel()
@@ -71,7 +79,7 @@ namespace BSDiscordRanking
                                 playlistTitle = new string($"Lvl {m_LevelID}"),
                                 playlistAuthor = new string("Kuurama&Julien"),
                                 playlistDescription = new string("BSCC Playlist"),
-                                syncURL = null,
+                                syncURL = m_SyncURL,
                                 image = new string(""),
                                 weighting = 1f
                             };
@@ -99,7 +107,7 @@ namespace BSDiscordRanking
                         playlistTitle = new string($"Lvl {m_LevelID}"),
                         playlistAuthor = new string("Kuurama&Julien"),
                         playlistDescription = new string("BSCC Playlist"),
-                        syncURL = null,
+                        syncURL = m_SyncURL,
                         image = new string(""),
                         weighting = 1f
                     };

@@ -12,6 +12,8 @@ namespace BSDiscordRanking.Formats
         public bool BigGGP { get; set; } = false;
         
         public string RolePrefix { get; set; }
+        
+        public string SyncURL { get; set; }
 
         public List<ulong> AuthorizedChannels { get; set; }
 
