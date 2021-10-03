@@ -90,28 +90,59 @@ namespace BSDiscordRanking.Controllers
             SocketGuildUser l_User = p_Context.Guild.GetUser(p_DiscordID);
             if (l_User != null)
             {
-                foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
+                bool l_RolesChanged = false;
+                var l_RolesDB = RoleController.ReadRolesDB().Roles;
+                var l_Roles = p_Context.Guild.Roles;
+                List<ulong> l_MyUserRolesID = new List<ulong>();
+                foreach (var l_Role in l_User.Roles)
                 {
-                    if (l_Role.LevelID == p_Level)
-                        await l_User.AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                    else if (l_Role.LevelID < p_Level && GetConfig().GiveOldRoles)
-                        await l_User.AddRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                    Thread.Sleep(60); // Discord API limit
+                    l_MyUserRolesID.Add(l_Role.Id);
                 }
 
-                foreach (SocketRole l_UserRole in l_User.Roles)
+                if (GetConfig().GiveOldRoles)
                 {
-                    foreach (RoleFormat l_Role in RoleController.ReadRolesDB().Roles)
+                    foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID > p_Level))
                     {
-                        if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID > p_Level)
-                            await l_User.RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                        else if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID != 0 && l_Role.LevelID != p_Level && !GetConfig().GiveOldRoles)
-                            await l_User.RemoveRoleAsync(p_Context.Guild.Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                        Thread.Sleep(60); // Discord API limit
+                        if (l_MyUserRolesID.Contains(l_Role.RoleID))
+                        {
+                            await l_User.RemoveRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            l_RolesChanged = true;
+                        }
+                    }
+                    
+                    foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID <= p_Level))
+                    {
+                        if (!l_MyUserRolesID.Contains(l_Role.RoleID))
+                        {
+                            await l_User.AddRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            l_RolesChanged = true;
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID != p_Level))
+                    {
+                        if (l_MyUserRolesID.Contains(l_Role.RoleID))
+                        {
+                            await l_User.RemoveRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            l_RolesChanged = true;
+                        }
+                    }
+                    foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID == p_Level))
+                    {
+                        if (!l_MyUserRolesID.Contains(l_Role.RoleID))
+                        {
+                            await l_User.AddRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            l_RolesChanged = true;
+                        }
                     }
                 }
 
-                await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{l_User.Id.ToString()}>, Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level (or use w1RR on the other bot to get them all back).");
+                if (l_RolesChanged)
+                    await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{l_User.Id.ToString()}>, Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level).");
+                else
+                    await p_Context.Channel.SendMessageAsync($"> :x: This player already had all his roles.");
             }
             else
             {
@@ -193,7 +224,7 @@ namespace BSDiscordRanking.Controllers
 
             return null;
         }
-        
+
         public static string GetDiscordID(string p_ScoreSaberID)
         {
             foreach (var l_User in m_Users)

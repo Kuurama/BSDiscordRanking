@@ -68,7 +68,7 @@ namespace BSDiscordRanking.Discord.Modules
             if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context, false))
             {
                 await ReplyAsync(
-                    $"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the ``{ConfigController.GetConfig().CommandPrefix[0]}getstarted`` command to get started.\nps: if you don't like being here you can still ask to be removed.");
+                    $"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the `{ConfigController.GetConfig().CommandPrefix[0]}getstarted` command to get started.\nps: if you don't like being here you can still ask to be removed.");
             }
             else
             {
@@ -374,6 +374,11 @@ namespace BSDiscordRanking.Discord.Modules
                 return;
             }
 
+            if (l_Player.GetPlayerLevel() == p_Level)
+            {
+                await ReplyAsync($"> This player is already Level {p_Level} but we will still perform a role check/update.\n");
+            }
+            
             l_Player.ResetLevels();
             for (int l_I = 0; l_I < p_Level; l_I++)
             {
@@ -387,7 +392,7 @@ namespace BSDiscordRanking.Discord.Modules
                 SocketGuildUser l_MyUser = Context.Guild.GetUser(Convert.ToUInt64(l_DiscordID));
                 if (l_MyUser != null)
                 {
-                    await ReplyAsync($"> :clock1: The bot will now update {l_MyUser.Username}'s roles. This step can take a while. ``(The bot should now be responsive again)``");
+                    await ReplyAsync($"> :clock1: The bot will now update {l_MyUser.Username}'s roles. This step can take a while. `(The bot should now be responsive again)`");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_MyUser.Id, p_Level);
                 }
 
@@ -476,7 +481,7 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (l_OldPlayerLevel < l_NewPlayerLevel)
                     if (l_IsDiscordLinked)
-                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! <@{l_DiscordID}>, You are now Level {l_NewPlayerLevel}.\n> To see your new pool, try the ``{ConfigController.GetConfig().CommandPrefix[0]}ggp`` command.");
+                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! <@{l_DiscordID}>, You are now Level {l_NewPlayerLevel}.\n> To see your new pool, try the `{ConfigController.GetConfig().CommandPrefix[0]}ggp` command.");
                     else
                         await ReplyAsync($"> <:Stonks:884058036371595294> {l_ScoreSaberOrDiscordName} is now Level {l_NewPlayerLevel}.\n");
                 else if (l_IsDiscordLinked)
@@ -485,7 +490,7 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync($"> <:NotStonks:884057234886238208> {l_ScoreSaberOrDiscordName} lost levels. they are now Level {l_NewPlayerLevel}");
                 if (l_IsDiscordLinked)
                 {
-                    await ReplyAsync($"> :clock1: The bot will now update {l_ScoreSaberOrDiscordName}'s roles. This step can take a while. ``(The bot should now be responsive again)``");
+                    await ReplyAsync($"> :clock1: The bot will now update {l_ScoreSaberOrDiscordName}'s roles. This step can take a while. `(The bot should now be responsive again)`");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_User.Id, l_NewPlayerLevel);
                 }
             }
