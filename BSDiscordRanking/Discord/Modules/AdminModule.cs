@@ -386,7 +386,7 @@ namespace BSDiscordRanking.Discord.Modules
             }
 
             l_Player.ReWriteStats();
-            new LeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, p_DiscordOrScoreSaberID, -1, p_Level, null);
+            new LeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, p_DiscordOrScoreSaberID, -1, p_Level, null, false);
             if (l_DiscordID != null)
             {
                 SocketGuildUser l_MyUser = Context.Guild.GetUser(Convert.ToUInt64(l_DiscordID));

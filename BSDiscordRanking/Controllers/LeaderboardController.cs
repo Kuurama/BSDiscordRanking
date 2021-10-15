@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading;
 using BSDiscordRanking.Formats;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+// ReSharper disable All
+// ReSharper disable All
 
 namespace BSDiscordRanking.Controllers
 {
@@ -21,11 +23,12 @@ namespace BSDiscordRanking.Controllers
             LoadLeaderboard();
         }
 
-        public void ManagePlayer(string p_Name, string p_ScoreSaberID, float p_Points, int p_Level, Trophy p_Trophy)
+        public List<string> ManagePlayer(string p_Name, string p_ScoreSaberID, float p_Points, int p_Level, Trophy p_Trophy, bool p_PingToggle)
         {
             if (p_ScoreSaberID != null)
             {
                 bool l_NewPlayer = true;
+                List<string> l_SnipedID = new List<string>();
                 foreach (var l_RankedPlayer in m_Leaderboard.Leaderboard)
                 {
                     if (p_ScoreSaberID == l_RankedPlayer.ScoreSaberID)
@@ -51,8 +54,14 @@ namespace BSDiscordRanking.Controllers
                             l_RankedPlayer.Trophy = p_Trophy;
                         }
 
+                        if (p_PingToggle)
+                        {
+                            l_RankedPlayer.Ping = !l_RankedPlayer.Ping;
+                        }
+
                         break;
                     }
+                    l_SnipedID.Add(l_RankedPlayer.ScoreSaberID);
                 }
 
                 if (l_NewPlayer)
@@ -60,7 +69,8 @@ namespace BSDiscordRanking.Controllers
                     RankedPlayer l_RankedPlayer = new RankedPlayer
                     {
                         Name = p_Name,
-                        ScoreSaberID = p_ScoreSaberID
+                        ScoreSaberID = p_ScoreSaberID,
+                        Ping = false
                     };
 
                     if (p_Points >= 0)
@@ -90,12 +100,15 @@ namespace BSDiscordRanking.Controllers
                 {
                     ReWriteLeaderboard();
                     Console.WriteLine($"Leaderboard's info updated for player {p_ScoreSaberID}.");
+                    return l_SnipedID;
                 }
             }
             else
             {
                 Console.WriteLine("This player is missing his score saber id");
             }
+
+            return null;
         }
 
         private void LoadLeaderboard()
@@ -120,7 +133,11 @@ namespace BSDiscordRanking.Controllers
                             {
                                 Leaderboard = new List<RankedPlayer>()
                                 {
-                                    new RankedPlayer() { Name = "PlayerSample" }
+                                    new RankedPlayer()
+                                    {
+                                        Name = "PlayerSample",
+                                        Ping = false
+                                    }
                                 }
                             };
                             Console.WriteLine($"Leaderboard Created (Empty Format), contained null");
@@ -144,7 +161,11 @@ namespace BSDiscordRanking.Controllers
                     {
                         Leaderboard = new List<RankedPlayer>()
                         {
-                            new RankedPlayer() { Name = "PlayerSample" }
+                            new RankedPlayer()
+                            {
+                                Name = "PlayerSample",
+                                Ping = false
+                            }
                         }
                     };
                     Console.WriteLine($"Leaderboard Created (Empty Format)");

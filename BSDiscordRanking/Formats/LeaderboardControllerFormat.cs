@@ -14,5 +14,6 @@ namespace BSDiscordRanking.Formats
         public float Points { get; set; }
         public int Level { get; set; }
         public Trophy Trophy { get; set; }
+        public bool Ping { get; set; }
     }
 }

@@ -1329,7 +1329,7 @@ namespace BSDiscordRanking
                         Diamond = l_Diamonds
                     };
 
-                    new LeaderboardController().ManagePlayer(m_PlayerFull.playerInfo.playerName, m_PlayerID, p_Points, GetPlayerLevel(), l_TotalTrophy); /// Manage the Leaderboard
+                    new LeaderboardController().ManagePlayer(m_PlayerFull.playerInfo.playerName, m_PlayerID, p_Points, GetPlayerLevel(), l_TotalTrophy, false); /// Manage the Leaderboard
                 }
                 catch (Exception l_Exception)
                 {
