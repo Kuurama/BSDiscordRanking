@@ -37,15 +37,10 @@ namespace BSDiscordRanking.Controllers
                     Player = new Sniped(),
                     SnipedByPlayers = new List<Sniped>()
                 };
-                int l_CurrentRank;
-                
+
                 LoadLeaderboard();
                 for (int l_I = 0; l_I <= m_Leaderboard.Leaderboard.Count - 1; l_I++)
                 {
-
-                    ////////// Debug Leaderboard /////////////
-                    m_Leaderboard.Leaderboard[l_I].DiscordID = UserController.GetDiscordID(m_Leaderboard.Leaderboard[l_I].ScoreSaberID);
-                    /// //////////////////////////////////////
 
                     if (p_ScoreSaberID == m_Leaderboard.Leaderboard[l_I].ScoreSaberID)
                     {
@@ -177,8 +172,11 @@ namespace BSDiscordRanking.Controllers
                         .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId)
                         .WithIconUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 })
-                .AddField("\u200B", $"Your rank changed from #{p_Snipe.Player.OldRank} to #{p_Snipe.Player.NewRank}", false);
-            if (p_Snipe.Player.OldRank < p_Snipe.Player.NewRank)
+                .AddField("\u200B", $"Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**", false);
+            
+                builder.WithDescription($"Your Current ping choice for leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+                
+                if (p_Snipe.Player.OldRank < p_Snipe.Player.NewRank)
             {
                 builder.WithColor(new Color(255, 0, 0));
             }
@@ -192,6 +190,7 @@ namespace BSDiscordRanking.Controllers
                 .ConfigureAwait(false);
 
             bool l_EmbedDone = false;
+            string l_MyText = "";
             if (p_Snipe.SnipedByPlayers.Count > 0)
             {
                 foreach (Sniped p_SnipedPlayer in p_Snipe.SnipedByPlayers)
@@ -222,7 +221,7 @@ namespace BSDiscordRanking.Controllers
                             l_PlayerText = p_SnipedPlayer.Name;
                         }
 
-                        builder.AddField($"\u200B", $"> {l_PlayerText} #{p_SnipedPlayer.OldRank} -> #{p_SnipedPlayer.NewRank}", false);
+                        l_MyText +=$"> {l_PlayerText} #{p_SnipedPlayer.OldRank} -> #{p_SnipedPlayer.NewRank}\n";
                     }
                 }
             }
@@ -230,7 +229,7 @@ namespace BSDiscordRanking.Controllers
             if (l_SnipeExist)
             {
                 embed = builder.Build();
-                await p_Context.Channel.SendMessageAsync(null, embed: embed)
+                await p_Context.Channel.SendMessageAsync(l_MyText, embed: embed)
                     .ConfigureAwait(false);
             }
         }
