@@ -193,6 +193,7 @@ namespace BSDiscordRanking.Controllers
             string l_MyText = "";
             if (p_Snipe.SnipedByPlayers.Count > 0)
             {
+                l_MyText += $"> <:Stonks:884058036371595294> {p_Snipe.Player.Name} #{p_Snipe.Player.OldRank} -> #{p_Snipe.Player.NewRank}\n";
                 foreach (Sniped p_SnipedPlayer in p_Snipe.SnipedByPlayers)
                 {
                     if (p_SnipedPlayer.IsPingAllowed && p_SnipedPlayer.OldRank != p_SnipedPlayer.NewRank)
