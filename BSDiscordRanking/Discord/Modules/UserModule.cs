@@ -136,7 +136,7 @@ namespace BSDiscordRanking.Discord.Modules
                 if (l_FetchPass.Result >= 1)
                 {
                     await ReplyAsync($"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result} new maps!\n");
-                    await ReplyAsync($"To see your progress through the pools, *try the* `{ConfigController.GetConfig().CommandPrefix[0]}progress` *command.*\n And to check your profile, *use the* `{ConfigController.GetConfig().CommandPrefix[0]}profile` *command.*");
+                    await ReplyAsync($"To see your progress through the pools, *try the* `{ConfigController.GetConfig().CommandPrefix[0]}progress` *command.*\nAnd to check your profile, *use the* `{ConfigController.GetConfig().CommandPrefix[0]}profile` *command.*");
                 }
                 else
                 {
@@ -156,6 +156,25 @@ namespace BSDiscordRanking.Discord.Modules
                     await ReplyAsync("> :clock1: The bot will now update your roles. This step can take a while. `(The bot should now be responsive again)`");
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, Context.User.Id, l_NewPlayerLevel);
                 }
+
+                Trophy l_TotalTrophy = new Trophy()
+                {
+                    Plastic = 0,
+                    Silver = 0,
+                    Gold = 0,
+                    Diamond = 0
+                };
+                foreach (var l_Trophy in l_Player.m_PlayerStats.Trophy)
+                {
+                    l_TotalTrophy.Plastic += l_Trophy.Plastic;
+                    l_TotalTrophy.Silver += l_Trophy.Silver;
+                    l_TotalTrophy.Gold += l_Trophy.Gold;
+                    l_TotalTrophy.Diamond += l_Trophy.Diamond;
+                }
+                
+                /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///
+                await LeaderboardController.SendSnipeMessage(Context,new LeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.Points, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the Leaderboard
+                ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
         }
 
@@ -414,13 +433,13 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
                     {
-                        if (l_LevelFormat.songs.Count > 0)
+                        if (l_LevelFormat.songs.Count > l_I)
                         {
                             if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash, StringComparison.CurrentCultureIgnoreCase))
                             {
                                 foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
                                 {
-                                    if (l_LevelFormat.songs.Count > 0)
+                                    if (l_LevelFormat.songs.Count > l_I)
                                     {
                                         for (int l_Y = l_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
                                         {
@@ -924,8 +943,27 @@ namespace BSDiscordRanking.Discord.Modules
             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
         }
 
+        [Command("pingtoggle")]
+        [Alias("toggleping")]
+        [Summary("Toggles personal ping for leaderboard snipe.")]
+        public async Task PingToggle()
+        {
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+            {
+                await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+            }
+            else
+            {
+                LeaderboardController l_LeaderboardController = new LeaderboardController();
+                int l_Index = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
+                l_LeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsPingAllowed = !l_LeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsPingAllowed;
+                l_LeaderboardController.ReWriteLeaderboard();
+                await ReplyAsync($"> Your Ping preference has been changed from **{!l_LeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsPingAllowed}** to **{l_LeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsPingAllowed}**");
+            }
+        }
+
         [Command("leaderboard")]
-        [Alias("ld", "leaderboards")]
+        [Alias("ld", "lb", "leaderboards")]
         [Summary("Shows the leaderboard.")]
         public async Task Leaderboard(int p_Page = default)
         {

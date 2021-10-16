@@ -72,6 +72,11 @@ namespace BSDiscordRanking
                 return 0;
             }
         }
+        
+        public string GetPlayerID()
+        {
+            return m_PlayerID;
+        }
 
         private void GetInfos()
         {
@@ -1308,6 +1313,11 @@ namespace BSDiscordRanking
                         }
                     }
 
+                    if (p_Points >= 0)
+                    {
+                        m_PlayerStats.Points = p_Points;
+                    }
+
                     ReWriteStats();
                     int l_Plastics = 0;
                     int l_Silvers = 0;
@@ -1328,8 +1338,6 @@ namespace BSDiscordRanking
                         Gold = l_Golds,
                         Diamond = l_Diamonds
                     };
-
-                    new LeaderboardController().ManagePlayer(m_PlayerFull.playerInfo.playerName, m_PlayerID, p_Points, GetPlayerLevel(), l_TotalTrophy, false); /// Manage the Leaderboard
                 }
                 catch (Exception l_Exception)
                 {

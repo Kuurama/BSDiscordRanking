@@ -2,19 +2,18 @@
 
 namespace BSDiscordRanking.Formats
 {
-    public class LeaderboardControllerFormat
+    public class SnipeFormat
     {
-        public List<RankedPlayer> Leaderboard { get; set; }
+        public Sniped Player { get; set; }
+        public List<Sniped> SnipedByPlayers { get; set; }
     }
-
-    public class RankedPlayer
+    public class Sniped
     {
         public string Name { get; set; }
         public string ScoreSaberID { get; set; }
         public string DiscordID { get; set; }
-        public float Points { get; set; }
-        public int Level { get; set; }
-        public Trophy Trophy { get; set; }
+        public int OldRank { get; set; }
+        public int NewRank { get; set; }
         public bool IsPingAllowed { get; set; }
     }
 }

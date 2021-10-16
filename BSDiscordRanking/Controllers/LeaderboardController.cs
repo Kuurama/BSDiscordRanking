@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
+using Discord;
+using Discord.Commands;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+
 // ReSharper disable All
 // ReSharper disable All
 
@@ -23,45 +27,87 @@ namespace BSDiscordRanking.Controllers
             LoadLeaderboard();
         }
 
-        public List<string> ManagePlayer(string p_Name, string p_ScoreSaberID, float p_Points, int p_Level, Trophy p_Trophy, bool p_PingToggle)
+        public SnipeFormat ManagePlayer(string p_Name, string p_ScoreSaberID, float p_Points, int p_Level, Trophy p_Trophy, bool p_PingToggle)
         {
             if (p_ScoreSaberID != null)
             {
                 bool l_NewPlayer = true;
-                List<string> l_SnipedID = new List<string>();
-                foreach (var l_RankedPlayer in m_Leaderboard.Leaderboard)
+                SnipeFormat l_Snipe = new SnipeFormat()
                 {
-                    if (p_ScoreSaberID == l_RankedPlayer.ScoreSaberID)
+                    Player = new Sniped(),
+                    SnipedByPlayers = new List<Sniped>()
+                };
+                int l_CurrentRank;
+                
+                LoadLeaderboard();
+                for (int l_I = 0; l_I <= m_Leaderboard.Leaderboard.Count - 1; l_I++)
+                {
+
+                    ////////// Debug Leaderboard /////////////
+                    m_Leaderboard.Leaderboard[l_I].DiscordID = UserController.GetDiscordID(m_Leaderboard.Leaderboard[l_I].ScoreSaberID);
+                    /// //////////////////////////////////////
+
+                    if (p_ScoreSaberID == m_Leaderboard.Leaderboard[l_I].ScoreSaberID)
                     {
                         l_NewPlayer = false;
                         if (p_Name != null)
                         {
-                            l_RankedPlayer.Name = p_Name;
+                            m_Leaderboard.Leaderboard[l_I].Name = p_Name;
                         }
 
                         if (p_Points >= 0)
                         {
-                            l_RankedPlayer.Points = p_Points;
+                            m_Leaderboard.Leaderboard[l_I].Points = p_Points;
                         }
 
                         if (p_Level >= 0)
                         {
-                            l_RankedPlayer.Level = p_Level;
+                            m_Leaderboard.Leaderboard[l_I].Level = p_Level;
                         }
 
                         if (p_Trophy != null)
                         {
-                            l_RankedPlayer.Trophy = p_Trophy;
+                            m_Leaderboard.Leaderboard[l_I].Trophy = p_Trophy;
                         }
 
                         if (p_PingToggle)
                         {
-                            l_RankedPlayer.Ping = !l_RankedPlayer.Ping;
+                            m_Leaderboard.Leaderboard[l_I].IsPingAllowed = !m_Leaderboard.Leaderboard[l_I].IsPingAllowed;
                         }
+
+                        m_Leaderboard.Leaderboard[l_I].DiscordID = UserController.GetDiscordID(m_Leaderboard.Leaderboard[l_I].ScoreSaberID);
+
+                        /// Update Player's info ///
+                        l_Snipe.Player.Name = m_Leaderboard.Leaderboard[l_I].Name;
+                        l_Snipe.Player.ScoreSaberID = m_Leaderboard.Leaderboard[l_I].ScoreSaberID;
+                        l_Snipe.Player.DiscordID = m_Leaderboard.Leaderboard[l_I].DiscordID;
+                        l_Snipe.Player.OldRank = l_I + 1;
+                        l_Snipe.Player.IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed;
+                        ///////////////////
 
                         break;
                     }
-                    l_SnipedID.Add(l_RankedPlayer.ScoreSaberID);
+
+
+                    l_Snipe.SnipedByPlayers.Add(new Sniped()
+                    {
+                        Name = m_Leaderboard.Leaderboard[l_I].Name,
+                        DiscordID = m_Leaderboard.Leaderboard[l_I].DiscordID,
+                        ScoreSaberID = m_Leaderboard.Leaderboard[l_I].ScoreSaberID,
+                        OldRank = l_I + 1,
+                        IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed
+                    });
+                }
+
+                m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
+                
+                for (int l_I = l_Snipe.SnipedByPlayers.Count - 1; l_I >= 0; l_I--)
+                {
+                    l_Snipe.SnipedByPlayers[l_I].NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.SnipedByPlayers[l_I].ScoreSaberID) + 1;
+                    if (l_Snipe.SnipedByPlayers[l_I].OldRank >= l_Snipe.SnipedByPlayers[l_I].NewRank)
+                    {
+                        l_Snipe.SnipedByPlayers.RemoveAt(l_I);
+                    }
                 }
 
                 if (l_NewPlayer)
@@ -70,7 +116,8 @@ namespace BSDiscordRanking.Controllers
                     {
                         Name = p_Name,
                         ScoreSaberID = p_ScoreSaberID,
-                        Ping = false
+                        DiscordID = UserController.GetDiscordID(p_ScoreSaberID),
+                        IsPingAllowed = false
                     };
 
                     if (p_Points >= 0)
@@ -95,12 +142,16 @@ namespace BSDiscordRanking.Controllers
 
                     m_Leaderboard.Leaderboard.Add(l_RankedPlayer);
                     ReWriteLeaderboard();
+                    return null;
                 }
                 else
                 {
                     ReWriteLeaderboard();
                     Console.WriteLine($"Leaderboard's info updated for player {p_ScoreSaberID}.");
-                    return l_SnipedID;
+
+                    l_Snipe.Player.NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.Player.ScoreSaberID) + 1;
+
+                    return l_Snipe; /// Returns the sniped players only if it not the first time the player is being registered.
                 }
             }
             else
@@ -110,6 +161,80 @@ namespace BSDiscordRanking.Controllers
 
             return null;
         }
+
+        public static async Task SendSnipeMessage(SocketCommandContext p_Context, SnipeFormat p_Snipe)
+        {
+            if (p_Snipe.Player.OldRank == p_Snipe.Player.NewRank) /// Don't send message if player's rank didn't changed.
+                return;
+
+            Player l_Player = new Player(p_Snipe.Player.ScoreSaberID);
+            bool l_SnipeExist = false;
+            var builder = new EmbedBuilder()
+                .WithAuthor(author =>
+                {
+                    author
+                        .WithName(p_Snipe.Player.Name)
+                        .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId)
+                        .WithIconUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                })
+                .AddField("\u200B", $"Your rank changed from #{p_Snipe.Player.OldRank} to #{p_Snipe.Player.NewRank}", false);
+            if (p_Snipe.Player.OldRank < p_Snipe.Player.NewRank)
+            {
+                builder.WithColor(new Color(255, 0, 0));
+            }
+            else
+            {
+                builder.WithColor(new Color(0, 255, 0));
+            }
+
+            var embed = builder.Build();
+            await p_Context.Channel.SendMessageAsync(null, embed: embed)
+                .ConfigureAwait(false);
+
+            bool l_EmbedDone = false;
+            if (p_Snipe.SnipedByPlayers.Count > 0)
+            {
+                foreach (Sniped p_SnipedPlayer in p_Snipe.SnipedByPlayers)
+                {
+                    if (p_SnipedPlayer.IsPingAllowed && p_SnipedPlayer.OldRank != p_SnipedPlayer.NewRank)
+                    {
+                        string l_PlayerText;
+                        l_SnipeExist = true;
+                        if (!l_EmbedDone)
+                        {
+                            builder = new EmbedBuilder()
+                                .WithTitle($"Get sniped! <:Sniped:898696818093875230> (by {p_Snipe.Player.Name})")
+                                .WithColor(new Color(255, 0, 0))
+                                .WithFooter(footer =>
+                                {
+                                    footer
+                                        .WithText($"To allow or disallow personnal pings, type the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+                                });
+                            l_EmbedDone = true;
+                        }
+
+                        if (p_SnipedPlayer.DiscordID != null)
+                        {
+                            l_PlayerText = $"<@{p_SnipedPlayer.DiscordID}>";
+                        }
+                        else
+                        {
+                            l_PlayerText = p_SnipedPlayer.Name;
+                        }
+
+                        builder.AddField($"\u200B", $"> {l_PlayerText} #{p_SnipedPlayer.OldRank} -> #{p_SnipedPlayer.NewRank}", false);
+                    }
+                }
+            }
+
+            if (l_SnipeExist)
+            {
+                embed = builder.Build();
+                await p_Context.Channel.SendMessageAsync(null, embed: embed)
+                    .ConfigureAwait(false);
+            }
+        }
+
 
         private void LoadLeaderboard()
         {
@@ -136,7 +261,7 @@ namespace BSDiscordRanking.Controllers
                                     new RankedPlayer()
                                     {
                                         Name = "PlayerSample",
-                                        Ping = false
+                                        IsPingAllowed = false
                                     }
                                 }
                             };
@@ -146,7 +271,7 @@ namespace BSDiscordRanking.Controllers
                         {
                             if (m_Leaderboard.Leaderboard != null)
                             {
-                                m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
+                                //m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
                             }
 
                             if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
@@ -164,7 +289,7 @@ namespace BSDiscordRanking.Controllers
                             new RankedPlayer()
                             {
                                 Name = "PlayerSample",
-                                Ping = false
+                                IsPingAllowed = false
                             }
                         }
                     };
@@ -206,7 +331,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        private void ReWriteLeaderboard()
+        public void ReWriteLeaderboard()
         {
             /// This Method Serialise the data from m_Leaderboard and create the Cache.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
