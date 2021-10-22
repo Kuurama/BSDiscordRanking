@@ -32,7 +32,7 @@ namespace BSDiscordRanking
         public Level(int p_LevelID)
         {
             m_LevelID = p_LevelID;
-            m_SyncURL = !string.IsNullOrEmpty(ConfigController.GetConfig().SyncURL) ? $"{ConfigController.GetConfig().SyncURL}{m_LevelID}{SUFFIX_NAME}.bplist" : null;
+            m_SyncURL = !string.IsNullOrEmpty(ConfigController.GetConfig().SyncURL) ? $"{ConfigController.GetConfig().SyncURL}{m_LevelID:D3}{SUFFIX_NAME}.bplist" : null;
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
@@ -68,7 +68,7 @@ namespace BSDiscordRanking
 
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist"))
+                    using (StreamReader l_SR = new StreamReader($"{PATH}{m_LevelID:D3}{SUFFIX_NAME}.bplist"))
                     {
                         m_Level = JsonSerializer.Deserialize<LevelFormat>(l_SR.ReadToEnd());
                         if (m_Level == null) /// json contain "null"
@@ -111,7 +111,7 @@ namespace BSDiscordRanking
                         image = new string(""),
                         weighting = 1f
                     };
-                    Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Created (Empty Format)");
+                    Console.WriteLine($"{m_LevelID:D3}{SUFFIX_NAME} Created (Empty Format)");
                 }
             }
             else
@@ -183,7 +183,7 @@ namespace BSDiscordRanking
                     {
                         if (m_Level.songs.Count > 0 || p_WriteDifferentFormat)
                         {
-                            File.WriteAllText($"{p_Path}{m_LevelID}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(p_LevelFormat));
+                            File.WriteAllText($"{p_Path}{m_LevelID:D3}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(p_LevelFormat));
                             Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
                             new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
                         }
@@ -230,8 +230,8 @@ namespace BSDiscordRanking
                 {
                     if (m_Level != null)
                     {
-                        File.Delete($"{PATH}{m_LevelID}{SUFFIX_NAME}.bplist");
-                        Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Deleted");
+                        File.Delete($"{PATH}{m_LevelID:D3}{SUFFIX_NAME}.bplist");
+                        Console.WriteLine($"{m_LevelID:D3}{SUFFIX_NAME} Deleted");
                         new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
                     }
                     else

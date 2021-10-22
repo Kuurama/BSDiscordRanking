@@ -1,4 +1,5 @@
-﻿using BSDiscordRanking.Controllers;
+﻿using System;
+using BSDiscordRanking.Controllers;
 
 namespace BSDiscordRanking
 {

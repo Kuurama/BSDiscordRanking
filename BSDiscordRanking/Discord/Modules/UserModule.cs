@@ -396,7 +396,8 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (int.TryParse(p_Level, out _))
             {
-                string l_Path = Level.GetPath() + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
+                int l_LevelInt = int.Parse(p_Level);
+                string l_Path = Level.GetPath() + $"{l_LevelInt:D3}{Level.SUFFIX_NAME}.bplist";
                 if (File.Exists(l_Path))
 
                     await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's the complete playlist! (up to date)");
