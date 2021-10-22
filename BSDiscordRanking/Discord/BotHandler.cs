@@ -12,15 +12,20 @@ namespace BSDiscordRanking.Discord
     public class BotHandler
     {
         public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
-    
+
+#pragma warning disable CA2211
         public static string m_Prefix;
-        private DiscordSocketClient m_Client;
+#pragma warning restore CA2211
+        // ReSharper disable once MemberCanBePrivate.Global
+        public DiscordSocketClient m_Client;
+#pragma warning disable CA2211
         public static CommandService m_Commands;
+#pragma warning restore CA2211
 
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
             m_Prefix = p_Config.CommandPrefix[0];
-            m_Client = new DiscordSocketClient();
+            m_Client = new DiscordSocketClient(new DiscordSocketConfig { GatewayIntents = GatewayIntents.All });
             m_Commands = new CommandService();
 
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
