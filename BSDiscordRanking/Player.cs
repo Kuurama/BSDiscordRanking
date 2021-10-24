@@ -295,20 +295,20 @@ namespace BSDiscordRanking
                                         if (l_Result != null)
                                             foreach (var l_NewScore in l_Result.scores) /// Remove old score and add new score.
                                             {
-                                                if (m_PlayerScore.scores.RemoveAll(x =>
-                                                        x.leaderboardId == l_NewScore.leaderboardId &&
-                                                        x.score != l_NewScore.score) > 0 ||
-                                                    !(m_PlayerScore.scores.Any(x =>
-                                                        x.leaderboardId == l_NewScore.leaderboardId)))
+                                                if (m_PlayerScore.scores.RemoveAll(p_X =>
+                                                        p_X.leaderboardId == l_NewScore.leaderboardId &&
+                                                        p_X.score != l_NewScore.score) > 0 ||
+                                                    !(m_PlayerScore.scores.Any(p_X =>
+                                                        p_X.leaderboardId == l_NewScore.leaderboardId)))
                                                 {
                                                     m_PlayerScore.scores.Add(l_NewScore);
                                                     l_NumberOfAddedScore++;
                                                 }
                                             }
                                     }
-                                    catch (WebException e)
+                                    catch (WebException l_E)
                                     {
-                                        if (e.Response is HttpWebResponse l_Response)
+                                        if (l_E.Response is HttpWebResponse l_Response)
                                         {
                                             Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
                                             if (l_Response.StatusCode == HttpStatusCode.NotFound)
