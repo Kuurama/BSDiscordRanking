@@ -583,7 +583,7 @@ namespace BSDiscordRanking
 
                         if (!l_LevelExist)
                             continue;
-                        l_Weighting = l_Levels[l_Y].m_Level.weighting;
+                        l_Weighting = l_Levels[l_Y].m_Level.customData.weighting;
                         l_PoolID = l_Levels[l_Y].m_LevelID;
                         foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
                         {
@@ -615,7 +615,7 @@ namespace BSDiscordRanking
                                                                     {
                                                                         foreach (var l_OldPassedDifficulty in l_OldPassedSong.difficulties)
                                                                         {
-                                                                            if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.minScoreRequirement)
+                                                                            if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
                                                                             {
                                                                                 l_OldDiffExist = true;
                                                                                 break;
@@ -624,7 +624,7 @@ namespace BSDiscordRanking
                                                                     }
                                                                 }
 
-                                                                if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_CachedDifficulty.minScoreRequirement)
+                                                                if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_CachedDifficulty.customData.minScoreRequirement)
                                                                 {
                                                                     l_DiffExist = true;
                                                                     break;
@@ -673,11 +673,11 @@ namespace BSDiscordRanking
                                                         }
                                                     }
 
-                                                    if (!l_MapStored && l_Score.unmodififiedScore >= l_Difficulty.minScoreRequirement)
+                                                    if (!l_MapStored && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
                                                     {
                                                         bool l_WasStored = false;
                                                         SongFormat l_PassedSong = new SongFormat();
-                                                        l_PassedSong.difficulties = new List<InSongFormat>();
+                                                        l_PassedSong.difficulties = new List<Difficulties>();
                                                         l_PassedSong.hash = l_Song.hash.ToUpper();
                                                         l_PassedSong.difficulties.Add(l_Difficulty);
                                                         l_PassedSong.name = l_Song.name;

@@ -189,7 +189,7 @@ namespace BSDiscordRanking.Controllers
                             {
                                 Console.WriteLine($"Map already exist in level {l_Level}");
                                 l_MapExistFormat.MapExist = true;
-                                if (l_Difficulty.minScoreRequirement != p_MinScoreRequirement)
+                                if (l_Difficulty.customData.minScoreRequirement != p_MinScoreRequirement)
                                     l_MapExistFormat.DifferentMinScore = true;
                                 l_MapExistFormat.Level = l_LevelID;
                                 return l_MapExistFormat;
