@@ -40,11 +40,9 @@ namespace BSDiscordRanking
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
             ///////////////////////////////////////////////////////////////////////////////////////
             /// check is SyncURL Changed
-            if (m_Level.syncURL != m_SyncURL)
-            {
-                m_Level.syncURL = m_SyncURL;
-                ReWritePlaylist(false);
-            }
+            if (m_Level.customData.syncURL == m_SyncURL) return;
+            m_Level.customData.syncURL = m_SyncURL;
+            ReWritePlaylist(false);
         }
 
         private void LoadLevel()
@@ -79,9 +77,12 @@ namespace BSDiscordRanking
                                 playlistTitle = new string($"Lvl {m_LevelID}"),
                                 playlistAuthor = new string("Kuurama&Julien"),
                                 playlistDescription = new string("BSCC Playlist"),
-                                syncURL = m_SyncURL,
-                                image = new string(""),
-                                weighting = 1f
+                                customData = new MainCustomData
+                                {
+                                    syncURL = m_SyncURL,
+                                    weighting = 1f
+                                },
+                                image = new string("")
                             };
                             Console.WriteLine($"Level {m_LevelID} Created (Empty Format), contained null");
                         }
@@ -103,13 +104,17 @@ namespace BSDiscordRanking
                 {
                     m_Level = new LevelFormat()
                     {
+                        customData = new MainCustomData
+                        {
+                            syncURL = m_SyncURL,
+                            weighting = 1f,
+                            customPassText = null
+                        },
                         songs = new List<SongFormat>(),
                         playlistTitle = new string($"Lvl {m_LevelID}"),
                         playlistAuthor = new string("Kuurama&Julien"),
                         playlistDescription = new string("BSCC Playlist"),
-                        syncURL = m_SyncURL,
-                        image = new string(""),
-                        weighting = 1f
+                        image = new string("")
                     };
                     Console.WriteLine($"{m_LevelID:D3}{SUFFIX_NAME} Created (Empty Format)");
                 }
@@ -127,8 +132,8 @@ namespace BSDiscordRanking
             {
                 foreach (var l_Difficulty in l_Song.difficulties)
                 {
-                    l_Difficulty.minScoreRequirement = new int();
-                    l_Difficulty.minScoreRequirement = 0;
+                    l_Difficulty.customData.minScoreRequirement = new int();
+                    l_Difficulty.customData.minScoreRequirement = 0;
                 }
             }
 
@@ -290,13 +295,19 @@ namespace BSDiscordRanking
                                 l_NewMapName = l_SBMapName.ToString();
                             } while (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0] || l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0]);
 
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = l_NewMapName};
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash,key = m_BeatSaver.id, name = l_NewMapName};
 
-                            InSongFormat l_InSongFormat = new InSongFormat
+                            Difficulties l_Difficulties = new Difficulties()
                             {
-                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = p_MinScoreRequirement
+                                name = p_SelectedDifficultyName, 
+                                characteristic = p_SelectedCharacteristic,
+                                customData = new DiffCustomData
+                                {
+                                    minScoreRequirement = p_MinScoreRequirement,
+                                    weighting = 1f
+                                }
                             };
-                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
+                            l_SongFormat.difficulties = new List<Difficulties> {l_Difficulties};
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -322,12 +333,12 @@ namespace BSDiscordRanking
                                     {
                                         foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
                                         {
-                                            if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                            if (l_Difficulties.characteristic == l_Difficulty.characteristic && l_Difficulties.name == l_Difficulty.name)
                                             {
                                                 l_DifficultyAlreadyExist = true;
-                                                if (l_InSongFormat.minScoreRequirement != l_Difficulty.minScoreRequirement)
+                                                if (l_Difficulties.customData.minScoreRequirement != l_Difficulty.customData.minScoreRequirement)
                                                 {
-                                                    l_Difficulty.minScoreRequirement = l_InSongFormat.minScoreRequirement;
+                                                    l_Difficulty.customData.minScoreRequirement = l_Difficulties.customData.minScoreRequirement;
                                                     l_ScoreRequirementEdit = true;
                                                 }
 
@@ -337,7 +348,7 @@ namespace BSDiscordRanking
 
                                         if (l_ScoreRequirementEdit)
                                         {
-                                            p_Context.Channel.SendMessageAsync($"> :ballot_box_with_check: Min Score Requirement changed to {l_InSongFormat.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
+                                            p_Context.Channel.SendMessageAsync($"> :ballot_box_with_check: Min Score Requirement changed to {l_Difficulties.customData.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
                                             ReWritePlaylist(false);
                                         }
                                         else if (l_DifficultyAlreadyExist)
@@ -346,7 +357,7 @@ namespace BSDiscordRanking
                                         }
                                         else
                                         {
-                                            m_Level.songs[l_I].difficulties.Add(l_InSongFormat);
+                                            m_Level.songs[l_I].difficulties.Add(l_Difficulties);
                                             p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                             ReWritePlaylist(false);
                                         }
@@ -420,11 +431,17 @@ namespace BSDiscordRanking
                         {
                             SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
 
-                            InSongFormat l_InSongFormat = new InSongFormat
+                            Difficulties l_Difficulties = new Difficulties
                             {
-                                name = p_SelectedDifficultyName, characteristic = p_SelectedCharacteristic, minScoreRequirement = 0
+                                name = p_SelectedDifficultyName,
+                                characteristic = p_SelectedCharacteristic,
+                                customData = new DiffCustomData
+                                {
+                                    minScoreRequirement = 0,
+                                    weighting = 1f
+                                }
                             };
-                            l_SongFormat.difficulties = new List<InSongFormat> {l_InSongFormat};
+                            l_SongFormat.difficulties = new List<Difficulties> {l_Difficulties};
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -450,17 +467,17 @@ namespace BSDiscordRanking
                                     {
                                         foreach (var l_Difficulty in m_Level.songs[l_I].difficulties)
                                         {
-                                            if (l_InSongFormat.characteristic == l_Difficulty.characteristic && l_InSongFormat.name == l_Difficulty.name)
+                                            if (l_Difficulties.characteristic == l_Difficulty.characteristic && l_Difficulties.name == l_Difficulty.name)
                                             {
                                                 l_DifficultyAlreadyExist = true;
-                                                l_InSongFormat = l_Difficulty;
+                                                l_Difficulties = l_Difficulty;
                                                 break;
                                             }
                                         }
 
                                         if (l_DifficultyAlreadyExist)
                                         {
-                                            m_Level.songs[l_I].difficulties.Remove(l_InSongFormat);
+                                            m_Level.songs[l_I].difficulties.Remove(l_Difficulties);
                                             if (m_Level.songs[l_I].difficulties.Count <= 0)
                                             {
                                                 m_Level.songs.RemoveAt(l_I);

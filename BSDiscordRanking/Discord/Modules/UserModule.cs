@@ -341,8 +341,8 @@ namespace BSDiscordRanking.Discord.Modules
                         foreach (var l_SongDifficulty in l_Song.difficulties)
                         {
                             var l_EmbedValue = $"{l_SongDifficulty.name} - {l_SongDifficulty.characteristic}{l_BigGgp}";
-                            if (l_SongDifficulty.minScoreRequirement != 0)
-                                l_EmbedValue += $" - MinScore: {l_SongDifficulty.minScoreRequirement}";
+                            if (l_SongDifficulty.customData.minScoreRequirement != 0)
+                                l_EmbedValue += $" - MinScore: {l_SongDifficulty.customData.minScoreRequirement}";
 
                             if (!l_Passed[l_Y])
                                 l_EmbedBuilder.AddField(l_Song.name, l_EmbedValue, true);
@@ -805,6 +805,10 @@ namespace BSDiscordRanking.Discord.Modules
             if (!UserController.UserExist(Context.User.Id.ToString()))
             {
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+            }
+            else if (LevelController.GetLevelControllerCache().LevelID.Count <= 0!)
+            {
+                await ReplyAsync($"> :x: Sorry, but please create a level. Please use `{BotHandler.m_Prefix}addmap` command first.");
             }
             else
             {
