@@ -262,8 +262,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName, int p_MinScoreRequirement,
-            SocketCommandContext p_Context)
+        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName, int p_MinScoreRequirement, string p_Category, string InfoOnGGP, string p_CustomPassText, SocketCommandContext p_Context)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -305,7 +304,9 @@ namespace BSDiscordRanking
                                 customData = new DiffCustomData
                                 {
                                     minScoreRequirement = p_MinScoreRequirement,
-                                    weighting = 1f
+                                    weighting = 1f,
+                                    category = p_Category,
+                                    customPassText = p_CustomPassText
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulties> {l_Difficulties};
@@ -399,7 +400,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Code}");
-                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_MinScoreRequirement, p_Context);
+                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_MinScoreRequirement, null, null, p_Context);
                 }
             }
             else

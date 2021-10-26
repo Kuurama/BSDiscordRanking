@@ -51,13 +51,27 @@ namespace BSDiscordRanking.Formats.Level
     public class DiffCustomData
     {
         private string m_CustomPassText;
+        private string m_Category;
+        private string m_InfoOnGGP;
         public float weighting { get; set; }
         public int minScoreRequirement { get; set; }
+
+        public string category
+        {
+            get => m_Category;
+            set => m_Category = String.IsNullOrEmpty(value) ? null : value;
+        }
 
         public string customPassText
         {
             get => m_CustomPassText;
             set => m_CustomPassText = String.IsNullOrEmpty(value) ? null : value;
+        }
+
+        public string infoOnGGP
+        {
+            get => m_InfoOnGGP;
+            set => m_InfoOnGGP = String.IsNullOrEmpty(value) ? null : value;
         }
     }
 }

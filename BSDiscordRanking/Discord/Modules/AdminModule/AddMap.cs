@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
     {
         [Command("addmap")]
         [Summary("Adds a map or updates it from a desired level.")]
-        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f)
+        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null)
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -39,10 +39,10 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                         if (l_DiffExist)
                         {
-                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_DifferentMinScore(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote));
+                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote));
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), Context);
+                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
                                 if (!l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -60,7 +60,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             }
                             else if (l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), Context);
+                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                 l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);

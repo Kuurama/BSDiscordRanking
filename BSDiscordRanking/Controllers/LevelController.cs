@@ -159,14 +159,17 @@ namespace BSDiscordRanking.Controllers
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public MapExistFormat MapExist_DifferentMinScore(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement)
+        public MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText)
         {
             new LevelController().FetchLevel();
             MapExistFormat l_MapExistFormat = new MapExistFormat
             {
                 MapExist = false,
                 DifferentMinScore = false,
-                Level = -1
+                Level = -1,
+                DifferentPassText = false,
+                DifferentInfoOnGGP = false,
+                DifferentCategory = false
             };
             foreach (var l_LevelID in GetLevelControllerCache().LevelID)
             {
@@ -181,10 +184,29 @@ namespace BSDiscordRanking.Controllers
                             if (l_Difficulty.name == p_Difficulty && l_Difficulty.characteristic == p_Characteristic)
                             {
                                 Console.WriteLine($"Map already exist in level {l_Level}");
+                                
                                 l_MapExistFormat.MapExist = true;
+                                
                                 if (l_Difficulty.customData.minScoreRequirement != p_MinScoreRequirement)
                                     l_MapExistFormat.DifferentMinScore = true;
+                                
                                 l_MapExistFormat.Level = l_LevelID;
+                                if (l_Difficulty.customData.customPassText != p_CustomPassText)
+                                {
+                                    l_MapExistFormat.CustomPassText = p_CustomPassText;
+                                    l_MapExistFormat.DifferentPassText = true;
+                                }
+                                if (l_Difficulty.customData.infoOnGGP != p_InfoOnGGP)
+                                {
+                                    l_MapExistFormat.InfoOnGGP = p_InfoOnGGP;
+                                    l_MapExistFormat.DifferentInfoOnGGP = true;
+                                }
+                                if (l_Difficulty.customData.category != p_Category)
+                                {
+                                    l_MapExistFormat.Category = p_Category;
+                                    l_MapExistFormat.DifferentCategory = true;
+                                }
+                                
                                 return l_MapExistFormat;
                             }
                         }
@@ -199,6 +221,12 @@ namespace BSDiscordRanking.Controllers
         {
             public bool MapExist { get; set; }
             public bool DifferentMinScore { get; set; }
+            public string Category { get; set; }
+            public string InfoOnGGP { get; set; }
+            public bool DifferentPassText { get; set; }
+            public bool DifferentCategory { get; set; }
+            public bool DifferentInfoOnGGP { get; set; }
+            public string CustomPassText { get; set; }
             public int Level { get; set; }
         }
     }
