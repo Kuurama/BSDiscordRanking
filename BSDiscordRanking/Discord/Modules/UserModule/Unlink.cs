@@ -22,6 +22,5 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 await ReplyAsync("> :white_check_mark: Your account was successfully unlinked!");
             }
         }
-        
     }
 }

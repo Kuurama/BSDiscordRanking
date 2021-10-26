@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
-using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -43,10 +40,10 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     break;
             }
 
-            if ((int)p_Acc == 0)
+            if ((int) p_Acc == 0)
                 return 0;
 
-            return (int)Math.Round(l_MaxScore * (p_Acc / 100));
+            return (int) Math.Round(l_MaxScore * (p_Acc / 100));
         }
 
         private class RequireManagerRoleAttribute : PreconditionAttribute

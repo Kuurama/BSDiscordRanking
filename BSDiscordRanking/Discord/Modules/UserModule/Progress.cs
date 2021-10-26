@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
 
@@ -59,7 +59,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             var l_Builder = new EmbedBuilder()
                                 .AddField("Pool", $"Level {l_PerLevelFormat.LevelID}", true)
                                 .AddField("Progress Bar", GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10), true)
-                                .AddField("Progress Amount", $"{Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
+                                .AddField("Progress Amount", $"{Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}", true);
                             var l_Embed = l_Builder.Build();
                             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             return;
@@ -96,7 +96,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else
                 {
                     int l_MessagesIndex = 0;
-                    List<string> l_Messages = new List<string> { "" };
+                    List<string> l_Messages = new List<string> {""};
                     if (l_PlayerPassPerLevel.Levels != null)
                     {
                         var l_Builder = new EmbedBuilder()
@@ -108,7 +108,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             if (l_PerLevelFormat.NumberOfMapDiffInLevel > 0)
                             {
                                 if (l_Messages[l_MessagesIndex].Length +
-                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}\n"
                                         .Length > 900)
                                 {
                                     l_MessagesIndex++;
@@ -120,7 +120,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 }
 
                                 l_Messages[l_MessagesIndex] +=
-                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
+                                    $"Level {l_PerLevelFormat.LevelID}: {GenerateProgressBar(l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.NumberOfMapDiffInLevel, 10)} {Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}% ({l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel})  {l_PerLevelFormat.TrophyString}" +
                                     Environment.NewLine;
                             }
                         }

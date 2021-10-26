@@ -1,22 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net.NetworkInformation;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Level;
+using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using static System.String;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
-
     [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
@@ -94,7 +89,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         private void DeleteUnpassedPlaylist(string p_OriginalPath, string p_FileName)
         {
-            ///// Delete all personnal files before generating new ones /////////
+            ///// Delete all personal files before generating new ones /////////
             string l_Path = p_OriginalPath + p_FileName + "/";
             if (File.Exists(p_OriginalPath + p_FileName + ".zip"))
                 File.Delete(p_OriginalPath + p_FileName + ".zip");
@@ -196,8 +191,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         }
 
 
-
-
         private string GenerateProgressBar(int p_Value, int p_MaxValue, int p_Size)
         {
             float l_Percentage = (float) p_Value / p_MaxValue;
@@ -220,7 +213,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return $"[{l_ProgressText}]";
         }
 
-        
 
         class CheckChannelAttribute : PreconditionAttribute
         {

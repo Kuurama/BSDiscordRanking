@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.API;
+using BSDiscordRanking.Formats.Level;
 using Discord.Commands;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 
@@ -15,19 +16,19 @@ namespace BSDiscordRanking
 {
     public class Level
     {
-        public LevelFormat m_Level;
-        private BeatSaverFormat m_BeatSaver;
-        public int m_LevelID;
         public const string SUFFIX_NAME = "_Level";
-        private string m_SyncURL;
-        public bool m_MapAdded;
-        public bool m_MapDeleted;
 
         /// Keep the underscore at the beginning to avoid issue with the controller.
         private const string PATH = @"./Levels/";
 
         private const int ERROR_LIMIT = 3;
+        private BeatSaverFormat m_BeatSaver;
         private int m_ErrorNumber = 0;
+        public LevelFormat m_Level;
+        public int m_LevelID;
+        public bool m_MapAdded;
+        public bool m_MapDeleted;
+        private string m_SyncURL;
 
         public Level(int p_LevelID)
         {
@@ -295,11 +296,11 @@ namespace BSDiscordRanking
                                 l_NewMapName = l_SBMapName.ToString();
                             } while (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0] || l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0]);
 
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash,key = m_BeatSaver.id, name = l_NewMapName};
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = l_NewMapName};
 
                             Difficulties l_Difficulties = new Difficulties()
                             {
-                                name = p_SelectedDifficultyName, 
+                                name = p_SelectedDifficultyName,
                                 characteristic = p_SelectedCharacteristic,
                                 customData = new DiffCustomData
                                 {
@@ -348,7 +349,8 @@ namespace BSDiscordRanking
 
                                         if (l_ScoreRequirementEdit)
                                         {
-                                            p_Context.Channel.SendMessageAsync($"> :ballot_box_with_check: Min Score Requirement changed to {l_Difficulties.customData.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
+                                            p_Context.Channel.SendMessageAsync(
+                                                $"> :ballot_box_with_check: Min Score Requirement changed to {l_Difficulties.customData.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
                                             ReWritePlaylist(false);
                                         }
                                         else if (l_DifficultyAlreadyExist)

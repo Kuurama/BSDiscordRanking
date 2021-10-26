@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BSDiscordRanking.Formats
+namespace BSDiscordRanking.Formats.Level
 {
     public class LevelFormat
     {
@@ -30,26 +30,32 @@ namespace BSDiscordRanking.Formats
 
     public class MainCustomData
     {
+        private string m_CustomPassText;
         private string m_SyncURL;
+
         public string syncURL
         {
             get => m_SyncURL;
             set => m_SyncURL = String.IsNullOrEmpty(value) ? null : value;
         }
+
         public float weighting { get; set; }
-        private string m_CustomPassText;
-        public string customPassText {
+
+        public string customPassText
+        {
             get => m_CustomPassText;
             set => m_CustomPassText = String.IsNullOrEmpty(value) ? null : value;
         }
     }
-    
+
     public class DiffCustomData
     {
+        private string m_CustomPassText;
         public float weighting { get; set; }
         public int minScoreRequirement { get; set; }
-        private string m_CustomPassText;
-        public string customPassText {
+
+        public string customPassText
+        {
             get => m_CustomPassText;
             set => m_CustomPassText = String.IsNullOrEmpty(value) ? null : value;
         }

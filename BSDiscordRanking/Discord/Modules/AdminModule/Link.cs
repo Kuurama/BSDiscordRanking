@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
@@ -22,7 +23,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     $"> :x: Sorry, but this discord account has already been linked. Please use the admin `{BotHandler.m_Prefix}unlink {p_DiscordID}` command.");
             else if (!string.IsNullOrEmpty(p_ScoreSaberID))
             {
-                p_ScoreSaberID = System.Text.RegularExpressions.Regex.Match(p_ScoreSaberID, @"\d+").Value;
+                p_ScoreSaberID = Regex.Match(p_ScoreSaberID, @"\d+").Value;
                 if (string.IsNullOrEmpty(UserController.GetPlayer(p_DiscordID)) &&
                     UserController.AccountExist(p_ScoreSaberID) && !UserController.SSIsAlreadyLinked(p_ScoreSaberID))
                 {

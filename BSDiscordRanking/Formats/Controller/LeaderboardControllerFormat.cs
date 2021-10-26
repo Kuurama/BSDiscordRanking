@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using BSDiscordRanking.Formats.Player;
 
-namespace BSDiscordRanking.Formats
+namespace BSDiscordRanking.Formats.Controller
 {
     public class LeaderboardControllerFormat
     {

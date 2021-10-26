@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -11,21 +11,20 @@ namespace BSDiscordRanking.Discord
 {
     public class BotHandler
     {
-        public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
-
 #pragma warning disable CA2211
         public static string m_Prefix;
 #pragma warning restore CA2211
-        // ReSharper disable once MemberCanBePrivate.Global
-        public DiscordSocketClient m_Client;
 #pragma warning disable CA2211
         public static CommandService m_Commands;
 #pragma warning restore CA2211
+        // ReSharper disable once MemberCanBePrivate.Global
+        public DiscordSocketClient m_Client;
+        public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
 
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
             m_Prefix = p_Config.CommandPrefix[0];
-            m_Client = new DiscordSocketClient(new DiscordSocketConfig { GatewayIntents = GatewayIntents.All });
+            m_Client = new DiscordSocketClient(new DiscordSocketConfig {GatewayIntents = GatewayIntents.All});
             m_Commands = new CommandService();
 
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
@@ -53,7 +52,7 @@ namespace BSDiscordRanking.Discord
             var l_Message = p_Arg as SocketUserMessage;
             var l_Context = new SocketCommandContext(m_Client, l_Message);
             if (l_Message != null && l_Message.Author.IsBot) return;
-            
+
             int l_ArgPos = 0;
 
             foreach (var l_Prefix in ConfigController.GetConfig().CommandPrefix)
@@ -67,7 +66,6 @@ namespace BSDiscordRanking.Discord
                             await l_Message.Channel.SendMessageAsync(l_Result.Result.ErrorReason);
                 }
             }
-
         }
     }
 }

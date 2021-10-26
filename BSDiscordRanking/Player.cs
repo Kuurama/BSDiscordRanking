@@ -7,7 +7,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.API;
+using BSDiscordRanking.Formats.Controller;
+using BSDiscordRanking.Formats.Level;
+using BSDiscordRanking.Formats.Player;
 using Discord.Commands;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -16,17 +19,17 @@ namespace BSDiscordRanking
 {
     public class Player
     {
-        private string m_PlayerID;
-        private string m_Path;
-        public ApiPlayerFull m_PlayerFull;
-        private ApiScores m_PlayerScore;
-        private PlayerPassFormat m_PlayerPass;
-        private LevelControllerFormat m_LevelController;
-        public PlayerStatsFormat m_PlayerStats;
-        private int m_NumberOfTry = 0;
-        private bool m_HavePlayerInfo = false;
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
+        private bool m_HavePlayerInfo = false;
+        private LevelControllerFormat m_LevelController;
+        private int m_NumberOfTry = 0;
+        private string m_Path;
+        public ApiPlayerFull m_PlayerFull;
+        private string m_PlayerID;
+        private PlayerPassFormat m_PlayerPass;
+        private ApiScores m_PlayerScore;
+        public PlayerStatsFormat m_PlayerStats;
 
         public Player(string p_PlayerID)
         {
@@ -72,7 +75,7 @@ namespace BSDiscordRanking
                 return 0;
             }
         }
-        
+
         public string GetPlayerID()
         {
             return m_PlayerID;
@@ -526,7 +529,7 @@ namespace BSDiscordRanking
                 string l_DifficultyShown = "";
                 int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
                 Trophy l_Trophy = new Trophy();
-                List<string> l_Messages = new List<string> { "" };
+                List<string> l_Messages = new List<string> {""};
                 List<int> l_ExistingLevelID = new List<int>();
                 int l_BiggerLevelID = 0;
                 var l_LevelController = new LevelController(); /// Constructor makes levelcontroller FetchLevel()
@@ -659,7 +662,7 @@ namespace BSDiscordRanking
 
                                                                     l_Passes++;
                                                                     l_PassesPerLevel++;
-                                                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1, -1); /// Mean the Player passed that level.
+                                                                    SetGrindInfo(l_Y + 1, new List<bool> {true}, -1, null, -1, -1); /// Mean the Player passed that level.
                                                                 }
                                                                 else
                                                                 {
@@ -676,9 +679,11 @@ namespace BSDiscordRanking
                                                     if (!l_MapStored && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
                                                     {
                                                         bool l_WasStored = false;
-                                                        SongFormat l_PassedSong = new SongFormat();
-                                                        l_PassedSong.difficulties = new List<Difficulties>();
-                                                        l_PassedSong.hash = l_Song.hash.ToUpper();
+                                                        SongFormat l_PassedSong = new SongFormat
+                                                        {
+                                                            difficulties = new List<Difficulties>(),
+                                                            hash = l_Song.hash.ToUpper()
+                                                        };
                                                         l_PassedSong.difficulties.Add(l_Difficulty);
                                                         l_PassedSong.name = l_Song.name;
                                                         m_PlayerPass.songs.Add(l_PassedSong);
@@ -716,7 +721,7 @@ namespace BSDiscordRanking
 
                                                             l_Passes++;
                                                             l_PassesPerLevel++;
-                                                            SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1, -1); /// Mean the Player passed that level.
+                                                            SetGrindInfo(l_Y + 1, new List<bool> {true}, -1, null, -1, -1); /// Mean the Player passed that level.
                                                         }
                                                         else
                                                         {
@@ -747,39 +752,39 @@ namespace BSDiscordRanking
                             {
                                 case 0:
                                 {
-                                    SetGrindInfo(l_Y + 1, new List<bool> { false }, -1, null, -1, -1);
+                                    SetGrindInfo(l_Y + 1, new List<bool> {false}, -1, null, -1, -1);
                                     break;
                                 }
                                 case <= 39:
                                 {
                                     l_Plastic = 1;
-                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1, -1);
+                                    SetGrindInfo(l_Y + 1, new List<bool> {true}, -1, null, -1, -1);
                                     break;
                                 }
                                 case <= 69:
                                 {
                                     l_Silver = 1;
-                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1, -1);
+                                    SetGrindInfo(l_Y + 1, new List<bool> {true}, -1, null, -1, -1);
                                     break;
                                 }
                                 case <= 99:
                                 {
                                     l_Gold = 1;
-                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1, -1);
+                                    SetGrindInfo(l_Y + 1, new List<bool> {true}, -1, null, -1, -1);
                                     break;
                                 }
 
                                 case 100:
                                 {
                                     l_Diamond = 1;
-                                    SetGrindInfo(l_Y + 1, new List<bool> { true }, -1, null, -1, -1);
+                                    SetGrindInfo(l_Y + 1, new List<bool> {true}, -1, null, -1, -1);
                                     break;
                                 }
                             }
                         }
                         else
                         {
-                            SetGrindInfo(l_Y + 1, new List<bool> { false }, -1, null, -1, -1);
+                            SetGrindInfo(l_Y + 1, new List<bool> {false}, -1, null, -1, -1);
                         }
 
                         if (l_PassesPerLevel > 0 && (m_PlayerStats.IsFirstScan > 0))
@@ -1248,7 +1253,7 @@ namespace BSDiscordRanking
                 }
 
                 l_PlayerPassPerLevelFormat.Levels.Add(new InPassPerLevelFormat
-                    { LevelID = l_Y + 1, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy { Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond }, TrophyString = l_TrophyString });
+                    {LevelID = l_Y + 1, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy {Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond}, TrophyString = l_TrophyString});
             }
 
             if (l_PlayerPassPerLevelFormat.Levels == null)

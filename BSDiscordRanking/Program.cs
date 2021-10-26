@@ -1,5 +1,5 @@
-﻿using System;
-using BSDiscordRanking.Controllers;
+﻿using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Discord;
 
 namespace BSDiscordRanking
 {
@@ -9,7 +9,7 @@ namespace BSDiscordRanking
         {
             new LevelController().FetchLevel();
             UserController.ReadDB();
-            Discord.BotHandler.StartBot(ConfigController.ReadConfig());
+            BotHandler.StartBot(ConfigController.ReadConfig());
         }
     }
 }
