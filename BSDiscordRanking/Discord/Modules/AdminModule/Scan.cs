@@ -1,0 +1,104 @@
+﻿using System;
+using System.Threading.Tasks;
+using BSDiscordRanking.Controllers;
+using Discord.Commands;
+using Discord.WebSocket;
+
+namespace BSDiscordRanking.Discord.Modules.AdminModule
+{
+    [RequireManagerRole]
+    public partial class AdminModule : ModuleBase<SocketCommandContext>
+    {
+        [Command("scan")]
+        [Alias("dc")]
+        [Summary("Scans a specific score saber account and add it to the database.")]
+        public async Task Scan_Scores(string p_DiscordOrScoreSaberID)
+        {
+            bool l_IsDiscordLinked = false;
+            string l_ScoreSaberOrDiscordName = "";
+            string l_DiscordID = "";
+            SocketGuildUser l_User = null;
+
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+
+            if (UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                l_User = Context.Guild.GetUser(Convert.ToUInt64(p_DiscordOrScoreSaberID));
+                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
+                if (l_User != null)
+                {
+                    l_IsDiscordLinked = true;
+                    l_DiscordID = l_User.Id.ToString();
+                    l_ScoreSaberOrDiscordName = l_User.Username;
+                }
+                else
+                {
+                    await ReplyAsync("> :x: This Discord User isn't accessible yet.");
+                    return;
+                }
+            }
+            else if (l_IsScoreSaberAccount)
+            {
+                if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
+                {
+                    l_User = Context.Guild.GetUser(Convert.ToUInt64(UserController.GetDiscordID(p_DiscordOrScoreSaberID)));
+                    l_IsDiscordLinked = true;
+                    l_DiscordID = l_User.Id.ToString();
+                    l_ScoreSaberOrDiscordName = l_User.Username;
+                }
+            }
+            else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                await ReplyAsync("> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID.");
+                return;
+            }
+
+            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            if (!l_IsDiscordLinked)
+            {
+                l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.playerInfo.playerName;
+            }
+
+            int l_OldPlayerLevel = l_Player.GetPlayerLevel(); /// By doing so, as a result => loadstats() inside too.
+
+            bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
+            var l_FetchPass = l_Player.FetchPass(Context);
+            if (l_FetchPass.Result >= 1)
+            {
+                if (l_IsDiscordLinked)
+                {
+                    await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result} new maps!\n");
+                }
+            }
+            else
+            {
+                if (l_FirsScan)
+                    await ReplyAsync($"> Oh, it seems like {l_ScoreSaberOrDiscordName} didn't pass any maps from the pools.");
+                else
+                    await ReplyAsync($"> :x: Sorry but {l_ScoreSaberOrDiscordName} didn't pass any new maps.");
+            }
+
+            int l_NewPlayerLevel = l_Player.GetPlayerLevel();
+            if (l_OldPlayerLevel != l_NewPlayerLevel)
+            {
+                if (l_OldPlayerLevel < l_NewPlayerLevel)
+                    if (l_IsDiscordLinked)
+                        await ReplyAsync($"> <:Stonks:884058036371595294> GG! <@{l_DiscordID}>, You are now Level {l_NewPlayerLevel}.\n> To see your new pool, try the `{ConfigController.GetConfig().CommandPrefix[0]}ggp` command.");
+                    else
+                        await ReplyAsync($"> <:Stonks:884058036371595294> {l_ScoreSaberOrDiscordName} is now Level {l_NewPlayerLevel}.\n");
+                else if (l_IsDiscordLinked)
+                    await ReplyAsync($"> <:NotStonks:884057234886238208> <@{l_DiscordID}>, You lost levels. You are now Level {l_NewPlayerLevel}");
+                else
+                    await ReplyAsync($"> <:NotStonks:884057234886238208> {l_ScoreSaberOrDiscordName} lost levels. they are now Level {l_NewPlayerLevel}");
+                if (l_IsDiscordLinked)
+                {
+                    await ReplyAsync($"> :clock1: The bot will now update {l_ScoreSaberOrDiscordName}'s roles. This step can take a while. `(The bot should now be responsive again)`");
+                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_User.Id, l_NewPlayerLevel);
+                }
+            }
+
+            if (!l_IsDiscordLinked)
+                await ReplyAsync($"> :white_check_mark: {l_ScoreSaberOrDiscordName}'s info added/updated");
+        }
+    }
+}
