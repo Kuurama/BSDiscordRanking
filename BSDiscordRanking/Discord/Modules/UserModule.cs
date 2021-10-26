@@ -677,10 +677,10 @@ namespace BSDiscordRanking.Discord.Modules
             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
             l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
             if (l_FindIndex == -1)
-                l_EmbedBuilder.AddField("Server Rank", ":medal: #0 - 0 RPL", true);
+                l_EmbedBuilder.AddField("Server Rank", $":medal: #0 - 0 {ConfigController.GetConfig().PointsName}", true);
             else
 
-                l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} RPL", true);
+                l_EmbedBuilder.AddField("Server Rank", ":medal: #" + $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} {ConfigController.GetConfig().PointsName}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
             l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
@@ -941,7 +941,7 @@ namespace BSDiscordRanking.Discord.Modules
                 .AddField("Can i get playlist with only unpassed maps?",
                     $"Yes you can! To get them, *do the* `{ConfigController.GetConfig().CommandPrefix[0]}gupl all` *command!* (stands for !getunpassedplaylist [MapPoolNumber]")
                 .AddField("About the 'ranking'?",
-                    $"There is a leaderboard using the `{ConfigController.GetConfig().CommandPrefix[0]}ld` command! (or use `{ConfigController.GetConfig().CommandPrefix[0]}leaderboard`)\nEach pass you do give you `RPL`, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
+                    $"There is a leaderboard using the `{ConfigController.GetConfig().CommandPrefix[0]}ld` command! (or use `{ConfigController.GetConfig().CommandPrefix[0]}leaderboard`)\nEach pass you do give you `{ConfigController.GetConfig().PointsName}`, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
                 .AddField("To see your progress through the ranking:", $"Type `{ConfigController.GetConfig().CommandPrefix[0]}progress`")
                 .AddField("How do i look at my profile?", $"```{ConfigController.GetConfig().CommandPrefix[0]}profile```");
             var l_Embed = l_Builder.Build();
@@ -994,7 +994,7 @@ namespace BSDiscordRanking.Discord.Modules
                 {
                     var l_RankedPlayer = l_LeaderboardController.m_Leaderboard.Leaderboard[l_Index];
                     l_EmbedBuilder.AddField(
-                        $"#{l_Index + 1} - {l_RankedPlayer.Name} : {l_RankedPlayer.Points} RPL",
+                        $"#{l_Index + 1} - {l_RankedPlayer.Name} : {l_RankedPlayer.Points} {ConfigController.GetConfig().PointsName}",
                         $"Level: {l_RankedPlayer.Level}. [ScoreSaber Profile](https://scoresaber.com/u/{l_RankedPlayer.ScoreSaberID})");
                     l_PageExist = true;
                 }
