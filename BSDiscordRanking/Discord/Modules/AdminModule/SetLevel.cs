@@ -41,7 +41,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             {
                 await ReplyAsync($"> This player is already Level {p_Level} but we will still perform a role check/update.\n");
             }
-            
+
             l_Player.ResetLevels();
             for (int l_I = 0; l_I < p_Level; l_I++)
             {

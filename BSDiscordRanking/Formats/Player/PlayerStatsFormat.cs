@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BSDiscordRanking.Formats
+namespace BSDiscordRanking.Formats.Player
 {
     public class PlayerStatsFormat
     {
@@ -12,9 +12,9 @@ namespace BSDiscordRanking.Formats
         //silver 40% 2
         //gold 70% 3
         //diamond 100% 4
-        
+
         public float Points { get; set; }
-        
+
         public int IsFirstScan { get; set; }
     }
 
@@ -25,5 +25,4 @@ namespace BSDiscordRanking.Formats
         public int Gold { get; set; }
         public int Diamond { get; set; }
     }
-    
 }

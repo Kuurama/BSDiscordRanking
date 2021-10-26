@@ -10,7 +10,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
-        
         [Command("getunpassedplaylist")]
         [Alias("gupl")]
         [Summary("Sends Playlist only containing the maps you didn't pass. Use `all` instead of the level id to get the whole level folder.")]

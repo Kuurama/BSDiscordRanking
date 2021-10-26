@@ -8,7 +8,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
-
         [Command("getplaylist")]
         [Alias("gpl")]
         [Summary("Sends the desired Level's playlist file. Use `all` instead of the level id to get the whole level folder.")]

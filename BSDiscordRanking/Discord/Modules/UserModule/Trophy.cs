@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
 
@@ -56,7 +56,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
 
                             var l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {l_PerLevelFormat.TrophyString}",
-                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float)(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
+                                $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.NumberOfMapDiffInLevel} ({Math.Round((float) (l_PerLevelFormat.NumberOfPass / (float) l_PerLevelFormat.NumberOfMapDiffInLevel) * 100.0f)}%)");
                             var l_Embed = l_Builder.Build();
                             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             return;

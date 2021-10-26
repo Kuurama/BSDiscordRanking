@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Controller;
 
 namespace BSDiscordRanking.Controllers
 {
     public class LevelController
     {
-        private LevelControllerFormat m_LevelController;
         private const string PATH = @"./";
         private const string FILENAME = "LevelController";
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
+        private LevelControllerFormat m_LevelController;
 
         public LevelController()
         {
@@ -25,7 +25,7 @@ namespace BSDiscordRanking.Controllers
             try
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
-                m_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
+                m_LevelController = new LevelControllerFormat {LevelID = new List<int>()};
                 string l_StringLevelID = "";
                 int l_MyInt;
 
@@ -159,13 +159,6 @@ namespace BSDiscordRanking.Controllers
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public class MapExistFormat
-        {
-            public bool MapExist { get; set; }
-            public bool DifferentMinScore { get; set; }
-            public int Level { get; set; }
-        }
-
         public MapExistFormat MapExist_DifferentMinScore(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement)
         {
             new LevelController().FetchLevel();
@@ -175,7 +168,7 @@ namespace BSDiscordRanking.Controllers
                 DifferentMinScore = false,
                 Level = -1
             };
-            foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+            foreach (var l_LevelID in GetLevelControllerCache().LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
                 Console.WriteLine(l_LevelID);
@@ -200,6 +193,13 @@ namespace BSDiscordRanking.Controllers
             }
 
             return l_MapExistFormat;
+        }
+
+        public class MapExistFormat
+        {
+            public bool MapExist { get; set; }
+            public bool DifferentMinScore { get; set; }
+            public int Level { get; set; }
         }
     }
 }

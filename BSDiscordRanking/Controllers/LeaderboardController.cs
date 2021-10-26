@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Controller;
+using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 // ReSharper disable All
 // ReSharper disable All
@@ -41,7 +43,6 @@ namespace BSDiscordRanking.Controllers
                 LoadLeaderboard();
                 for (int l_I = 0; l_I <= m_Leaderboard.Leaderboard.Count - 1; l_I++)
                 {
-
                     if (p_ScoreSaberID == m_Leaderboard.Leaderboard[l_I].ScoreSaberID)
                     {
                         l_NewPlayer = false;
@@ -95,7 +96,7 @@ namespace BSDiscordRanking.Controllers
                 }
 
                 m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
-                
+
                 for (int l_I = l_Snipe.SnipedByPlayers.Count - 1; l_I >= 0; l_I--)
                 {
                     l_Snipe.SnipedByPlayers[l_I].NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.SnipedByPlayers[l_I].ScoreSaberID) + 1;
@@ -173,10 +174,10 @@ namespace BSDiscordRanking.Controllers
                         .WithIconUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 })
                 .AddField("\u200B", $"Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**", false);
-            
-                builder.WithDescription($"Your Current ping choice for leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
-                
-                if (p_Snipe.Player.OldRank < p_Snipe.Player.NewRank)
+
+            builder.WithDescription($"Your Current ping choice for leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+
+            if (p_Snipe.Player.OldRank < p_Snipe.Player.NewRank)
             {
                 builder.WithColor(new Color(255, 0, 0));
             }
@@ -222,7 +223,7 @@ namespace BSDiscordRanking.Controllers
                             l_PlayerText = p_SnipedPlayer.Name;
                         }
 
-                        l_MyText +=$"> {l_PlayerText} #{p_SnipedPlayer.OldRank} -> #{p_SnipedPlayer.NewRank}\n";
+                        l_MyText += $"> {l_PlayerText} #{p_SnipedPlayer.OldRank} -> #{p_SnipedPlayer.NewRank}\n";
                     }
                 }
             }
@@ -274,7 +275,7 @@ namespace BSDiscordRanking.Controllers
                                 //m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
                             }
 
-                            if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
+                            if (m_Leaderboard.Leaderboard is {Count: >= 2}) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
 
                             Console.WriteLine($"Leaderboard Loaded and Sorted");
                         }

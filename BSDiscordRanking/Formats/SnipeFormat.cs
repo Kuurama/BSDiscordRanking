@@ -7,6 +7,7 @@ namespace BSDiscordRanking.Formats
         public Sniped Player { get; set; }
         public List<Sniped> SnipedByPlayers { get; set; }
     }
+
     public class Sniped
     {
         public string Name { get; set; }

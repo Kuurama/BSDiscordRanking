@@ -12,6 +12,5 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             await Context.Channel.SendMessageAsync("Here.. (take it, but it's secret) : ||http://prntscr.com/soylt9||", false);
         }
-
     }
 }

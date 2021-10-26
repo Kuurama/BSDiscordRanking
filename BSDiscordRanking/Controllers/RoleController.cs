@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
-
 
 namespace BSDiscordRanking.Controllers
 {
@@ -15,22 +15,23 @@ namespace BSDiscordRanking.Controllers
 
         private void WriteRolesDB()
         {
-            File.WriteAllText($"./roles.json", System.Text.Json.JsonSerializer.Serialize(m_RoleController));
+            File.WriteAllText($"./roles.json", JsonSerializer.Serialize(m_RoleController));
         }
 
         public static RolesFormat ReadRolesDB()
         {
             if (File.Exists("roles.json"))
             {
-                RolesFormat l_RolesFormat = System.Text.Json.JsonSerializer.Deserialize<RolesFormat>(new StreamReader("./roles.json").ReadToEnd());
+                RolesFormat l_RolesFormat = JsonSerializer.Deserialize<RolesFormat>(new StreamReader("./roles.json").ReadToEnd());
                 if (l_RolesFormat != null)
                 {
                     return l_RolesFormat;
                 }
             }
+
             return new RolesFormat {Roles = new List<RoleFormat>()};
         }
-        
+
         public async Task CreateAllRoles(SocketCommandContext p_Context, bool Overwrite)
         {
             ReadRolesDB();
@@ -39,29 +40,33 @@ namespace BSDiscordRanking.Controllers
                 if (!RoleExist($"Lv.{l_LevelID}") || Overwrite)
                 {
                     var l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
-                    m_RoleController.Roles.Add(new RoleFormat{RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
+                    m_RoleController.Roles.Add(new RoleFormat {RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
                 }
+
                 Thread.Sleep(60);
             }
+
             if (!RoleExist($"{ConfigController.GetConfig().RolePrefix} Ranked") || Overwrite)
             {
                 var l_Role = p_Context.Guild.CreateRoleAsync($"{ConfigController.GetConfig().RolePrefix} Ranked", GuildPermissions.None, Color.Blue, false, false).Result;
                 await l_Role.ModifyAsync(p_Properties => p_Properties.Position = 0);
-                m_RoleController.Roles.Add(new RoleFormat(){RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = 0});
+                m_RoleController.Roles.Add(new RoleFormat() {RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = 0});
             }
-            WriteRolesDB(); 
+
+            WriteRolesDB();
         }
 
         private bool RoleExist(string p_Name)
-        { 
+        {
             if (m_RoleController == null) return false;
-            foreach (var l_Role in m_RoleController.Roles) 
+            foreach (var l_Role in m_RoleController.Roles)
             {
                 if (l_Role.RoleName == p_Name)
                 {
                     return true;
                 }
             }
+
             return false;
         }
     }

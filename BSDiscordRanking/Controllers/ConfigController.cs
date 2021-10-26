@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Controller;
 using Newtonsoft.Json;
 
 namespace BSDiscordRanking.Controllers
 {
     public class ConfigController
     {
-        public static ConfigFormat m_ConfigFormat = new ConfigFormat(){ AuthorizedChannels = new List<ulong>()};
-        private static readonly ConfigFormat DefaultConfig = new ConfigFormat() { AuthorizedChannels = new List<ulong>()};
+        public static ConfigFormat m_ConfigFormat = new ConfigFormat() {AuthorizedChannels = new List<ulong>()};
+        private static readonly ConfigFormat DefaultConfig = new ConfigFormat() {AuthorizedChannels = new List<ulong>()};
 
         public static void CreateConfig()
         {
@@ -32,10 +32,10 @@ namespace BSDiscordRanking.Controllers
             if (File.Exists("./config.json"))
             {
                 try
-                {   
+                {
                     using (StreamReader l_StreamReader = new StreamReader("./config.json"))
                     {
-                        m_ConfigFormat  = JsonConvert.DeserializeObject<ConfigFormat>(l_StreamReader.ReadToEnd());
+                        m_ConfigFormat = JsonConvert.DeserializeObject<ConfigFormat>(l_StreamReader.ReadToEnd());
                         return m_ConfigFormat;
                     }
                 }
@@ -50,9 +50,10 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine("Config does not exist, creating a new one.");
                 CreateConfig();
             }
+
             return null;
         }
-        
+
         public static ConfigFormat GetConfig()
         {
             if (m_ConfigFormat != DefaultConfig)
@@ -65,6 +66,5 @@ namespace BSDiscordRanking.Controllers
             string l_Config = JsonConvert.SerializeObject(m_ConfigFormat);
             File.WriteAllText("./config.json", l_Config);
         }
-        
     }
 }

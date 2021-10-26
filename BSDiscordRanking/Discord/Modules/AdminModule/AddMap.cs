@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.API;
 using Discord;
 using Discord.Commands;
 

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Player;
 using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
@@ -59,11 +59,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_TotalTrophy.Gold += l_Trophy.Gold;
                     l_TotalTrophy.Diamond += l_Trophy.Diamond;
                 }
-                
+
                 /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///
-                await LeaderboardController.SendSnipeMessage(Context,new LeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.Points, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the Leaderboard
+                await LeaderboardController.SendSnipeMessage(Context, new LeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.Points, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the Leaderboard
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }
-        }   
+        }
     }
 }
