@@ -21,6 +21,8 @@ namespace BSDiscordRanking.Formats
         
         public ulong LoggingChannel { get; set; }
 
+        public string PointsName { get; set; } = "PP";
+
     }
     
 }
