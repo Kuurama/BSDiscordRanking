@@ -27,7 +27,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
                     {
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
-                        LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0);
+                        LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null);
                         if (l_MapExistCheck.MapExist)
                         {
                             Level l_Level = new Level(l_MapExistCheck.Level);

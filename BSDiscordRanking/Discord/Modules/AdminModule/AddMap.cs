@@ -10,22 +10,32 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("addmap")]
+        [Alias("editmap","rankmap")]
         [Summary("Adds a map or updates it from a desired level.")]
-        public async Task AddMap(int p_Level = 0, string p_Code = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null)
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null)
         {
-            if (p_Level <= 0 || string.IsNullOrEmpty(p_Code) || string.IsNullOrEmpty(p_Characteristic) ||
+            if (p_Level <= 0 || string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
             }
             else
             {
+                if (p_Category == "null")
+                    p_Category = null;
+
+                if (p_InfoOnGGP == "null")
+                    p_InfoOnGGP = null;
+
+                if (p_CustomPassText == "null")
+                    p_CustomPassText = null;
+                
                 if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
                         Level l_Level = new Level(p_Level);
-                        BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
+                        BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode, Context);
                         int l_NumberOfNote = 0;
                         bool l_DiffExist = false;
                         foreach (var l_Diff in l_Map.versions[^1].diffs)
@@ -39,10 +49,10 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                         if (l_DiffExist)
                         {
-                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote));
+                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText);
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
+                                l_Level.AddMap(p_BSRCode, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
                                 if (!l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -58,15 +68,34 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                                     await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                 }
                             }
-                            else if (l_MapExistCheck.DifferentMinScore)
+                            else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText)
                             {
-                                l_Level.AddMap(p_Code, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
+                                l_Level.AddMap(p_BSRCode, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                                l_EmbedBuilder.WithTitle("Min Score Requirement Edited on:");
+                                l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
-                                l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
+                                if (l_MapExistCheck.DifferentMinScore)
+                                {
+                                    l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", false);
+                                }
+
+                                if (l_MapExistCheck.DifferentCategory)
+                                {
+                                    l_EmbedBuilder.AddField("New Category:", p_Category, false);
+                                }
+                                
+                                if (l_MapExistCheck.DifferentInfoOnGGP)
+                                {
+                                    l_EmbedBuilder.AddField("New InfoOnGGP:", p_InfoOnGGP, false);
+                                }
+                                
+                                if (l_MapExistCheck.DifferentPassText)
+                                {
+                                    l_EmbedBuilder.AddField("New CustomPassText:", p_CustomPassText, false);
+                                }
+                                
                                 l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");

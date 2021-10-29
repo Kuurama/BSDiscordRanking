@@ -32,12 +32,12 @@ namespace BSDiscordRanking.Controllers
             return new RolesFormat {Roles = new List<RoleFormat>()};
         }
 
-        public async Task CreateAllRoles(SocketCommandContext p_Context, bool Overwrite)
+        public async Task CreateAllRoles(SocketCommandContext p_Context, bool p_Overwrite)
         {
             ReadRolesDB();
             foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
-                if (!RoleExist($"Lv.{l_LevelID}") || Overwrite)
+                if (!RoleExist($"Lv.{l_LevelID}") || p_Overwrite)
                 {
                     var l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
                     m_RoleController.Roles.Add(new RoleFormat {RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID});
@@ -46,7 +46,7 @@ namespace BSDiscordRanking.Controllers
                 Thread.Sleep(60);
             }
 
-            if (!RoleExist($"{ConfigController.GetConfig().RolePrefix} Ranked") || Overwrite)
+            if (!RoleExist($"{ConfigController.GetConfig().RolePrefix} Ranked") || p_Overwrite)
             {
                 var l_Role = p_Context.Guild.CreateRoleAsync($"{ConfigController.GetConfig().RolePrefix} Ranked", GuildPermissions.None, Color.Blue, false, false).Result;
                 await l_Role.ModifyAsync(p_Properties => p_Properties.Position = 0);
