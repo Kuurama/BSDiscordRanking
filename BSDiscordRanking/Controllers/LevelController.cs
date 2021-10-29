@@ -159,7 +159,7 @@ namespace BSDiscordRanking.Controllers
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText)
+        public MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, float p_Weight)
         {
             new LevelController().FetchLevel();
             MapExistFormat l_MapExistFormat = new MapExistFormat
@@ -169,7 +169,9 @@ namespace BSDiscordRanking.Controllers
                 Level = -1,
                 DifferentPassText = false,
                 DifferentInfoOnGGP = false,
-                DifferentCategory = false
+                DifferentCategory = false,
+                Weight = p_Weight,
+                DifferentWeight = false
             };
             foreach (var l_LevelID in GetLevelControllerCache().LevelID)
             {
@@ -186,11 +188,11 @@ namespace BSDiscordRanking.Controllers
                                 Console.WriteLine($"Map already exist in level {l_Level}");
                                 
                                 l_MapExistFormat.MapExist = true;
-                                
+                                l_MapExistFormat.Level = l_LevelID;
+
                                 if (l_Difficulty.customData.minScoreRequirement != p_MinScoreRequirement)
                                     l_MapExistFormat.DifferentMinScore = true;
                                 
-                                l_MapExistFormat.Level = l_LevelID;
                                 if (l_Difficulty.customData.customPassText != p_CustomPassText)
                                 {
                                     l_MapExistFormat.CustomPassText = p_CustomPassText;
@@ -205,6 +207,11 @@ namespace BSDiscordRanking.Controllers
                                 {
                                     l_MapExistFormat.Category = p_Category;
                                     l_MapExistFormat.DifferentCategory = true;
+                                }
+                                if (Math.Abs(l_Difficulty.customData.weighting - p_Weight) > 0.001)
+                                {
+                                    l_MapExistFormat.Weight = p_Weight;
+                                    l_MapExistFormat.DifferentWeight = true;
                                 }
                                 
                                 return l_MapExistFormat;
@@ -227,6 +234,8 @@ namespace BSDiscordRanking.Controllers
             public bool DifferentCategory { get; set; }
             public bool DifferentInfoOnGGP { get; set; }
             public string CustomPassText { get; set; }
+            public float Weight { get; set; }
+            public bool DifferentWeight { get; set; }
             public int Level { get; set; }
         }
     }

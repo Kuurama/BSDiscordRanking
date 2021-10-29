@@ -12,7 +12,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         [Command("addmap")]
         [Alias("editmap","rankmap")]
         [Summary("Adds a map or updates it from a desired level.")]
-        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null)
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, float p_Weight = 1f)
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -49,10 +49,10 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                         if (l_DiffExist)
                         {
-                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText);
+                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_Weight);
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(p_BSRCode, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
+                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_Weight, Context);
                                 if (!l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -68,34 +68,30 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                                     await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                 }
                             }
-                            else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText)
+                            else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentWeight)
                             {
-                                l_Level.AddMap(p_BSRCode, p_Characteristic, p_DifficultyName, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, Context);
+                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_Weight, Context);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                 l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
+                                
                                 if (l_MapExistCheck.DifferentMinScore)
-                                {
                                     l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", false);
-                                }
 
                                 if (l_MapExistCheck.DifferentCategory)
-                                {
                                     l_EmbedBuilder.AddField("New Category:", p_Category, false);
-                                }
-                                
+
                                 if (l_MapExistCheck.DifferentInfoOnGGP)
-                                {
                                     l_EmbedBuilder.AddField("New InfoOnGGP:", p_InfoOnGGP, false);
-                                }
-                                
+
                                 if (l_MapExistCheck.DifferentPassText)
-                                {
                                     l_EmbedBuilder.AddField("New CustomPassText:", p_CustomPassText, false);
-                                }
-                                
+
+                                if (l_MapExistCheck.DifferentWeight)
+                                    l_EmbedBuilder.AddField("New Weight:", p_Weight, false);
+
                                 l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
