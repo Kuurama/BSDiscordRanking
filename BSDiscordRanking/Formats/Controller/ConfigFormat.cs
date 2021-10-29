@@ -18,7 +18,7 @@ namespace BSDiscordRanking.Formats.Controller
         public List<ulong> AuthorizedChannels { get; set; }
 
         public bool GiveOldRoles { get; set; } = false;
-
+        public bool automaticWeightCalculation { get; set; } = false;
         public ulong LoggingChannel { get; set; }
 
         public string PointsName { get; set; } = "PP";

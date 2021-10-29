@@ -159,7 +159,7 @@ namespace BSDiscordRanking.Controllers
             Console.WriteLine("RetryNumber set to 0");
         }
 
-        public MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, float p_Weight)
+        public MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight)
         {
             new LevelController().FetchLevel();
             MapExistFormat l_MapExistFormat = new MapExistFormat
@@ -170,6 +170,8 @@ namespace BSDiscordRanking.Controllers
                 DifferentPassText = false,
                 DifferentInfoOnGGP = false,
                 DifferentCategory = false,
+                ForceManualWeight = p_ForceManualWeight,
+                DifferentForceManualWeight = false,
                 Weight = p_Weight,
                 DifferentWeight = false
             };
@@ -208,6 +210,11 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.Category = p_Category;
                                     l_MapExistFormat.DifferentCategory = true;
                                 }
+                                if (l_Difficulty.customData.forceManualWeight != p_ForceManualWeight)
+                                {
+                                    l_MapExistFormat.ForceManualWeight = p_ForceManualWeight;
+                                    l_MapExistFormat.DifferentForceManualWeight = true;
+                                }
                                 if (Math.Abs(l_Difficulty.customData.weighting - p_Weight) > 0.001)
                                 {
                                     l_MapExistFormat.Weight = p_Weight;
@@ -234,6 +241,8 @@ namespace BSDiscordRanking.Controllers
             public bool DifferentCategory { get; set; }
             public bool DifferentInfoOnGGP { get; set; }
             public string CustomPassText { get; set; }
+            public bool ForceManualWeight { get; set; }
+            public bool DifferentForceManualWeight { get; set; }
             public float Weight { get; set; }
             public bool DifferentWeight { get; set; }
             public int Level { get; set; }

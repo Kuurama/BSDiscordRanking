@@ -12,7 +12,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         [Command("addmap")]
         [Alias("editmap","rankmap")]
         [Summary("Adds a map or updates it from a desired level.")]
-        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, float p_Weight = 1f)
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_ForceManualWeight = false, float p_Weight = 1f)
         {
             if (p_Level <= 0 || string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -49,10 +49,10 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                         if (l_DiffExist)
                         {
-                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_Weight);
+                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight);
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_Weight, Context);
+                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, Context);
                                 if (!l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -68,9 +68,9 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                                     await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                 }
                             }
-                            else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentWeight)
+                            else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                             {
-                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_Weight, Context);
+                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, Context);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                 l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
@@ -89,6 +89,9 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                                 if (l_MapExistCheck.DifferentPassText)
                                     l_EmbedBuilder.AddField("New CustomPassText:", p_CustomPassText, false);
 
+                                if (l_MapExistCheck.DifferentForceManualWeight)
+                                    l_EmbedBuilder.AddField("New ManualWeightPreference:", p_ForceManualWeight, false);
+                                
                                 if (l_MapExistCheck.DifferentWeight)
                                     l_EmbedBuilder.AddField("New Weight:", p_Weight, false);
 
