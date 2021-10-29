@@ -5,7 +5,14 @@ namespace BSDiscordRanking.Formats.Player
 {
     public class PlayerPassFormat
     {
-        public List<SongFormat> songs { get; set; }
+        public List<InPlayerPassFormat> PassList { get; set; }
+    }
+
+    public class InPlayerPassFormat
+    {
+        public SongFormat Song { get; set; }
+        public float Score { get; set; }
+        public int LeaderboardID { get; set; }
     }
 
     public class PlayerPassPerLevelFormat

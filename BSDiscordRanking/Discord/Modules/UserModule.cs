@@ -22,16 +22,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             LevelFormat l_LevelFormat = l_Level.GetLevelData();
             if (l_LevelFormat.songs.Count > 0)
             {
-                foreach (var l_PlayerPassSong in l_PlayerPass.songs)
+                foreach (var l_PlayerPassSong in l_PlayerPass.PassList)
                 {
                     for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
                     {
                         if (l_LevelFormat.songs.Count > l_I)
                         {
-                            if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
+                            if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.Song.hash,
                                 StringComparison.CurrentCultureIgnoreCase))
                             {
-                                foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.difficulties)
+                                foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.Song.difficulties)
                                 {
                                     if (l_LevelFormat.songs.Count > l_I)
                                     {
@@ -212,8 +212,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             return $"[{l_ProgressText}]";
         }
-
-
+        
         class CheckChannelAttribute : PreconditionAttribute
         {
             public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context,

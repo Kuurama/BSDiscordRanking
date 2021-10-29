@@ -17,11 +17,11 @@ namespace BSDiscordRanking.Formats.Level
     {
         public string hash { get; set; }
         public string key { get; set; }
-        public List<Difficulties> difficulties { get; set; }
+        public List<Difficulty> difficulties { get; set; }
         public string name { get; set; }
     }
 
-    public class Difficulties
+    public class Difficulty
     {
         public string characteristic { get; set; }
         public string name { get; set; }
@@ -73,7 +73,9 @@ namespace BSDiscordRanking.Formats.Level
             get => m_InfoOnGGP;
             set => m_InfoOnGGP = String.IsNullOrEmpty(value) ? null : value;
         }
-        
+
+        public int noteCount { get; set; }
+        public int maxScore { get; set; }
         public bool forceManualWeight { get; set; }
     }
 }

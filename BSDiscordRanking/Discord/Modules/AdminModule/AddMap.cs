@@ -52,7 +52,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight);
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, Context);
+                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, Context);
                                 if (!l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -70,7 +70,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             }
                             else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                             {
-                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, Context);
+                                l_Level.AddMap(p_BSRCode, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, Context);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                 l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
