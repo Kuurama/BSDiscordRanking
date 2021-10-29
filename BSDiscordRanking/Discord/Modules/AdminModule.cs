@@ -10,7 +10,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
     [RequireManagerRole]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
-        private int ScoreFromAcc(float p_Acc = 0f, int p_NoteCount = 0)
+        public static int ScoreFromAcc(float p_Acc = 0f, int p_NoteCount = 0)
         {
             /// Made by MoreOwO :3
 
@@ -40,7 +40,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     break;
             }
 
-            if ((int) p_Acc == 0)
+            if (p_Acc == 0f)
                 return 0;
 
             return (int) Math.Round(l_MaxScore * (p_Acc / 100));
