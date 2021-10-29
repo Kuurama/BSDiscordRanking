@@ -262,7 +262,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName, int p_MinScoreRequirement, string p_Category, string InfoOnGGP, string p_CustomPassText, SocketCommandContext p_Context)
+        public void AddMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, SocketCommandContext p_Context)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -282,6 +282,9 @@ namespace BSDiscordRanking
                         bool l_SongAlreadyExist = false;
                         bool l_DifficultyAlreadyExist = false;
                         bool l_ScoreRequirementEdit = false;
+                        bool l_CategoryEdit = false;
+                        bool l_InfoOnGGPEdit = false;
+                        bool l_CustomPassTextEdit = false;
                         try
                         {
                             StringBuilder l_SBMapName = new StringBuilder(m_BeatSaver.name);
@@ -306,7 +309,8 @@ namespace BSDiscordRanking
                                     minScoreRequirement = p_MinScoreRequirement,
                                     weighting = 1f,
                                     category = p_Category,
-                                    customPassText = p_CustomPassText
+                                    customPassText = p_CustomPassText,
+                                    infoOnGGP = p_InfoOnGGP
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulties> {l_Difficulties};
@@ -343,15 +347,51 @@ namespace BSDiscordRanking
                                                     l_Difficulty.customData.minScoreRequirement = l_Difficulties.customData.minScoreRequirement;
                                                     l_ScoreRequirementEdit = true;
                                                 }
+                                                if (l_Difficulties.customData.category != l_Difficulty.customData.category)
+                                                {
+                                                    l_Difficulty.customData.category = l_Difficulties.customData.category;
+                                                    l_CategoryEdit = true;
+                                                }
+                                                if (l_Difficulties.customData.infoOnGGP != l_Difficulty.customData.infoOnGGP)
+                                                {
+                                                    l_Difficulty.customData.infoOnGGP = l_Difficulties.customData.infoOnGGP;
+                                                    l_InfoOnGGPEdit = true;
+                                                }
+                                                if (l_Difficulties.customData.customPassText != l_Difficulty.customData.customPassText)
+                                                {
+                                                    l_Difficulty.customData.customPassText = l_Difficulties.customData.customPassText;
+                                                    l_CustomPassTextEdit = true;
+                                                }
 
                                                 break;
                                             }
                                         }
 
-                                        if (l_ScoreRequirementEdit)
+                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit)
                                         {
                                             p_Context.Channel.SendMessageAsync(
-                                                $"> :ballot_box_with_check: Min Score Requirement changed to {l_Difficulties.customData.minScoreRequirement} in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID}");
+                                                $"> :ballot_box_with_check: The following maps info has been changed in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID} :\n");
+                                            if (l_ScoreRequirementEdit)
+                                            {
+                                                p_Context.Channel.SendMessageAsync(
+                                                    $"> Min Score => {l_Difficulties.customData.minScoreRequirement}.");
+                                            }
+                                            if (l_CategoryEdit)
+                                            {
+                                                p_Context.Channel.SendMessageAsync(
+                                                    $"> Category => {l_Difficulties.customData.category}.");
+                                            }
+                                            if (l_InfoOnGGPEdit)
+                                            {
+                                                p_Context.Channel.SendMessageAsync(
+                                                    $"> InfoOnGGP => {l_Difficulties.customData.infoOnGGP}.");
+                                            }
+                                            if (l_CustomPassTextEdit)
+                                            {
+                                                p_Context.Channel.SendMessageAsync(
+                                                    $"> CustomPassText => {l_Difficulties.customData.customPassText}.");
+                                            }
+                                            
                                             ReWritePlaylist(false);
                                         }
                                         else if (l_DifficultyAlreadyExist)
@@ -364,6 +404,7 @@ namespace BSDiscordRanking
                                             p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                             ReWritePlaylist(false);
                                         }
+
                                     }
                                     else
                                     {
@@ -400,7 +441,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Code}");
-                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_MinScoreRequirement, null, null, p_Context);
+                    AddMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_MinScoreRequirement, null, null, null, p_Context);
                 }
             }
             else
