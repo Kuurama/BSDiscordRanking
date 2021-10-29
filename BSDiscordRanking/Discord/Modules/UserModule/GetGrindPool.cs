@@ -86,8 +86,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                         }
                                     }
                                 }
-
-
+                            
                             for (int l_N = 0; l_N < l_Song.difficulties.Count; l_N++)
                             {
                                 if (l_Passed.Count <= l_I)
