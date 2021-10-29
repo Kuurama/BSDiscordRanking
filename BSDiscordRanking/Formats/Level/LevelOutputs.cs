@@ -73,5 +73,7 @@ namespace BSDiscordRanking.Formats.Level
             get => m_InfoOnGGP;
             set => m_InfoOnGGP = String.IsNullOrEmpty(value) ? null : value;
         }
+        
+        public bool forceManualWeight { get; set; }
     }
 }

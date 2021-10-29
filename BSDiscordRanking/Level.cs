@@ -262,7 +262,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(string p_Code, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, float p_Weighting, SocketCommandContext p_Context)
+        public void AddMap(string p_Code, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, SocketCommandContext p_Context)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -291,6 +291,8 @@ namespace BSDiscordRanking
                         bool l_InfoOnGGPEdit = false;
                         bool l_CustomPassTextEdit = false;
                         bool l_WeightEdit = false;
+                        string l_NewManualWeightPreference = null;
+                        bool l_ForceManualWeightPreferenceEdit = false;
                         try
                         {
                             StringBuilder l_SBMapName = new StringBuilder(m_BeatSaver.name);
@@ -316,7 +318,8 @@ namespace BSDiscordRanking
                                     weighting = p_Weighting,
                                     category = p_Category,
                                     customPassText = p_CustomPassText,
-                                    infoOnGGP = p_InfoOnGGP
+                                    infoOnGGP = p_InfoOnGGP,
+                                    forceManualWeight = p_ForceManualWeight
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulties> {l_Difficulties};
@@ -378,12 +381,18 @@ namespace BSDiscordRanking
                                                     l_Difficulty.customData.weighting = l_Difficulties.customData.weighting;
                                                     l_WeightEdit = true;
                                                 }
+                                                if (l_Difficulties.customData.forceManualWeight != l_Difficulty.customData.forceManualWeight)
+                                                {
+                                                    l_Difficulty.customData.forceManualWeight = l_Difficulties.customData.forceManualWeight;
+                                                    l_NewManualWeightPreference = l_Difficulties.customData.forceManualWeight == true ? "true" : "false";
+                                                    l_ForceManualWeightPreferenceEdit = true;
+                                                }
 
                                                 break;
                                             }
                                         }
 
-                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_WeightEdit)
+                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit)
                                         {
                                             p_Context.Channel.SendMessageAsync(
                                                 $"> :ballot_box_with_check: The following maps info has been changed in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID} :\n");
@@ -406,6 +415,11 @@ namespace BSDiscordRanking
                                             {
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> CustomPassText: {l_OriginalCustomPassText} => {l_Difficulties.customData.customPassText}.");
+                                            }
+                                            if (l_ForceManualWeightPreferenceEdit)
+                                            {
+                                                p_Context.Channel.SendMessageAsync(
+                                                    $"> Manual Weight Preference has been set to : **{l_NewManualWeightPreference}**.");
                                             }
                                             if (l_WeightEdit)
                                             {
@@ -462,7 +476,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_Code}");
-                    AddMap(p_Code, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, null, null, null, p_Weighting, p_Context);
+                    AddMap(p_Code, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_Context);
                 }
             }
             else
