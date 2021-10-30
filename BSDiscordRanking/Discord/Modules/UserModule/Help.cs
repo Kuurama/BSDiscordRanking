@@ -14,9 +14,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         [Command("help")]
         [Summary("Shows all the commands & their summaries.")]
-        public async Task Help(params string[] p_commands)
+        public async Task Help(string p_Command = null)
         {
-            if (p_commands == null)
+            if (p_Command == null)
             {
                 bool l_IsAdmin = false;
                 if (Context.User is SocketGuildUser l_User)
@@ -55,9 +55,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
-                string p_command = p_commands.First();
                 var l_FoundCommand = BotHandler.m_Commands.Commands.ToList().Find(x =>
-                    x.Name == p_command || x.Aliases.ToList().Find(x => x == p_command) == p_command);
+                    x.Name == p_Command || x.Aliases.ToList().Find(x => x == p_Command) == p_Command);
                 if (l_FoundCommand != null)
                 {
                     EmbedBuilder l_Builder = new EmbedBuilder();
