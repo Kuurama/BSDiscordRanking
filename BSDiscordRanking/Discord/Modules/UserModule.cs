@@ -22,16 +22,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             LevelFormat l_LevelFormat = l_Level.GetLevelData();
             if (l_LevelFormat.songs.Count > 0)
             {
-                foreach (var l_PlayerPassSong in l_PlayerPass.PassList)
+                foreach (var l_PlayerPassSong in l_PlayerPass.SongList)
                 {
                     for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
                     {
                         if (l_LevelFormat.songs.Count > l_I)
                         {
-                            if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.Song.hash,
+                            if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
                                 StringComparison.CurrentCultureIgnoreCase))
                             {
-                                foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.Song.difficulties)
+                                foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.DiffList)
                                 {
                                     if (l_LevelFormat.songs.Count > l_I)
                                     {
@@ -41,9 +41,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                                 l_LevelFormat.songs.Count > 0)
                                             {
                                                 if (l_LevelFormat.songs[l_I].difficulties[l_Y].characteristic ==
-                                                    l_PlayerPassSongDifficulty.characteristic &&
+                                                    l_PlayerPassSongDifficulty.Difficulty.characteristic &&
                                                     l_LevelFormat.songs[l_I].difficulties[l_Y].name ==
-                                                    l_PlayerPassSongDifficulty.name)
+                                                    l_PlayerPassSongDifficulty.Difficulty.name)
                                                 {
                                                     /// Here remove diff or map if it's the only ranked diff
                                                     if (l_LevelFormat.songs[l_I].difficulties.Count <= 1)

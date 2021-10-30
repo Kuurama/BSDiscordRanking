@@ -5,12 +5,19 @@ namespace BSDiscordRanking.Formats.Player
 {
     public class PlayerPassFormat
     {
-        public List<InPlayerPassFormat> PassList { get; set; }
+        public List<InPlayerSong> SongList { get; set; }
     }
 
+    public class InPlayerSong
+    {
+        public string hash { get; set; }
+        public string key { get; set; }
+        public string name { get; set; }
+        public List<InPlayerPassFormat> DiffList { get; set; }
+    }
     public class InPlayerPassFormat
     {
-        public SongFormat Song { get; set; }
+        public Difficulty Difficulty { get; set; }
         public float Score { get; set; }
         public int LeaderboardID { get; set; }
     }

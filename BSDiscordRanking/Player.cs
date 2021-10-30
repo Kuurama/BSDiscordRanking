@@ -299,11 +299,7 @@ namespace BSDiscordRanking
                                         if (l_Result != null)
                                             foreach (var l_NewScore in l_Result.scores) /// Remove old score and add new score.
                                             {
-                                                if (m_PlayerScore.scores.RemoveAll(p_X =>
-                                                        p_X.leaderboardId == l_NewScore.leaderboardId &&
-                                                        p_X.score != l_NewScore.score) > 0 ||
-                                                    !(m_PlayerScore.scores.Any(p_X =>
-                                                        p_X.leaderboardId == l_NewScore.leaderboardId)))
+                                                if (m_PlayerScore.scores.RemoveAll(p_X => p_X.leaderboardId == l_NewScore.leaderboardId && p_X.score != l_NewScore.score) > 0 || !(m_PlayerScore.scores.Any(p_X => p_X.leaderboardId == l_NewScore.leaderboardId)))
                                                 {
                                                     m_PlayerScore.scores.Add(l_NewScore);
                                                     l_NumberOfAddedScore++;
@@ -528,6 +524,7 @@ namespace BSDiscordRanking
                 float l_Weighting = 0f;
                 int l_PoolID = 0;
                 string l_DifficultyShown = "";
+                int l_OldPlayerFirstScanStatus = m_PlayerStats.IsFirstScan;
                 int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
                 Trophy l_Trophy = new Trophy();
                 List<string> l_Messages = new List<string> { "" };
@@ -538,7 +535,7 @@ namespace BSDiscordRanking
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
                 m_PlayerPass = new PlayerPassFormat
                 {
-                    PassList = new List<InPlayerPassFormat>()
+                    SongList = new List<InPlayerSong>()
                 };
                 ResetTrophy();
                 ResetLevels();
@@ -604,22 +601,22 @@ namespace BSDiscordRanking
                                             {
                                                 if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                 {
-                                                    foreach (var l_CachedPassedSong in m_PlayerPass.PassList)
+                                                    foreach (var l_CachedPassedSong in m_PlayerPass.SongList)
                                                     {
                                                         bool l_DiffExist = false;
                                                         bool l_OldDiffExist = false;
-                                                        if (l_CachedPassedSong.Song.difficulties != null && string.Equals(l_CachedPassedSong.Song.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                        if (l_CachedPassedSong.DiffList != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                         {
                                                             l_MapStored = true;
-                                                            foreach (var l_CachedDifficulty in l_CachedPassedSong.Song.difficulties)
+                                                            foreach (var l_CachedDifficulty in l_CachedPassedSong.DiffList)
                                                             {
-                                                                foreach (var l_OldPassedSong in l_OldPlayerPass.PassList)
+                                                                foreach (var l_OldPassedSong in l_OldPlayerPass.SongList)
                                                                 {
-                                                                    if (l_CachedPassedSong.Song.hash == l_OldPassedSong.Song.hash)
+                                                                    if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
                                                                     {
-                                                                        foreach (var l_OldPassedDifficulty in l_OldPassedSong.Song.difficulties)
+                                                                        foreach (var l_OldPassedDifficulty in l_OldPassedSong.DiffList)
                                                                         {
-                                                                            if (l_OldPassedDifficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
+                                                                            if (l_OldPassedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
                                                                             {
                                                                                 l_OldDiffExist = true;
                                                                                 break;
@@ -628,7 +625,7 @@ namespace BSDiscordRanking
                                                                     }
                                                                 }
 
-                                                                if (l_CachedDifficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_CachedDifficulty.customData.minScoreRequirement)
+                                                                if (l_CachedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_CachedDifficulty.Difficulty.customData.minScoreRequirement)
                                                                 {
                                                                     l_DiffExist = true;
                                                                     break;
@@ -637,7 +634,12 @@ namespace BSDiscordRanking
 
                                                             if (!l_DiffExist)
                                                             {
-                                                                l_CachedPassedSong.Song.difficulties.Add(l_Difficulty);
+                                                                l_CachedPassedSong.DiffList.Add(new InPlayerPassFormat()
+                                                                {
+                                                                    Difficulty = l_Difficulty,
+                                                                    Score = l_Score.score,
+                                                                    LeaderboardID = l_Score.leaderboardId
+                                                                });
                                                                 if (!l_OldDiffExist)
                                                                 {
                                                                     l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
@@ -685,26 +687,26 @@ namespace BSDiscordRanking
                                                     if (!l_MapStored && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
                                                     {
                                                         bool l_WasStored = false;
-                                                        InPlayerPassFormat l_PlayerPassFormat = new InPlayerPassFormat()
+                                                        InPlayerSong l_PlayerPassFormat = new InPlayerSong()
                                                         {
-                                                            Song = new SongFormat
-                                                            {
-                                                                difficulties = new List<Difficulty>(),
+                                                                DiffList = new List<InPlayerPassFormat>(),
                                                                 hash = l_Song.hash.ToUpper(),
                                                                 key = l_Song.key,
                                                                 name = l_Song.name
-                                                            },
-                                                            Score = l_Score.score,
-                                                            LeaderboardID = l_Score.leaderboardId
                                                         };
 
-                                                        l_PlayerPassFormat.Song.difficulties.Add(l_Difficulty);
-                                                        l_PlayerPassFormat.Song.name = l_Song.name;
-                                                        m_PlayerPass.PassList.Add(l_PlayerPassFormat);
-
-                                                        foreach (var l_OldPassedSong in l_OldPlayerPass.PassList)
+                                                        l_PlayerPassFormat.DiffList.Add(new InPlayerPassFormat()
                                                         {
-                                                            if (string.Equals(l_OldPassedSong.Song.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                            Difficulty = l_Difficulty,
+                                                            Score = l_Score.score,
+                                                            LeaderboardID = l_Score.leaderboardId
+                                                        });
+                                                        l_PlayerPassFormat.name = l_Song.name;
+                                                        m_PlayerPass.SongList.Add(l_PlayerPassFormat);
+
+                                                        foreach (var l_OldPassedSong in l_OldPlayerPass.SongList)
+                                                        {
+                                                            if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                             {
                                                                 l_WasStored = true;
                                                                 break;
@@ -862,7 +864,8 @@ namespace BSDiscordRanking
                         foreach (var l_Message in l_Messages)
                         {
                             var l_Builder = new EmbedBuilder();
-                            if (l_IsFirstMessage) l_Builder.WithTitle("You passed the following maps:");
+                            if (l_IsFirstMessage) l_Builder.WithTitle(l_OldPlayerFirstScanStatus > 0 ? "You passed maps in the following levels:" : "You passed the following maps:");
+
                             l_IsFirstMessage = false;
                             l_Builder.WithDescription(l_Message);
                             l_Builder.WithColor(new Color(94, 34, 122));
@@ -908,13 +911,7 @@ namespace BSDiscordRanking
                             {
                                 l_PlayerPass = new PlayerPassFormat()
                                 {
-                                    PassList = new List<InPlayerPassFormat>()
-                                    {
-                                        new InPlayerPassFormat()
-                                        {
-                                            Song = new SongFormat()
-                                        }
-                                    }
+                                    SongList = new List<InPlayerSong>()
                                 };
                                 Console.WriteLine($"PlayerPass Created (Empty Format), file contained null");
                             }
@@ -928,13 +925,7 @@ namespace BSDiscordRanking
                     {
                         l_PlayerPass = new PlayerPassFormat()
                         {
-                            PassList = new List<InPlayerPassFormat>()
-                            {
-                                new InPlayerPassFormat()
-                                {
-                                    Song = new SongFormat()
-                                }
-                            }
+                            SongList = new List<InPlayerSong>()
                         };
                         Console.WriteLine($@"{m_Path}pass.json Created (Empty Format)");
                     }
@@ -946,13 +937,7 @@ namespace BSDiscordRanking
             {
                 return l_PlayerPass = new PlayerPassFormat()
                 {
-                    PassList = new List<InPlayerPassFormat>()
-                    {
-                        new InPlayerPassFormat()
-                        {
-                            Song = new SongFormat()
-                        }
-                    }
+                    SongList = new List<InPlayerSong>()
                 };
             }
         }
@@ -996,7 +981,7 @@ namespace BSDiscordRanking
                             File.WriteAllText($@"{m_Path}pass.json", JsonSerializer.Serialize(m_PlayerPass));
                             try
                             {
-                                Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.PassList.Count} song(s) are stored (song number <= number of scores : multiple diff)");
+                                Console.WriteLine($"Pass's file of {m_PlayerFull.playerInfo.playerName} Updated, {m_PlayerPass.SongList.Count} song(s) are stored (song number <= number of scores : multiple diff)");
                             }
                             catch (Exception)
                             {
@@ -1164,13 +1149,7 @@ namespace BSDiscordRanking
                 {
                     m_PlayerPass = new PlayerPassFormat
                     {
-                        PassList = new List<InPlayerPassFormat>()
-                        {
-                            new InPlayerPassFormat()
-                            {
-                                Song = new SongFormat()
-                            }
-                        }
+                        SongList = new List<InPlayerSong>()
                     };
                     Console.WriteLine("This player don't have any pass yet");
                     return m_PlayerPass;
@@ -1180,13 +1159,7 @@ namespace BSDiscordRanking
             {
                 return m_PlayerPass = new PlayerPassFormat
                 {
-                    PassList = new List<InPlayerPassFormat>()
-                    {
-                        new InPlayerPassFormat()
-                        {
-                            Song = new SongFormat()
-                        }
-                    }
+                    SongList = new List<InPlayerSong>()
                 };
             }
         }
@@ -1261,17 +1234,17 @@ namespace BSDiscordRanking
                         }
                     }
 
-                    foreach (var l_OldPlayerScore in l_OldPlayerPass.PassList)
+                    foreach (var l_OldPlayerScore in l_OldPlayerPass.SongList)
                     {
-                        if (String.Equals(l_Song.hash, l_OldPlayerScore.Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                        if (String.Equals(l_Song.hash, l_OldPlayerScore.hash, StringComparison.CurrentCultureIgnoreCase))
                         {
-                            if (l_Song.difficulties != null && l_OldPlayerScore.Song.difficulties != null)
+                            if (l_Song.difficulties != null && l_OldPlayerScore.DiffList != null)
                             {
                                 foreach (var l_Difficulty in l_Song.difficulties)
                                 {
-                                    foreach (var l_OldPlayerScoreDiff in l_OldPlayerScore.Song.difficulties)
+                                    foreach (var l_OldPlayerScoreDiff in l_OldPlayerScore.DiffList)
                                     {
-                                        if (l_Difficulty.characteristic == l_OldPlayerScoreDiff.characteristic && l_Difficulty.name == l_OldPlayerScoreDiff.name)
+                                        if (l_Difficulty.characteristic == l_OldPlayerScoreDiff.Difficulty.characteristic && l_Difficulty.name == l_OldPlayerScoreDiff.Difficulty.name)
                                         {
                                             l_NumberOfPass++;
                                             break;
