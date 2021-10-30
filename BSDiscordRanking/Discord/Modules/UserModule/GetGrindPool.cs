@@ -168,44 +168,113 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
 
                     l_Player.ReWriteStats();
-
+                    List<string> l_Messages = new List<string> { "" };
                     if (l_ListPassedMap.Count > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                         l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} {l_PlayerTrophy}");
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
-                        string l_BigGgp = null;
                         int l_Y = 0;
                         int l_NumbedOfEmbed = 1;
-
-                        if (ConfigController.GetConfig().BigGGP) l_BigGgp = "\n\u200B";
+                        string l_LastMessage = null;
 
                         foreach (var l_PassedMap in l_ListPassedMap)
                         {
                             foreach (var l_PassedDiff in l_PassedMap.Song.difficulties)
                             {
-                                var l_EmbedValue = $"{l_PassedDiff.name} - {l_PassedDiff.characteristic}{l_BigGgp}";
-                                if (l_PassedDiff.customData.minScoreRequirement != 0)
-                                    l_EmbedValue += $" - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%)";
-
-                                l_EmbedBuilder.AddField($"{l_PassedMap.Song.name} ({Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%)", l_EmbedValue, true);
-
-                                if (l_NumbedOfEmbed % 2 != 0)
+                                if (ConfigController.GetConfig().FullEmbededGGP)
                                 {
-                                    if (l_Y % 2 == 0)
+                                    var l_EmbedValue = $"{l_PassedDiff.name} - {l_PassedDiff.characteristic}";
+                                    if (l_PassedDiff.customData.minScoreRequirement != 0)
+                                        l_EmbedValue += $" - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%)";
+
+                                    l_EmbedBuilder.AddField($"{l_PassedMap.Song.name} ({Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%)", l_EmbedValue, true);
+
+                                    if (l_NumbedOfEmbed % 2 != 0)
+                                    {
+                                        if (l_Y % 2 == 0)
+                                            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                                    }
+                                    else if (l_Y % 2 != 0)
                                         l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                                }
-                                else if (l_Y % 2 != 0)
-                                    l_EmbedBuilder.AddField("\u200B", "\u200B", true);
 
-                                l_Y++;
-                                if (l_Y % 15 == 0)
+                                    l_Y++;
+                                    if (l_Y % 15 == 0)
+                                    {
+                                        await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                        l_EmbedBuilder = new EmbedBuilder();
+                                        l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+                                        l_NumbedOfEmbed++;
+                                    }
+                                }
+                                else
                                 {
-                                    await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                                    l_EmbedBuilder = new EmbedBuilder();
-                                    l_NumbedOfEmbed++;
+                                    int l_MessagesIndex = 0;
+                                    if (
+                                        $"l_Messages[l_MessagesIndex].Length + {l_PassedMap.Song.name} - {l_PassedDiff.name} - {l_PassedDiff.characteristic}  - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%) : {l_PassedDiff.customData.infoOnGGP}\n"
+                                            .Length > 1900)
+                                    {
+                                        l_MessagesIndex++;
+                                    }
+
+                                    if (l_Messages.Count < l_MessagesIndex + 1)
+                                    {
+                                        l_Messages.Add(""); /// Initialize the next used index.
+                                        l_EmbedBuilder.AddField("\u200B", l_Messages[l_MessagesIndex - 1]);
+                                        var l_Embed = l_EmbedBuilder.Build();
+                                        await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                        l_EmbedBuilder = new EmbedBuilder();
+                                        l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+                                    }
+
+                                    if (l_PassedDiff.customData.minScoreRequirement != 0)
+                                    {
+                                        if (l_PassedDiff.customData.infoOnGGP != null)
+                                        {
+                                            if (l_PassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name})  - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                            else
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic})  - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                        }
+                                        else
+                                        {
+                                            if (l_PassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name})  - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                            else
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic})  - MinScore: {l_PassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_PassedDiff.customData.minScoreRequirement / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (l_PassedDiff.customData.infoOnGGP != null)
+                                        {
+                                            if (l_PassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name}) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+
+                                            else
+                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic}) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                        }
+                                        else
+                                        {
+                                            if (l_PassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name}) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                            else
+                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic}) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                        }
+                                    }
+
+                                    l_LastMessage = l_Messages[l_MessagesIndex];
                                 }
                             }
+                        }
+
+                        if (!ConfigController.GetConfig().FullEmbededGGP)
+                        {
+                            l_EmbedBuilder.AddField("\u200B", l_LastMessage);
                         }
 
                         l_EmbedBuilder.WithFooter(
@@ -220,40 +289,107 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                         l_EmbedBuilder.WithTitle($"Not Passed maps in level {p_Level}");
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
-                        string l_BigGgp = null;
                         int l_Y = 0;
                         int l_NumbedOfEmbed = 1;
-
-                        if (ConfigController.GetConfig().BigGGP) l_BigGgp = "\n\u200B";
+                        string l_LastMessage = null;
 
                         foreach (var l_NotPassedMap in l_NotPassedMapList)
                         {
                             foreach (var l_NotPassedDiff in l_NotPassedMap.Song.difficulties)
                             {
-                                var l_EmbedValue = $"{l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic}{l_BigGgp}";
-                                if (l_NotPassedDiff.customData.minScoreRequirement != 0)
-                                    l_EmbedValue += $" - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%)";
-
-                                l_EmbedBuilder.AddField($"{l_NotPassedMap.Song.name}", l_EmbedValue, true);
-
-                                if (l_NumbedOfEmbed % 2 != 0)
+                                if (ConfigController.GetConfig().FullEmbededGGP)
                                 {
-                                    if (l_Y % 2 == 0)
+                                    var l_EmbedValue = $"{l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic}";
+                                    if (l_NotPassedDiff.customData.minScoreRequirement != 0)
+                                        l_EmbedValue += $" - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%)";
+
+                                    l_EmbedBuilder.AddField($"{l_NotPassedMap.Song.name}", l_EmbedValue, true);
+
+                                    if (l_NumbedOfEmbed % 2 != 0)
+                                    {
+                                        if (l_Y % 2 == 0)
+                                            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                                    }
+                                    else if (l_Y % 2 != 0)
                                         l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                                }
-                                else if (l_Y % 2 != 0)
-                                    l_EmbedBuilder.AddField("\u200B", "\u200B", true);
 
-                                l_Y++;
-                                if (l_Y % 15 == 0)
+                                    l_Y++;
+                                    if (l_Y % 15 == 0)
+                                    {
+                                        await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                        l_EmbedBuilder = new EmbedBuilder();
+                                        l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+                                        l_NumbedOfEmbed++;
+                                    }
+                                }
+                                else
                                 {
-                                    await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                                    l_EmbedBuilder = new EmbedBuilder();
-                                    l_NumbedOfEmbed++;
+                                    int l_MessagesIndex = 0;
+                                    if ($"l_Messages[l_MessagesIndex].Length + {l_NotPassedMap.Song.name} - {l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic}  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%) : {l_NotPassedDiff.customData.infoOnGGP}\n"
+                                            .Length > 1900)
+                                    {
+                                        l_MessagesIndex++;
+                                    }
+
+                                    if (l_Messages.Count < l_MessagesIndex + 1)
+                                    {
+                                        l_Messages.Add(""); /// Initialize the next used index.
+                                        l_EmbedBuilder.AddField("\u200B", l_Messages[l_MessagesIndex - 1]);
+                                        var l_Embed = l_EmbedBuilder.Build();
+                                        await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                        l_EmbedBuilder = new EmbedBuilder();
+                                        l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+                                    }
+
+                                    if (l_NotPassedDiff.customData.minScoreRequirement != 0)
+                                    {
+                                        if (l_NotPassedDiff.customData.infoOnGGP != null)
+                                        {
+                                            if (l_NotPassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name})  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%) - {l_NotPassedDiff.customData.infoOnGGP.Replace("_", " ")}\n";
+                                            else
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic})  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%) - {l_NotPassedDiff.customData.infoOnGGP.Replace("_", " ")}\n";
+                                        }
+                                        else
+                                        {
+                                            if (l_NotPassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name})  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%)\n";
+                                            else
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic})  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%)\n";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (l_NotPassedDiff.customData.infoOnGGP != null)
+                                        {
+                                            if (l_NotPassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] += $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name}) - {l_NotPassedDiff.customData.infoOnGGP.Replace("_", " ")}\n";
+
+                                            else
+                                                l_Messages[l_MessagesIndex] += $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic}) - {l_NotPassedDiff.customData.infoOnGGP.Replace("_", " ")}\n";
+                                        }
+                                        else
+                                        {
+                                            if (l_NotPassedDiff.characteristic == "Standard")
+                                                l_Messages[l_MessagesIndex] += $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name})\n";
+                                            else
+                                                l_Messages[l_MessagesIndex] += $"***`{l_NotPassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic})\n";
+                                        }
+                                    }
+
+                                    l_LastMessage = l_Messages[l_MessagesIndex];
                                 }
                             }
                         }
-
+                        if (!ConfigController.GetConfig().FullEmbededGGP)
+                        {
+                            l_EmbedBuilder.AddField("\u200B", l_LastMessage);
+                        }
+                        
                         l_EmbedBuilder.WithFooter(
                             $"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
