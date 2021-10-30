@@ -60,6 +60,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     List<InPlayerPassFormat> l_NotPassedMapList = new List<InPlayerPassFormat>();
                     int l_NumberOfPass = 0;
                     bool l_IsPassed = false;
+                    bool l_AlreadyHaveThumbnail = false;
+                    if (UserController.GetPlayer(Context.User.Id.ToString()) == null)
+                    {
+                        l_AlreadyHaveThumbnail = true; /// Do not display Thumbnail for not linked users.
+                    }
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     l_Player.LoadStats();
                     if (l_Level.m_Level.songs.Count > 0)
@@ -174,6 +179,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                         l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} {l_PlayerTrophy}");
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+                        if (!l_AlreadyHaveThumbnail)
+                        {
+                            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                            l_AlreadyHaveThumbnail = true;
+                        }
                         int l_Y = 0;
                         int l_NumbedOfEmbed = 1;
                         string l_LastMessage = null;
@@ -289,6 +299,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                         l_EmbedBuilder.WithTitle($"Not Passed maps in level {p_Level}");
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
+                        if (!l_AlreadyHaveThumbnail)
+                        {
+                            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                            l_AlreadyHaveThumbnail = true;
+                        }
+
                         int l_Y = 0;
                         int l_NumbedOfEmbed = 1;
                         string l_LastMessage = null;
