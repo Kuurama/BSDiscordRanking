@@ -812,7 +812,7 @@ namespace BSDiscordRanking
                         SetGrindInfo(l_Y + 1, null, -1, l_Trophy, -1, -1);
 
                         l_TotalAmountOfPass += l_PassesPerLevel;
-                        l_Points += l_Weighting * 0.375f * l_PassesPerLevel; /// Current RPL formula from BSCC, subject to change?
+                        l_Points += l_Weighting * 0.375f * l_PassesPerLevel; /// Current RPL formula from BSCC
                         l_PassesPerLevel = 0;
                         l_NumberOfDifficulties = 0;
                     }
