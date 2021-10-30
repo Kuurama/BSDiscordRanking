@@ -11,6 +11,7 @@ using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using BSDiscordRanking.Formats.Player;
+using Discord;
 using Discord.Commands;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -643,7 +644,8 @@ namespace BSDiscordRanking
                                                                     if (m_PlayerStats.IsFirstScan <= 0)
                                                                     {
                                                                         if (l_Messages[l_MessagesIndex].Length +
-                                                                            $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n".Length
+                                                                            $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL):\n> {l_Difficulty.customData.customPassText}\n\n"
+                                                                                .Length
                                                                             > 1900)
                                                                         {
                                                                             l_MessagesIndex++;
@@ -656,8 +658,12 @@ namespace BSDiscordRanking
 
                                                                         /// Display new pass (new diff passed while there was already a passed diff) 1/2
 
-                                                                        l_Messages[l_MessagesIndex] +=
-                                                                            $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n";
+                                                                        if (l_Difficulty.customData.customPassText != null)
+                                                                            l_Messages[l_MessagesIndex] +=
+                                                                                $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
+                                                                        else
+                                                                            l_Messages[l_MessagesIndex] +=
+                                                                                $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n";
                                                                     }
 
                                                                     l_Passes++;
@@ -711,7 +717,9 @@ namespace BSDiscordRanking
                                                             if (m_PlayerStats.IsFirstScan <= 0)
                                                             {
                                                                 if (l_Messages[l_MessagesIndex].Length >
-                                                                    1900 - $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n".Length)
+                                                                    1900 -
+                                                                    $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL):\n> {l_Difficulty.customData.customPassText}\n\n"
+                                                                        .Length)
                                                                 {
                                                                     l_MessagesIndex++;
                                                                 }
@@ -722,9 +730,12 @@ namespace BSDiscordRanking
                                                                 }
 
                                                                 /// Display new pass (new diff passed while there was already a passed diff) 2/2
-
-                                                                l_Messages[l_MessagesIndex] +=
-                                                                    $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n"; /// Display new pass 2/2
+                                                                if (l_Difficulty.customData.customPassText != null)
+                                                                    l_Messages[l_MessagesIndex] +=
+                                                                        $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
+                                                                else
+                                                                    l_Messages[l_MessagesIndex] +=
+                                                                        $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n";
                                                             }
 
                                                             l_Passes++;
@@ -822,7 +833,7 @@ namespace BSDiscordRanking
                         l_Gold = 0;
                         l_Diamond = 0;
 
-                        
+
                         if (m_PlayerStats.Trophy.ElementAtOrDefault(l_Y) == null)
                         {
                             m_PlayerStats.Trophy.Insert(l_Y, l_Trophy);
@@ -831,26 +842,32 @@ namespace BSDiscordRanking
                         {
                             m_PlayerStats.Trophy[l_Y] = l_Trophy;
                         }
+
                         ReWriteStats();
-                        
+
                         l_TotalAmountOfPass += l_PassesPerLevel;
                         l_Points += l_Weighting * 0.375f * l_PassesPerLevel; /// Current RPL formula from BSCC
                         l_PassesPerLevel = 0;
                         l_NumberOfDifficulties = 0;
-                        
                     }
 
                     m_PlayerStats.Points = l_Points;
                     m_PlayerStats.IsFirstScan = 0;
                     m_PlayerStats.TotalNumberOfPass = l_TotalAmountOfPass;
                     ReWriteStats();
-                    
-                    ReWritePass();
 
+                    ReWritePass();
+                    bool l_IsFirstMessage = true;
                     if (l_Passes >= 1)
                         foreach (var l_Message in l_Messages)
                         {
-                            await p_Context.Channel.SendMessageAsync(">>> " + l_Message);
+                            var l_Builder = new EmbedBuilder();
+                            if (l_IsFirstMessage) l_Builder.WithTitle("You passed the following maps:");
+                            l_IsFirstMessage = false;
+                            l_Builder.WithDescription(l_Message);
+                            l_Builder.WithColor(new Color(94, 34, 122));
+                            var l_Embed = l_Builder.Build();
+                            await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                         }
 
                     return l_Passes;

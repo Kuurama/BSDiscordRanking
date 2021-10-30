@@ -24,7 +24,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 if (l_FetchPass.Result >= 1)
                 {
                     await ReplyAsync($"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result} new maps!\n");
-                    await ReplyAsync($"To see your progress through the pools, *try the* `{ConfigController.GetConfig().CommandPrefix[0]}progress` *command.*\nAnd to check your profile, *use the* `{ConfigController.GetConfig().CommandPrefix[0]}profile` *command.*");
+                    if (l_FirsScan)
+                    {
+                        await ReplyAsync($"To see your progress through the pools, *try the* `{ConfigController.GetConfig().CommandPrefix[0]}progress` *command.*\nAnd to check your profile, *use the* `{ConfigController.GetConfig().CommandPrefix[0]}profile` *command.*");
+                    }
                 }
                 else
                 {
