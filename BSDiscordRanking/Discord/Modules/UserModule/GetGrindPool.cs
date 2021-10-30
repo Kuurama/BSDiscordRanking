@@ -60,11 +60,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     List<InPlayerPassFormat> l_NotPassedMapList = new List<InPlayerPassFormat>();
                     int l_NumberOfPass = 0;
                     bool l_IsPassed = false;
-                    bool l_AlreadyHaveThumbnail = false;
-                    if (UserController.GetPlayer(Context.User.Id.ToString()) == null)
-                    {
-                        l_AlreadyHaveThumbnail = true; /// Do not display Thumbnail for not linked users.
-                    }
+                    bool l_AlreadyHaveThumbnail = UserController.GetPlayer(Context.User.Id.ToString()) == null;
+
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     l_Player.LoadStats();
                     if (l_Level.m_Level.songs.Count > 0)
@@ -184,6 +181,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                             l_AlreadyHaveThumbnail = true;
                         }
+
                         int l_Y = 0;
                         int l_NumbedOfEmbed = 1;
                         string l_LastMessage = null;
@@ -263,17 +261,20 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                         if (l_PassedDiff.customData.infoOnGGP != null)
                                         {
                                             if (l_PassedDiff.characteristic == "Standard")
-                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name}) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name}) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
 
                                             else
-                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic}) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic}) - {l_PassedDiff.customData.infoOnGGP.Replace("_", " ")} - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
                                         }
                                         else
                                         {
                                             if (l_PassedDiff.characteristic == "Standard")
                                                 l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name}) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
                                             else
-                                                l_Messages[l_MessagesIndex] += $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic}) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
+                                                l_Messages[l_MessagesIndex] +=
+                                                    $"***`{l_PassedMap.Song.name.Replace("`", @"\`").Replace("*", @"\*")}`*** ({l_PassedDiff.name} - {l_PassedDiff.characteristic}) - {Math.Round(l_PassedMap.Score / l_PassedDiff.customData.maxScore * 100f * 100f) / 100f}%\n";
                                         }
                                     }
 
@@ -294,6 +295,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_Player.SetGrindInfo(p_Level, l_LevelIsPassed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1, -1);
                     }
 
+                    l_Messages = new List<string>{""}; /// Reset the Message between Passed and Unpassed maps
+                    
                     if (l_NotPassedMapList.Count > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -341,7 +344,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 else
                                 {
                                     int l_MessagesIndex = 0;
-                                    if ($"l_Messages[l_MessagesIndex].Length + {l_NotPassedMap.Song.name} - {l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic}  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%) : {l_NotPassedDiff.customData.infoOnGGP}\n"
+                                    if (
+                                        $"l_Messages[l_MessagesIndex].Length + {l_NotPassedMap.Song.name} - {l_NotPassedDiff.name} - {l_NotPassedDiff.characteristic}  - MinScore: {l_NotPassedDiff.customData.minScoreRequirement} ({Math.Round((float)l_NotPassedDiff.customData.minScoreRequirement / l_NotPassedDiff.customData.maxScore * 100f * 100f) / 100f}%) : {l_NotPassedDiff.customData.infoOnGGP}\n"
                                             .Length > 1900)
                                     {
                                         l_MessagesIndex++;
@@ -401,11 +405,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 }
                             }
                         }
+
                         if (!ConfigController.GetConfig().FullEmbededGGP)
                         {
                             l_EmbedBuilder.AddField("\u200B", l_LastMessage);
                         }
-                        
+
                         l_EmbedBuilder.WithFooter(
                             $"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
