@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Formats.API
         public bool automapper { get; set; }
         public bool ranked { get; set; }
         public bool qualified { get; set; }
-        public List<Versions> versions { get; set; }
+        public List<Version> versions { get; set; }
     }
 
     public class Metadata
@@ -44,7 +44,7 @@ namespace BSDiscordRanking.Formats.API
         public string avatar { get; set; }
     }
 
-    public class Versions
+    public class Version
     {
         public string hash { get; set; }
         public string key { get; set; }
@@ -54,13 +54,13 @@ namespace BSDiscordRanking.Formats.API
 
         public string createdAt { get; set; }
         public int sageScore { get; set; }
-        public List<Diffs> diffs { get; set; }
+        public List<Diff> diffs { get; set; }
         public string downloadURL { get; set; }
         public string coverURL { get; set; }
         public string previewURL { get; set; }
     }
 
-    public class Diffs
+    public class Diff
     {
         public float njs { get; set; }
         public float offset { get; set; }
