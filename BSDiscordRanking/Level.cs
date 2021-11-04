@@ -263,7 +263,8 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(string p_Code, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, SocketCommandContext p_Context)
+        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote,
+            SocketCommandContext p_Context)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -276,8 +277,7 @@ namespace BSDiscordRanking
             {
                 if (m_Level != null)
                 {
-                    p_Code = p_Code.ToUpper();
-                    m_BeatSaver = FetchBeatMap(p_Code, p_Context);
+                    m_BeatSaver = p_BeatSaverMap;
                     if (m_BeatSaver is not null)
                     {
                         bool l_SongAlreadyExist = false;
@@ -315,6 +315,7 @@ namespace BSDiscordRanking
                                 characteristic = p_SelectedCharacteristic,
                                 customData = new DiffCustomData
                                 {
+                                    leaderboardID = 0,
                                     minScoreRequirement = p_MinScoreRequirement,
                                     weighting = p_Weighting,
                                     category = p_Category,
@@ -322,7 +323,7 @@ namespace BSDiscordRanking
                                     infoOnGGP = p_InfoOnGGP,
                                     forceManualWeight = p_ForceManualWeight,
                                     noteCount = p_NumberOfNote,
-                                    maxScore = AdminModule.ScoreFromAcc(100f,p_NumberOfNote)
+                                    maxScore = AdminModule.ScoreFromAcc(100f, p_NumberOfNote)
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulty> {l_Difficulty};
@@ -360,30 +361,35 @@ namespace BSDiscordRanking
                                                     l_LevelDifficulty.customData.minScoreRequirement = l_Difficulty.customData.minScoreRequirement;
                                                     l_ScoreRequirementEdit = true;
                                                 }
+
                                                 if (l_Difficulty.customData.category != l_LevelDifficulty.customData.category)
                                                 {
                                                     l_OriginalCategory = l_LevelDifficulty.customData.category;
                                                     l_LevelDifficulty.customData.category = l_Difficulty.customData.category;
                                                     l_CategoryEdit = true;
                                                 }
+
                                                 if (l_Difficulty.customData.infoOnGGP != l_LevelDifficulty.customData.infoOnGGP)
                                                 {
                                                     l_OriginalInfoOnGGP = l_LevelDifficulty.customData.infoOnGGP;
                                                     l_LevelDifficulty.customData.infoOnGGP = l_Difficulty.customData.infoOnGGP;
                                                     l_InfoOnGGPEdit = true;
                                                 }
+
                                                 if (l_Difficulty.customData.customPassText != l_LevelDifficulty.customData.customPassText)
                                                 {
                                                     l_OriginalCustomPassText = l_LevelDifficulty.customData.customPassText;
                                                     l_LevelDifficulty.customData.customPassText = l_Difficulty.customData.customPassText;
                                                     l_CustomPassTextEdit = true;
                                                 }
+
                                                 if (Math.Abs(l_Difficulty.customData.weighting - l_LevelDifficulty.customData.weighting) > 0.001f)
                                                 {
                                                     l_OriginalWeighting = l_LevelDifficulty.customData.weighting;
                                                     l_LevelDifficulty.customData.weighting = l_Difficulty.customData.weighting;
                                                     l_WeightEdit = true;
                                                 }
+
                                                 if (l_Difficulty.customData.forceManualWeight != l_LevelDifficulty.customData.forceManualWeight)
                                                 {
                                                     l_LevelDifficulty.customData.forceManualWeight = l_Difficulty.customData.forceManualWeight;
@@ -404,32 +410,37 @@ namespace BSDiscordRanking
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> Min Score: {l_OriginalScoreRequirement} => {l_Difficulty.customData.minScoreRequirement}.");
                                             }
+
                                             if (l_CategoryEdit)
                                             {
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> Category: {l_OriginalCategory} => {l_Difficulty.customData.category}.");
                                             }
+
                                             if (l_InfoOnGGPEdit)
                                             {
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> InfoOnGGP: {l_OriginalInfoOnGGP} => {l_Difficulty.customData.infoOnGGP}.");
                                             }
+
                                             if (l_CustomPassTextEdit)
                                             {
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> CustomPassText: {l_OriginalCustomPassText} => {l_Difficulty.customData.customPassText}.");
                                             }
+
                                             if (l_ForceManualWeightPreferenceEdit)
                                             {
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> Manual Weight Preference has been set to : **{l_NewManualWeightPreference}**.");
                                             }
+
                                             if (l_WeightEdit)
                                             {
                                                 p_Context.Channel.SendMessageAsync(
                                                     $"> Weight: {l_OriginalWeighting} => {l_Difficulty.customData.weighting}.");
                                             }
-                                            
+
                                             ReWritePlaylist(false);
                                         }
                                         else if (l_DifficultyAlreadyExist)
@@ -442,7 +453,6 @@ namespace BSDiscordRanking
                                             p_Context.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                             ReWritePlaylist(false);
                                         }
-
                                     }
                                     else
                                     {
@@ -478,8 +488,8 @@ namespace BSDiscordRanking
                     Console.WriteLine("Seems like you forgot to Load the Level, Attempting to load the Level Cache..");
                     m_ErrorNumber++;
                     LoadLevel();
-                    Console.WriteLine($"Trying to AddMap {p_Code}");
-                    AddMap(p_Code, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_Context);
+                    Console.WriteLine($"Trying to AddMap {p_BeatSaverMap.id}");
+                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_Context);
                 }
             }
             else
@@ -489,7 +499,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void RemoveMap(string p_Code, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
+        public void RemoveMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedCharacteristic, string p_SelectedDifficultyName,
             SocketCommandContext p_SocketCommandContext)
         {
             /// <summary>
@@ -503,15 +513,14 @@ namespace BSDiscordRanking
             {
                 if (m_Level != null)
                 {
-                    p_Code = p_Code.ToUpper();
-                    m_BeatSaver = FetchBeatMap(p_Code, p_SocketCommandContext);
+                    m_BeatSaver = p_BeatSaverMap;
                     if (m_BeatSaver is not null)
                     {
                         bool l_SongAlreadyExist = false;
                         bool l_DifficultyAlreadyExist = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, name = m_BeatSaver.name};
+                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = m_BeatSaver.name};
 
                             Difficulty l_Difficulty = new Difficulty
                             {
@@ -525,55 +534,48 @@ namespace BSDiscordRanking
                             };
                             l_SongFormat.difficulties = new List<Difficulty> {l_Difficulty};
 
-                            if (!string.IsNullOrEmpty(l_SongFormat.name))
-                            {
-                                if (m_Level.songs.Count != 0)
-                                {
-                                    int l_I;
-                                    for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
-                                    {
-                                        foreach (var l_BeatMapVersion in m_BeatSaver.versions)
-                                        {
-                                            if (String.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase))
-                                            {
-                                                l_SongAlreadyExist = true;
-                                                break;
-                                            }
-                                        }
 
-                                        if (l_SongAlreadyExist)
+                            if (m_Level.songs.Count != 0)
+                            {
+                                int l_I;
+                                for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
+                                {
+                                    foreach (var l_BeatMapVersion in m_BeatSaver.versions)
+                                    {
+                                        if (String.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || String.Equals(m_Level.songs[l_I].key, l_BeatMapVersion.key, StringComparison.CurrentCultureIgnoreCase))
+                                        {
+                                            l_SongAlreadyExist = true;
                                             break;
+                                        }
                                     }
 
                                     if (l_SongAlreadyExist)
+                                        break;
+                                }
+
+                                if (l_SongAlreadyExist)
+                                {
+                                    foreach (var l_LevelDifficulty in m_Level.songs[l_I].difficulties)
                                     {
-                                        foreach (var l_LevelDifficulty in m_Level.songs[l_I].difficulties)
+                                        if (l_Difficulty.characteristic == l_LevelDifficulty.characteristic && l_Difficulty.name == l_LevelDifficulty.name)
                                         {
-                                            if (l_Difficulty.characteristic == l_LevelDifficulty.characteristic && l_Difficulty.name == l_LevelDifficulty.name)
-                                            {
-                                                l_DifficultyAlreadyExist = true;
-                                                l_Difficulty = l_LevelDifficulty;
-                                                break;
-                                            }
+                                            l_DifficultyAlreadyExist = true;
+                                            l_Difficulty = l_LevelDifficulty;
+                                            break;
+                                        }
+                                    }
+
+                                    if (l_DifficultyAlreadyExist)
+                                    {
+                                        m_Level.songs[l_I].difficulties.Remove(l_Difficulty);
+                                        if (m_Level.songs[l_I].difficulties.Count <= 0)
+                                        {
+                                            m_Level.songs.RemoveAt(l_I);
                                         }
 
-                                        if (l_DifficultyAlreadyExist)
-                                        {
-                                            m_Level.songs[l_I].difficulties.Remove(l_Difficulty);
-                                            if (m_Level.songs[l_I].difficulties.Count <= 0)
-                                            {
-                                                m_Level.songs.RemoveAt(l_I);
-                                            }
-
-                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
-                                            m_MapDeleted = true;
-                                            ReWritePlaylist(false);
-                                        }
-                                        else
-                                        {
-                                            p_SocketCommandContext.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} doesn't exist in Level {m_LevelID}");
-                                            ReWritePlaylist(false);
-                                        }
+                                        p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
+                                        m_MapDeleted = true;
+                                        ReWritePlaylist(false);
                                     }
                                     else
                                     {
@@ -605,8 +607,8 @@ namespace BSDiscordRanking
                     Console.WriteLine("Seems like you forgot to Load the Level, Attempting to load the Level Cache..");
                     m_ErrorNumber++;
                     LoadLevel();
-                    Console.WriteLine($"Trying to RemoveMap {p_Code}");
-                    RemoveMap(p_Code, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
+                    Console.WriteLine($"Trying to RemoveMap {p_BeatSaverMap.id}");
+                    RemoveMap(p_BeatSaverMap, p_SelectedCharacteristic, p_SelectedDifficultyName, p_SocketCommandContext);
                 }
             }
             else
@@ -615,7 +617,6 @@ namespace BSDiscordRanking
                 Console.WriteLine("Please Contact an Administrator.");
             }
         }
-
 
         private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
         {

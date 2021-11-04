@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.API;
 using Discord;
@@ -27,11 +28,31 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
                     {
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
+                        if (l_Map is null)
+                        {
+                            Diff l_Diff = new Diff()
+                            {
+                                characteristic = p_Characteristic,
+                                difficulty = p_DifficultyName
+                            };
+                            Version l_Version = new Version()
+                            {
+                                hash = null,
+                                key = p_Code,
+                                diffs = new List<Diff>(){l_Diff}
+                            };
+                            l_Map = new BeatSaverFormat()
+                            {
+                                id = p_Code,
+                                
+                                versions = new List<Version>(){l_Version}
+                            };
+                        }
                         LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f);
                         if (l_MapExistCheck.MapExist)
                         {
                             Level l_Level = new Level(l_MapExistCheck.Level);
-                            l_Level.RemoveMap(p_Code, p_Characteristic, p_DifficultyName, Context);
+                            l_Level.RemoveMap(l_Map, p_Characteristic, p_DifficultyName, Context);
 
                             l_Map = Level.FetchBeatMap(p_Code, Context);
                             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
