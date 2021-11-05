@@ -531,7 +531,7 @@ namespace BSDiscordRanking
                 List<string> l_Messages = new List<string> {""};
                 List<int> l_ExistingLevelID = new List<int>();
                 int l_BiggerLevelID = 0;
-                bool l_AboveLVLSixteenPass = false; /// Funny
+                bool l_AboveLVLFourteenPass = false; /// Funny
                 var l_LevelController = new LevelController(); /// Constructor makes levelcontroller FetchLevel()
                 LoadLevelControllerCache();
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
@@ -669,7 +669,7 @@ namespace BSDiscordRanking
                                                                             l_Messages[l_MessagesIndex] +=
                                                                                 $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n";
                                                                         if (l_Y >= 16)
-                                                                            l_AboveLVLSixteenPass = true; /// Funny 1/2
+                                                                            l_AboveLVLFourteenPass = true; /// Funny 1/2
                                                                     }
 
                                                                     l_Passes++;
@@ -742,8 +742,8 @@ namespace BSDiscordRanking
                                                                 else
                                                                     l_Messages[l_MessagesIndex] +=
                                                                         $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_PoolID}** (+{l_Weighting * 0.375f} RPL)\n";
-                                                                if (l_Y >= 16)
-                                                                    l_AboveLVLSixteenPass = true; /// Funny 2/2
+                                                                if (l_Y >= 14)
+                                                                    l_AboveLVLFourteenPass = true; /// Funny 2/2
                                                             }
 
                                                             l_Passes++;
@@ -891,7 +891,7 @@ namespace BSDiscordRanking
                             await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                         }
 
-                    if (GetPlayerLevel() == 8 && l_AboveLVLSixteenPass)
+                    if (GetPlayerLevel() == 8 && l_AboveLVLFourteenPass )
                     {
                         await p_Context.Channel.SendMessageAsync($"Ohh that's quite pog, but `{ConfigController.GetConfig().CommandPrefix[0]}lvl9` when <a:KekBoom:905995426786856971>");
                     }
