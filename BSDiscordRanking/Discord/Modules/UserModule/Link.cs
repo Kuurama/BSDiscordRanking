@@ -11,6 +11,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("link")]
+        [Alias("register")]
         [Summary("Links your ScoreSaber account to your Discord's one.")]
         public async Task LinkUser(string p_ScoreSaberLink = "")
         {

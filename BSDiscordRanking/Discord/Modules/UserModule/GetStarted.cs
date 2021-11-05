@@ -10,6 +10,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("getstarted")]
+        [Alias("setup")]
         [Summary("Displays informations about how you could get started using the bot.")]
         public async Task GetStarted()
         {
