@@ -19,6 +19,7 @@ namespace BSDiscordRanking.Formats.Player
     {
         public Difficulty Difficulty { get; set; }
         public float Score { get; set; }
+        public int Rank { get; set; }
         public int LeaderboardID { get; set; }
     }
 

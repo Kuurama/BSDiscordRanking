@@ -640,6 +640,7 @@ namespace BSDiscordRanking
                                                                 {
                                                                     Difficulty = l_Difficulty,
                                                                     Score = l_Score.score,
+                                                                    Rank = l_Score.rank,
                                                                     LeaderboardID = l_Score.leaderboardId
                                                                 });
                                                                 if (!l_OldDiffExist)
@@ -703,6 +704,7 @@ namespace BSDiscordRanking
                                                         {
                                                             Difficulty = l_Difficulty,
                                                             Score = l_Score.score,
+                                                            Rank = l_Score.rank,
                                                             LeaderboardID = l_Score.leaderboardId
                                                         });
                                                         l_PlayerPassFormat.name = l_Song.name;
