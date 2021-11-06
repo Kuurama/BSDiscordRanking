@@ -20,15 +20,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public async Task GetGrindPool(int p_Level = -1, string p_Embed1Or0 = null)
         {
             bool l_CheckForLastGGP = false;
-            bool l_FullEmbededGGP = false;
+            bool l_FullEmbeddedGGP = false;
             float l_EarnedPoints = 0f;
             float l_MaximumPoints = 0f;
             if (Int32.TryParse(p_Embed1Or0, out int l_EmbedIntValue))
             {
-                l_FullEmbededGGP = l_EmbedIntValue > 0;
+                l_FullEmbeddedGGP = l_EmbedIntValue > 0;
             }
             else
-                l_FullEmbededGGP = ConfigController.m_ConfigFormat.FullEmbededGGP;
+                l_FullEmbeddedGGP = ConfigController.m_ConfigFormat.FullEmbeddedGGP;
 
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
@@ -216,7 +216,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_NumberOfDifficulties - l_NumberOfPass <= 0)
                             l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbededGGP, true);
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, true);
 
                         if (l_GGP.EmbedBuilder != null)
                         {
@@ -242,7 +242,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_NumberOfPass >= 0)
                             l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbededGGP, false);
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, false);
 
                         if (l_GGP.EmbedBuilder != null)
                         {
@@ -267,7 +267,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
         }
 
-        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbededGGP, bool p_OnlySendPasses)
+        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses)
         {
             int l_Y = 0;
             int l_NumbedOfEmbed = 1;
@@ -293,7 +293,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     string l_ScoreOnMap = (l_Diff.Score != 0 ? $"- {Math.Round(l_Diff.Score / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%" : null);
                     string l_RankOnMap = (l_Diff.Rank != 0 ? $"(#{l_Diff.Rank})" : null);
                     string l_CustomText = (l_Diff.Difficulty.customData.infoOnGGP != null ? $"- {l_Diff.Difficulty.customData.infoOnGGP.Replace("_", " ")}" : "");
-                    if (p_FullEmbededGGP)
+                    if (p_FullEmbeddedGGP)
                     {
                         var l_EmbedValue = $"{l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}";
                         if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
@@ -378,7 +378,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
             }
 
-            if (!p_FullEmbededGGP && l_LastMessage != "")
+            if (!p_FullEmbeddedGGP && l_LastMessage != "")
             {
                 p_EmbedBuilder.AddField("\u200B", l_LastMessage);
             }

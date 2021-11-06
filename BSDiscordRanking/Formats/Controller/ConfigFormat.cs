@@ -9,7 +9,7 @@ namespace BSDiscordRanking.Formats.Controller
         public string DiscordStatus { get; set; } = "Made by Kuurama & Julien";
 
         public ulong BotManagementRoleID { get; set; }
-        public bool FullEmbededGGP { get; set; } = true;
+        public bool FullEmbeddedGGP { get; set; } = true;
 
         public string RolePrefix { get; set; }
 
