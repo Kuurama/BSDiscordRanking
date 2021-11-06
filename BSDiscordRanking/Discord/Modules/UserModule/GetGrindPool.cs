@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
@@ -16,11 +17,19 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ggp")]
         [Alias("getgrindpool")]
         [Summary("Shows the Level's maps while displaying your passes, not giving a specific level will display the next available level you might want to grind.")]
-        public async Task GetGrindPool(int p_Level = -1)
+        public async Task GetGrindPool(int p_Level = -1, string p_Embed1Or0 = null)
         {
             bool l_CheckForLastGGP = false;
+            bool l_FullEmbededGGP = false;
             float l_EarnedPoints = 0f;
             float l_MaximumPoints = 0f;
+            if (Int32.TryParse(p_Embed1Or0, out int l_EmbedIntValue))
+            {
+                l_FullEmbededGGP = l_EmbedIntValue > 0;
+            }
+            else
+                l_FullEmbededGGP = ConfigController.m_ConfigFormat.FullEmbededGGP;
+
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
             {
@@ -91,7 +100,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                             customData = l_SongDifficulty.customData
                                         },
                                         LeaderboardID = 0,
-                                        Score = 0
+                                        Score = 0,
+                                        Rank = 0
                                     });
                                 l_MaximumPoints += l_Level.m_Level.customData.weighting * 0.375f;
                             }
@@ -118,6 +128,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                                         l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Difficulty.customData = l_PlayerPassDifficulty.Difficulty.customData;
                                                         l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].LeaderboardID = l_PlayerPassDifficulty.LeaderboardID;
                                                         l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Score = l_PlayerPassDifficulty.Score;
+                                                        l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Rank = l_PlayerPassDifficulty.Rank;
                                                         l_EarnedPoints += l_Level.m_Level.customData.weighting * 0.375f;
                                                     }
 
@@ -205,7 +216,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_NumberOfDifficulties - l_NumberOfPass <= 0)
                             l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, true);
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbededGGP, true);
 
                         if (l_GGP.EmbedBuilder != null)
                         {
@@ -231,7 +242,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_NumberOfPass >= 0)
                             l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, false);
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbededGGP, false);
 
                         if (l_GGP.EmbedBuilder != null)
                         {
@@ -256,7 +267,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
         }
 
-        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_OnlySendPasses)
+        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbededGGP, bool p_OnlySendPasses)
         {
             int l_Y = 0;
             int l_NumbedOfEmbed = 1;
@@ -280,16 +291,17 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
 
                     string l_ScoreOnMap = (l_Diff.Score != 0 ? $"- {Math.Round(l_Diff.Score / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%" : null);
+                    string l_RankOnMap = (l_Diff.Rank != 0 ? $"(#{l_Diff.Rank})" : null);
                     string l_CustomText = (l_Diff.Difficulty.customData.infoOnGGP != null ? $"- {l_Diff.Difficulty.customData.infoOnGGP.Replace("_", " ")}" : "");
-                    if (ConfigController.GetConfig().FullEmbededGGP)
+                    if (p_FullEmbededGGP)
                     {
                         var l_EmbedValue = $"{l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}";
                         if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
-                            l_EmbedValue += $" - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%){l_CustomText}";
+                            l_EmbedValue += $" - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText}";
                         else
                             l_EmbedValue += l_CustomText;
 
-                        p_EmbedBuilder.AddField($"{l_Map.name}{l_ScoreOnMap}", l_EmbedValue, true);
+                        p_EmbedBuilder.AddField($"{l_Map.name} {l_ScoreOnMap} {l_RankOnMap}", l_EmbedValue, true);
 
                         if (l_NumbedOfEmbed % 2 != 0)
                         {
@@ -311,7 +323,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                     else
                     {
-                        if (l_Messages[l_MessagesIndex].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap}\n"
+                        if (l_Messages[l_MessagesIndex].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
                             .Length > 1000)
                         {
                             l_MessageTotalLength += l_Messages[l_MessagesIndex].Length;
@@ -354,6 +366,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_Messages[l_MessagesIndex] += $" *`{l_ScoreOnMap}`*";
                         }
 
+                        if (l_RankOnMap != null)
+                        {
+                            l_Messages[l_MessagesIndex] += $" *`{l_RankOnMap}`*";
+                        }
+
                         l_Messages[l_MessagesIndex] += "\n";
 
                         l_LastMessage = l_Messages[l_MessagesIndex];
@@ -361,7 +378,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
             }
 
-            if (!ConfigController.GetConfig().FullEmbededGGP && l_LastMessage != "")
+            if (!p_FullEmbededGGP && l_LastMessage != "")
             {
                 p_EmbedBuilder.AddField("\u200B", l_LastMessage);
             }
