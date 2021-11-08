@@ -87,7 +87,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                 l_EmbedBuilder.WithColor(new Color(255, 0, 0));
-                if (l_NotDisplayedMaps.Length > 1800)
+                if (l_NotDisplayedMaps.Length > 3800)
                 {
                     l_EmbedBuilder.WithDescription($"{l_NumberOfNotDisplayedMaps} More maps containing those characters were found.\nTo find them: increase the number of characters in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.\n> Due to too many maps being researched, no map list will be send.");
                 }
