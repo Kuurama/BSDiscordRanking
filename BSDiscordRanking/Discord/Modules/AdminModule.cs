@@ -5,6 +5,7 @@ using BSDiscordRanking.Controllers;
 using Discord.Commands;
 using Discord.WebSocket;
 
+// ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
     [RequireManagerRole]

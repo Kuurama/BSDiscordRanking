@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
@@ -231,7 +230,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_NumberOfDifficulties - l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                        l_EmbedBuilder.WithTitle($"Not Passed maps in level {p_Level}");
+                        l_EmbedBuilder.WithTitle($"Unpassed maps in level {p_Level}");
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
@@ -240,7 +239,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
 
                         if (l_NumberOfPass >= 0)
-                            l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
+                            l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level} (or {BotHandler.m_Prefix}getplaylist all) to get all of them.");
 
                         GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, false);
 

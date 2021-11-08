@@ -10,6 +10,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 
+// ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
     [CheckChannel]
@@ -64,13 +65,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                     }
                 }
+
+                l_LevelFormat.customData.syncURL = null;
             }
 
             if (l_LevelFormat.songs.Count <= 0)
                 return; /// Do not create the file if it's empty.
             l_Level.CreateDirectory(p_Path);
-            l_Level.ReWritePlaylist(true, p_Path,
-                l_LevelFormat); /// Write the personal playlist file in the PATH folder.
+            l_Level.ReWritePlaylist(true, p_Path, l_LevelFormat); /// Write the personal playlist file in the PATH folder.
         }
 
         private static string RemoveSpecialCharacters(string p_Str)
@@ -137,7 +139,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 await ReplyAsync(p_IsSomeoneElse
                     ? "> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID."
-                    : $"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+                    : $"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
                 return;
             }
 

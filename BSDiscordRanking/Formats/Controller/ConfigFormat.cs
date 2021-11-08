@@ -23,5 +23,7 @@ namespace BSDiscordRanking.Formats.Controller
         public ulong LoggingChannel { get; set; }
 
         public string PointsName { get; set; } = "PP";
+
+        public int MaximumNumberOfMapInGetInfo { get; set; } = 8;
     }
 }
