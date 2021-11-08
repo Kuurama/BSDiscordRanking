@@ -14,9 +14,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         [Command("getinfo")]
         [Summary("Shows informations about available maps found.")]
-        public async Task GetInfo(string p_SearchArg)
+        public async Task GetInfo([Remainder] string p_SearchArg)
         {
-            p_SearchArg = p_SearchArg.Replace("_", "");
+            p_SearchArg = p_SearchArg.Replace("_", "").Replace(" ", "");
             if (p_SearchArg.Length < 3)
             {
                 await ReplyAsync("> :x: Sorry, the minimum for searching a map is 3 characters (excluding '_').");
@@ -43,26 +43,42 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 return;
             }
 
+            int l_NumberOfMapFound = 0;
+
             foreach (var l_GroupedMaps in l_Maps.GroupBy(p_Maps => p_Maps.Item1.hash))
             {
-                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                foreach (var (l_SongFormat, l_Item2) in l_GroupedMaps)
+                if (l_NumberOfMapFound <= ConfigController.GetConfig().MaximumNumberOfMapInGetInfo)
                 {
-                    foreach (var l_MapDifficulty in l_SongFormat.difficulties)
+                    EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                    foreach (var (l_SongFormat, l_Item2) in l_GroupedMaps)
                     {
-                        l_EmbedBuilder.AddField(l_MapDifficulty.name, l_MapDifficulty.characteristic, true);
-                        l_EmbedBuilder.AddField("Level:", $"Lv.{l_Item2}", true);
-                        l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                        foreach (var l_MapDifficulty in l_SongFormat.difficulties)
+                        {
+                            l_EmbedBuilder.AddField(l_MapDifficulty.name, l_MapDifficulty.characteristic, true);
+                            l_EmbedBuilder.AddField("Level:", $"Lv.{l_Item2}", true);
+                            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                        }
                     }
+
+                    var l_Map = l_GroupedMaps.First().Item1;
+
+                    l_EmbedBuilder.WithDescription("Ranked difficulties:");
+                    l_EmbedBuilder.WithTitle(l_Map.name);
+                    l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
+                    l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).id}");
+                    await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                    
                 }
+                else
+                {
+                    
+                }
+                l_NumberOfMapFound++;
+            }
 
-                var l_Map = l_GroupedMaps.First().Item1;
-
-                l_EmbedBuilder.WithDescription("Ranked difficulties:");
-                l_EmbedBuilder.WithTitle(l_Map.name);
-                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
-                l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).id}");
-                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+            if (l_NumberOfMapFound > ConfigController.GetConfig().MaximumNumberOfMapInGetInfo)
+            {
+                await Context.Channel.SendMessageAsync($"> {l_NumberOfMapFound} More maps containing those characters were found, to find them increase the number of character in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.");
             }
         }
     }

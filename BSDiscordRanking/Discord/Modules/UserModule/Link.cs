@@ -17,7 +17,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             if (!IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())))
                 await ReplyAsync(
-                    $"> :x: Sorry, but your account already has been linked. Please use `{BotHandler.m_Prefix}unlink`.");
+                    $"> :x: Sorry, but your account already has been linked. If you want to unlink it: Please use `{BotHandler.m_Prefix}unlink`.");
             else if (!IsNullOrEmpty(p_ScoreSaberLink))
             {
                 p_ScoreSaberLink = Regex.Match(p_ScoreSaberLink, @"\d+").Value;

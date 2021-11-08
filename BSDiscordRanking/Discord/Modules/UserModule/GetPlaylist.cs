@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("getplaylist")]
         [Alias("gpl")]
         [Summary("Sends the desired Level's playlist file. Use `all` instead of the level id to get the whole level folder.")]
-        public async Task GetPlaylist(string p_Level)
+        public async Task GetPlaylist(string p_Level = null)
         {
             if (int.TryParse(p_Level, out _))
             {
@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 string l_Path = Level.GetPath() + $"{l_LevelInt:D3}{Level.SUFFIX_NAME}.bplist";
                 if (File.Exists(l_Path))
 
-                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's the complete playlist! (up to date)");
+                    await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's the complete playlist! (up to date).\n> All difficulties you need to do are highlighted and the playlist can be updated through you game using the sync button.");
                 else
 
                     await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
@@ -31,7 +31,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 try
                 {
                     ZipFile.CreateFromDirectory(Level.GetPath(), "levels.zip");
-                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's a playlist folder containing all the playlist's pools! (up to date)");
+                    await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's a playlist folder containing all the playlist's pools! (up to date).\n> All difficulties you need to do are highlighted and the playlists can be updated through you game using the sync button.");
                 }
                 catch
                 {
@@ -39,7 +39,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
             }
             else
-                await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\"");
+                await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\".");
         }
     }
 }

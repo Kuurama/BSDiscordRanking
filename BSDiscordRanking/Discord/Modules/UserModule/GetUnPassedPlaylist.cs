@@ -16,7 +16,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public async Task GetUnpassedPlaylist(string p_Level)
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
-                await Context.Channel.SendMessageAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.");
+                await Context.Channel.SendMessageAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
             else
             {
                 const string ORIGINAL_PATH = "./PersonalLevels/";
@@ -48,12 +48,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         return;
                     }
                 }
-
                 if (int.TryParse(p_Level, out _))
                 {
+                    int l_LevelInt = int.Parse(p_Level);
                     if (LevelController.GetLevelControllerCache().LevelID.Contains(int.Parse(p_Level)))
                     {
-                        string l_PathFile = l_Path + $"{p_Level}{Level.SUFFIX_NAME}.bplist";
+                        string l_PathFile = l_Path + $"{l_LevelInt:D3}{Level.SUFFIX_NAME}.bplist";
 
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
