@@ -44,9 +44,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             int l_NumberOfMapFound = 0;
-
+            int l_NumberOfNotDisplayedMaps = 0;
+            string l_NotDisplayedMaps = "";
             foreach (var l_GroupedMaps in l_Maps.GroupBy(p_Maps => p_Maps.Item1.hash))
             {
+                var l_Map = l_GroupedMaps.First().Item1;
                 if (l_NumberOfMapFound <= ConfigController.GetConfig().MaximumNumberOfMapInGetInfo)
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -59,9 +61,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                         }
                     }
-
-                    var l_Map = l_GroupedMaps.First().Item1;
-
+                    
                     l_EmbedBuilder.WithDescription("Ranked difficulties:");
                     l_EmbedBuilder.WithTitle(l_Map.name);
                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
@@ -71,14 +71,31 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else
                 {
-                    
+                    foreach (var (l_SongFormat, l_Item2) in l_GroupedMaps)
+                    {
+                        foreach (var l_MapDifficulty in l_SongFormat.difficulties)
+                        {
+                            l_NotDisplayedMaps += $"> {l_Map.name}: *`({l_MapDifficulty.name} - {l_MapDifficulty.characteristic})`* in Lv.{l_Item2}\n";
+                            l_NumberOfNotDisplayedMaps++;
+                        }
+                    }
                 }
                 l_NumberOfMapFound++;
             }
 
             if (l_NumberOfMapFound > ConfigController.GetConfig().MaximumNumberOfMapInGetInfo)
             {
-                await Context.Channel.SendMessageAsync($"> {l_NumberOfMapFound} More maps containing those characters were found, to find them increase the number of character in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.");
+                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                l_EmbedBuilder.WithColor(new Color(255, 0, 0));
+                if (l_NotDisplayedMaps.Length > 1800)
+                {
+                    l_EmbedBuilder.WithDescription($"{l_NumberOfNotDisplayedMaps} More maps containing those characters were found.\nTo find them: increase the number of characters in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.\n> Due to too many maps being researched, no map list will be send.");
+                }
+                else
+                {
+                    l_EmbedBuilder.WithDescription($"{l_NumberOfNotDisplayedMaps} More maps containing those characters were found\n\nTo find them:\n-increase the number of characters in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.\n\nHere is a list of the maps you are missing:\n\n" + l_NotDisplayedMaps);
+                }
+                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             }
         }
     }
