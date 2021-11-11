@@ -43,9 +43,12 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
                 {
                     l_User = Context.Guild.GetUser(Convert.ToUInt64(UserController.GetDiscordID(p_DiscordOrScoreSaberID)));
-                    l_IsDiscordLinked = true;
-                    l_DiscordID = l_User.Id.ToString();
-                    l_ScoreSaberOrDiscordName = l_User.Username;
+                    if (l_User != null)
+                    {
+                        l_IsDiscordLinked = true;
+                        l_DiscordID = l_User.Id.ToString();
+                        l_ScoreSaberOrDiscordName = l_User.Username;
+                    }
                 }
             }
             else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
