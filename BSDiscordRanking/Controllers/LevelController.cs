@@ -26,9 +26,9 @@ namespace BSDiscordRanking.Controllers
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
                 m_LevelController = new LevelControllerFormat {LevelID = new List<int>()};
-                string l_StringLevelID = "";
+                string l_StringLevelID;
                 int l_MyInt;
-
+                
                 foreach (string l_FileName in l_Files)
                 {
                     l_StringLevelID = "";
@@ -215,7 +215,7 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.ForceManualWeight = p_ForceManualWeight;
                                     l_MapExistFormat.DifferentForceManualWeight = true;
                                 }
-                                if (Math.Abs(l_Difficulty.customData.weighting - p_Weight) > 0.001)
+                                if (Math.Abs(l_Difficulty.customData.manualWeight - p_Weight) > 0.001)
                                 {
                                     l_MapExistFormat.Weight = p_Weight;
                                     l_MapExistFormat.DifferentWeight = true;

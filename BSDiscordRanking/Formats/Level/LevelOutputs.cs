@@ -54,7 +54,8 @@ namespace BSDiscordRanking.Formats.Level
         private string m_Category;
         private string m_InfoOnGGP;
         public int leaderboardID { get; set; }
-        public float weighting { get; set; }
+        public float manualWeight { get; set; }
+        public float AutoWeight { get; set; }
         public int minScoreRequirement { get; set; }
 
         public string category

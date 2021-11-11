@@ -15,7 +15,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             bool l_PageExist = false;
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-            LeaderboardController l_LeaderboardController = new LeaderboardController();
+            PassLeaderboardController l_LeaderboardController = new PassLeaderboardController();
             if (p_Page == default)
             {
                 try

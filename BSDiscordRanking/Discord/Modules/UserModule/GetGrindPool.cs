@@ -98,7 +98,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                             characteristic = l_SongDifficulty.characteristic,
                                             customData = l_SongDifficulty.customData
                                         },
-                                        LeaderboardID = 0,
                                         Score = 0,
                                         Rank = 0
                                     });
@@ -125,7 +124,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                                     if (l_DiffIndex >= 0)
                                                     {
                                                         l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Difficulty.customData = l_PlayerPassDifficulty.Difficulty.customData;
-                                                        l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].LeaderboardID = l_PlayerPassDifficulty.LeaderboardID;
                                                         l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Score = l_PlayerPassDifficulty.Score;
                                                         l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Rank = l_PlayerPassDifficulty.Rank;
                                                         l_EarnedPoints += l_Level.m_Level.customData.weighting * 0.375f;
@@ -222,7 +220,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             await Context.Channel.SendMessageAsync("", false, l_GGP.EmbedBuilder.Build());
                         }
 
-                        l_Player.SetGrindInfo(p_Level, l_LevelIsPassed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1, -1);
+                        l_Player.SetGrindInfo(p_Level, l_LevelIsPassed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1, -1, -1);
                     }
 
                     List<string> l_Messages = new List<string> { $"" }; /// Reset the Message between Passed and Unpassed maps

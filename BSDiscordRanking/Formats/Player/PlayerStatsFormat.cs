@@ -13,7 +13,8 @@ namespace BSDiscordRanking.Formats.Player
         //gold 70% 3
         //diamond 100% 4
 
-        public float Points { get; set; }
+        public float PassPoints { get; set; }
+        public float AccPoints { get; set; }
 
         public int IsFirstScan { get; set; }
     }
