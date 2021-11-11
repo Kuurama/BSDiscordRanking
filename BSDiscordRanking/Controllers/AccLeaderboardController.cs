@@ -11,20 +11,17 @@ using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
 
-// ReSharper disable All
-// ReSharper disable All
-
 namespace BSDiscordRanking.Controllers
 {
-    public class LeaderboardController
+    public class AccLeaderboardController
     {
-        private const string PATH = @"./";
-        private const string FILENAME = @"Leaderboard";
+        private const string PATH = @"./Leaderboard/";
+        private const string FILENAME = @"AccLeaderboard";
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
         public LeaderboardControllerFormat m_Leaderboard;
 
-        public LeaderboardController()
+        public AccLeaderboardController()
         {
             LoadLeaderboard();
         }
@@ -80,7 +77,7 @@ namespace BSDiscordRanking.Controllers
                         l_Snipe.Player.OldRank = l_I + 1;
                         l_Snipe.Player.IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed;
                         ///////////////////
-
+                        m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
                         break;
                     }
 
@@ -94,8 +91,6 @@ namespace BSDiscordRanking.Controllers
                         IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed
                     });
                 }
-
-                m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
 
                 for (int l_I = l_Snipe.SnipedByPlayers.Count - 1; l_I >= 0; l_I--)
                 {
@@ -165,29 +160,22 @@ namespace BSDiscordRanking.Controllers
 
             Player l_Player = new Player(p_Snipe.Player.ScoreSaberID);
             bool l_SnipeExist = false;
-            var builder = new EmbedBuilder()
-                .WithAuthor(author =>
+            var l_Builder = new EmbedBuilder()
+                .WithAuthor(p_Author =>
                 {
-                    author
+                    p_Author
                         .WithName(p_Snipe.Player.Name)
                         .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId)
                         .WithIconUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 })
-                .AddField("\u200B", $"Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**", false);
+                .AddField("\u200B", $"Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**");
 
-            builder.WithDescription($"Your Current ping choice for leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+            l_Builder.WithDescription($"Your Current ping choice for leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
 
-            if (p_Snipe.Player.OldRank < p_Snipe.Player.NewRank)
-            {
-                builder.WithColor(new Color(255, 0, 0));
-            }
-            else
-            {
-                builder.WithColor(new Color(0, 255, 0));
-            }
+            l_Builder.WithColor(p_Snipe.Player.OldRank < p_Snipe.Player.NewRank ? new Color(255, 0, 0) : new Color(0, 255, 0));
 
-            var embed = builder.Build();
-            await p_Context.Channel.SendMessageAsync(null, embed: embed)
+            var l_Embed = l_Builder.Build();
+            await p_Context.Channel.SendMessageAsync(null, embed: l_Embed)
                 .ConfigureAwait(false);
 
             bool l_EmbedDone = false;
@@ -195,43 +183,35 @@ namespace BSDiscordRanking.Controllers
             if (p_Snipe.SnipedByPlayers.Count > 0)
             {
                 l_MyText += $"> <:Stonks:884058036371595294> {p_Snipe.Player.Name} #{p_Snipe.Player.OldRank} -> #{p_Snipe.Player.NewRank}\n";
-                foreach (Sniped p_SnipedPlayer in p_Snipe.SnipedByPlayers)
+                foreach (Sniped l_SnipedPlayer in p_Snipe.SnipedByPlayers)
                 {
-                    if (p_SnipedPlayer.IsPingAllowed && p_SnipedPlayer.OldRank != p_SnipedPlayer.NewRank)
+                    if (l_SnipedPlayer.IsPingAllowed && l_SnipedPlayer.OldRank != l_SnipedPlayer.NewRank)
                     {
-                        string l_PlayerText;
                         l_SnipeExist = true;
                         if (!l_EmbedDone)
                         {
-                            builder = new EmbedBuilder()
+                            l_Builder = new EmbedBuilder()
                                 .WithTitle($"Get sniped! <:Sniped:898696818093875230> (by {p_Snipe.Player.Name})")
                                 .WithColor(new Color(255, 0, 0))
-                                .WithFooter(footer =>
+                                .WithFooter(p_Footer =>
                                 {
-                                    footer
-                                        .WithText($"To allow or disallow personnal pings, type the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+                                    p_Footer
+                                        .WithText($"To allow or disallow personal pings, type the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
                                 });
                             l_EmbedDone = true;
                         }
 
-                        if (p_SnipedPlayer.DiscordID != null)
-                        {
-                            l_PlayerText = $"<@{p_SnipedPlayer.DiscordID}>";
-                        }
-                        else
-                        {
-                            l_PlayerText = p_SnipedPlayer.Name;
-                        }
+                        string l_PlayerText = l_SnipedPlayer.DiscordID != null ? $"<@{l_SnipedPlayer.DiscordID}>" : l_SnipedPlayer.Name;
 
-                        l_MyText += $"> {l_PlayerText} #{p_SnipedPlayer.OldRank} -> #{p_SnipedPlayer.NewRank}\n";
+                        l_MyText += $"> {l_PlayerText} #{l_SnipedPlayer.OldRank} -> #{l_SnipedPlayer.NewRank}\n";
                     }
                 }
             }
 
             if (l_SnipeExist)
             {
-                embed = builder.Build();
-                await p_Context.Channel.SendMessageAsync(l_MyText, embed: embed)
+                l_Embed = l_Builder.Build();
+                await p_Context.Channel.SendMessageAsync(l_MyText, embed: l_Embed)
                     .ConfigureAwait(false);
             }
         }
@@ -272,12 +252,12 @@ namespace BSDiscordRanking.Controllers
                         {
                             if (m_Leaderboard.Leaderboard != null)
                             {
-                                //m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
+                                //m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.PassPoints).ToList();
                             }
 
                             if (m_Leaderboard.Leaderboard is {Count: >= 2}) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
 
-                            Console.WriteLine($"Leaderboard Loaded and Sorted");
+                            Console.WriteLine($"AccLeaderboard Loaded and Sorted");
                         }
                     }
                 }

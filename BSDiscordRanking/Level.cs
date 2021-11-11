@@ -287,7 +287,7 @@ namespace BSDiscordRanking
                         string l_OriginalCategory = null;
                         string l_OriginalInfoOnGGP = null;
                         string l_OriginalCustomPassText = null;
-                        float l_OriginalWeighting = 1f;
+                        float l_OriginalManualWeight = 1f;
                         bool l_CategoryEdit = false;
                         bool l_InfoOnGGPEdit = false;
                         bool l_CustomPassTextEdit = false;
@@ -317,7 +317,7 @@ namespace BSDiscordRanking
                                 {
                                     leaderboardID = 0,
                                     minScoreRequirement = p_MinScoreRequirement,
-                                    weighting = p_Weighting,
+                                    manualWeight = p_Weighting,
                                     category = p_Category,
                                     customPassText = p_CustomPassText,
                                     infoOnGGP = p_InfoOnGGP,
@@ -383,10 +383,10 @@ namespace BSDiscordRanking
                                                     l_CustomPassTextEdit = true;
                                                 }
 
-                                                if (Math.Abs(l_Difficulty.customData.weighting - l_LevelDifficulty.customData.weighting) > 0.001f)
+                                                if (Math.Abs(l_Difficulty.customData.manualWeight - l_LevelDifficulty.customData.manualWeight) > 0.001f)
                                                 {
-                                                    l_OriginalWeighting = l_LevelDifficulty.customData.weighting;
-                                                    l_LevelDifficulty.customData.weighting = l_Difficulty.customData.weighting;
+                                                    l_OriginalManualWeight = l_LevelDifficulty.customData.manualWeight;
+                                                    l_LevelDifficulty.customData.manualWeight = l_Difficulty.customData.manualWeight;
                                                     l_WeightEdit = true;
                                                 }
 
@@ -438,7 +438,7 @@ namespace BSDiscordRanking
                                             if (l_WeightEdit)
                                             {
                                                 p_Context.Channel.SendMessageAsync(
-                                                    $"> Weight: {l_OriginalWeighting} => {l_Difficulty.customData.weighting}.");
+                                                    $"> Weight: {l_OriginalManualWeight} => {l_Difficulty.customData.manualWeight}.");
                                             }
 
                                             ReWritePlaylist(false);
@@ -529,7 +529,7 @@ namespace BSDiscordRanking
                                 customData = new DiffCustomData
                                 {
                                     minScoreRequirement = 0,
-                                    weighting = 1f
+                                    manualWeight = 1f
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulty> {l_Difficulty};
@@ -738,6 +738,36 @@ namespace BSDiscordRanking
                     Console.WriteLine("OK Internet is Dead?");
                     return null;
                 }
+            }
+        }
+
+        public float RecalculateAutoWeight(int p_LeaderboardID)
+        {
+            float l_SumOfPercentage = 0;
+            MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
+            if (l_MapLeaderboard.m_MapLeaderboard.Leaderboard.Count >= ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight)
+            {
+                for (int l_Index = 0; l_Index < ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight; l_Index++)
+                {
+                    if (l_MapLeaderboard.m_MapLeaderboard.MaxScore > 0)
+                    {
+                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.Leaderboard[l_Index].Score / l_MapLeaderboard.m_MapLeaderboard.MaxScore)*100;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Map MaxScore is negative/zero, can't recalculate weight.");
+                        return 0;
+                    }
+                }
+
+                float l_AveragePercentage = (l_SumOfPercentage / ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight);
+                float l_AverageNeededPercentage = 100f - l_AveragePercentage;
+                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * m_LevelID)/32;
+                return l_NewWeight;
+            }
+            else
+            {
+                return 0;
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Player;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -96,7 +97,26 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_User.Id, l_NewPlayerLevel);
                 }
             }
-
+            Trophy l_TotalTrophy = new Trophy()
+            {
+                Plastic = 0,
+                Silver = 0,
+                Gold = 0,
+                Diamond = 0
+            };
+            foreach (var l_Trophy in l_Player.m_PlayerStats.Trophy)
+            {
+                l_TotalTrophy.Plastic += l_Trophy.Plastic;
+                l_TotalTrophy.Silver += l_Trophy.Silver;
+                l_TotalTrophy.Gold += l_Trophy.Gold;
+                l_TotalTrophy.Diamond += l_Trophy.Diamond;
+            }
+            /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///////////////////////////
+                
+            await PassLeaderboardController.SendSnipeMessage(Context, new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.PassPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+            await AccLeaderboardController.SendSnipeMessage(Context, new AccLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.AccPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+                
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             if (!l_IsDiscordLinked)
                 await ReplyAsync($"> :white_check_mark: {l_ScoreSaberOrDiscordName}'s info added/updated");
         }

@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Formats.Controller
         public ulong BotManagementRoleID { get; set; }
         public bool FullEmbeddedGGP { get; set; } = true;
 
-        public string RolePrefix { get; set; }
+        public string RolePrefix { get; set; } = "";
 
         public string SyncURL { get; set; }
 
@@ -19,6 +19,7 @@ namespace BSDiscordRanking.Formats.Controller
 
         public bool GiveOldRoles { get; set; } = false;
         public bool automaticWeightCalculation { get; set; } = false;
+        public int minimumNumberOfScoreForAutoWeight { get; set; } = 3;
         public bool perPlaylistWeighting { get; set; } = false;
         public ulong LoggingChannel { get; set; }
 

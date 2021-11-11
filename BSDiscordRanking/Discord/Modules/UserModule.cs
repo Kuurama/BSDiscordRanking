@@ -159,7 +159,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 l_Diamonds += l_Trophy.Diamond;
             }
 
-            LeaderboardController l_LeaderboardController = new LeaderboardController();
+            PassLeaderboardController l_LeaderboardController = new PassLeaderboardController();
 
             int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
                 p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
