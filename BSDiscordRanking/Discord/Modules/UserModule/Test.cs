@@ -6,10 +6,11 @@ using Discord.WebSocket;
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
     [CheckChannel]
-    [SetSlashCommand("testcommand", "This is the test command description")]
+    
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Summary("Sends test command.")]
+        [SetSlashCommand("testcommand", "This is the test command description")]
         public static async Task TestCommand(SocketInteraction p_SocketInteraction)
         {
             switch (p_SocketInteraction)
