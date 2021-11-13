@@ -31,7 +31,11 @@ namespace BSDiscordRanking.Discord
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
             m_Client.Log += _client_Log;
 
-            
+            /// Slash Command auto Implementation ///
+            SlashCommandImplementer l_SlashCommandImplementer = new SlashCommandImplementer(m_Client, typeof(UserModule), 764143740255207454);
+            m_Client.Ready += l_SlashCommandImplementer.SlashCommandFetchAndCreation;
+            m_Client.InteractionCreated += SlashCommandImplementer.RunAllSlashCommand;
+            ////////////////////////////////////////
 
             await RegisterCommandsAsync();
             await m_Client.LoginAsync(TokenType.Bot, p_Config.DiscordToken);
