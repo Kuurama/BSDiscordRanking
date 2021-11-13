@@ -255,7 +255,7 @@ namespace BSDiscordRanking.Controllers
                                 //m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.PassPoints).ToList();
                             }
 
-                            if (m_Leaderboard.Leaderboard is {Count: >= 2}) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
+                            if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
 
                             Console.WriteLine($"AccLeaderboard Loaded and Sorted");
                         }

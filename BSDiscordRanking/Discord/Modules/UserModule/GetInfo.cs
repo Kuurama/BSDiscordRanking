@@ -61,13 +61,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
                         }
                     }
-                    
+
                     l_EmbedBuilder.WithDescription("Ranked difficulties:");
                     l_EmbedBuilder.WithTitle(l_Map.name);
                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
                     l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).id}");
                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                    
                 }
                 else
                 {
@@ -80,6 +79,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                     }
                 }
+
                 l_NumberOfMapFound++;
             }
 
@@ -95,6 +95,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     l_EmbedBuilder.WithDescription($"{l_NumberOfNotDisplayedMaps} More maps containing those characters were found\n\nTo find them:\n-increase the number of characters in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.\n\nHere is a list of the maps you are missing:\n\n" + l_NotDisplayedMaps);
                 }
+
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             }
         }

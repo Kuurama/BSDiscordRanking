@@ -195,8 +195,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         private string GenerateProgressBar(int p_Value, int p_MaxValue, int p_Size)
         {
-            float l_Percentage = (float) p_Value / p_MaxValue;
-            int l_Progress = (int) Math.Round(p_Size * l_Percentage);
+            float l_Percentage = (float)p_Value / p_MaxValue;
+            int l_Progress = (int)Math.Round(p_Size * l_Percentage);
             int l_EmptyProgress = p_Size - l_Progress;
 
             string l_ProgressText = "";
@@ -214,7 +214,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             return $"[{l_ProgressText}]";
         }
-        
+
         class CheckChannelAttribute : PreconditionAttribute
         {
             public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context,

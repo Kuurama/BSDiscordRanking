@@ -39,15 +39,16 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             {
                                 hash = null,
                                 key = p_Code,
-                                diffs = new List<Diff>(){l_Diff}
+                                diffs = new List<Diff>() { l_Diff }
                             };
                             l_Map = new BeatSaverFormat()
                             {
                                 id = p_Code,
-                                
-                                versions = new List<Version>(){l_Version}
+
+                                versions = new List<Version>() { l_Version }
                             };
                         }
+
                         LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f);
                         if (l_MapExistCheck.MapExist)
                         {

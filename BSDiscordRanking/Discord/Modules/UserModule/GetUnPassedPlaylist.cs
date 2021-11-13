@@ -48,6 +48,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         return;
                     }
                 }
+
                 if (int.TryParse(p_Level, out _))
                 {
                     int l_LevelInt = int.Parse(p_Level);

@@ -8,8 +8,8 @@ namespace BSDiscordRanking.Controllers
 {
     public class ConfigController
     {
-        public static ConfigFormat m_ConfigFormat = new ConfigFormat() {AuthorizedChannels = new List<ulong>()};
-        private static readonly ConfigFormat DefaultConfig = new ConfigFormat() {AuthorizedChannels = new List<ulong>()};
+        public static ConfigFormat m_ConfigFormat = new ConfigFormat() { AuthorizedChannels = new List<ulong>() };
+        private static readonly ConfigFormat DefaultConfig = new ConfigFormat() { AuthorizedChannels = new List<ulong>() };
 
         public static void CreateConfig()
         {

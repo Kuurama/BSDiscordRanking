@@ -307,7 +307,7 @@ namespace BSDiscordRanking
                                 l_NewMapName = l_SBMapName.ToString();
                             } while (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0] || l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0]);
 
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = l_NewMapName};
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = l_NewMapName };
 
                             Difficulty l_Difficulty = new Difficulty
                             {
@@ -326,7 +326,7 @@ namespace BSDiscordRanking
                                     maxScore = AdminModule.ScoreFromAcc(100f, p_NumberOfNote)
                                 }
                             };
-                            l_SongFormat.difficulties = new List<Difficulty> {l_Difficulty};
+                            l_SongFormat.difficulties = new List<Difficulty> { l_Difficulty };
 
                             if (!string.IsNullOrEmpty(l_SongFormat.name))
                             {
@@ -520,7 +520,7 @@ namespace BSDiscordRanking
                         bool l_DifficultyAlreadyExist = false;
                         try
                         {
-                            SongFormat l_SongFormat = new SongFormat {hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = m_BeatSaver.name};
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = m_BeatSaver.name };
 
                             Difficulty l_Difficulty = new Difficulty
                             {
@@ -532,7 +532,7 @@ namespace BSDiscordRanking
                                     manualWeight = 1f
                                 }
                             };
-                            l_SongFormat.difficulties = new List<Difficulty> {l_Difficulty};
+                            l_SongFormat.difficulties = new List<Difficulty> { l_Difficulty };
 
 
                             if (m_Level.songs.Count != 0)
@@ -751,7 +751,7 @@ namespace BSDiscordRanking
                 {
                     if (l_MapLeaderboard.m_MapLeaderboard.MaxScore > 0)
                     {
-                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.Leaderboard[l_Index].Score / l_MapLeaderboard.m_MapLeaderboard.MaxScore)*100;
+                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.Leaderboard[l_Index].Score / l_MapLeaderboard.m_MapLeaderboard.MaxScore) * 100;
                     }
                     else
                     {
@@ -762,7 +762,7 @@ namespace BSDiscordRanking
 
                 float l_AveragePercentage = (l_SumOfPercentage / ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight);
                 float l_AverageNeededPercentage = 100f - l_AveragePercentage;
-                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * m_LevelID)/32;
+                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * m_LevelID) / 32;
                 return l_NewWeight;
             }
             else

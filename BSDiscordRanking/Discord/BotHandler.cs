@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
@@ -24,11 +25,14 @@ namespace BSDiscordRanking.Discord
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
             m_Prefix = p_Config.CommandPrefix[0];
-            m_Client = new DiscordSocketClient(new DiscordSocketConfig {GatewayIntents = GatewayIntents.All});
+            m_Client = new DiscordSocketClient(new DiscordSocketConfig { GatewayIntents = GatewayIntents.All });
             m_Commands = new CommandService();
 
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
             m_Client.Log += _client_Log;
+
+            
+
             await RegisterCommandsAsync();
             await m_Client.LoginAsync(TokenType.Bot, p_Config.DiscordToken);
             await m_Client.StartAsync();

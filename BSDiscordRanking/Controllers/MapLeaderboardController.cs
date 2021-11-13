@@ -203,7 +203,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         l_SumOfFirstScores += m_MapLeaderboard.Leaderboard[l_Index].Score;
                     }
-                    
+
                     l_AutoWeightCheck = true;
                 }
 
@@ -221,7 +221,7 @@ namespace BSDiscordRanking.Controllers
                         {
                             m_MapLeaderboard.Leaderboard[l_I].Score = p_Score;
                         }
-                        
+
                         break;
                     }
                 }
@@ -240,11 +240,10 @@ namespace BSDiscordRanking.Controllers
                         l_MapPlayerPass.Score = p_Score;
 
                     m_MapLeaderboard.Leaderboard.Add(l_MapPlayerPass);
-                    
                 }
-                
+
                 ReWriteMapLeaderboard();
-                 
+
                 if (l_AutoWeightCheck)
                 {
                     if (m_MapLeaderboard.Leaderboard.Count >= l_MinimumNumberOfScore)
