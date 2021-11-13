@@ -10,7 +10,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("addmap")]
-        [Alias("editmap","rankmap")]
+        [Alias("editmap", "rankmap")]
         [Summary("Adds a map or updates it from a desired level. Not used fields can be wrote null or 0 depending on their types. (or even ignored if you don't need any of the next ones)")]
         public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_ForceManualWeight = false, float p_Weight = 1f)
         {
@@ -29,7 +29,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                 if (p_CustomPassText == "null")
                     p_CustomPassText = null;
-                
+
                 if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
@@ -76,7 +76,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
-                                
+
                                 if (l_MapExistCheck.DifferentMinScore)
                                     l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", false);
 
@@ -91,7 +91,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                                 if (l_MapExistCheck.DifferentForceManualWeight)
                                     l_EmbedBuilder.AddField("New ManualWeightPreference:", p_ForceManualWeight, false);
-                                
+
                                 if (l_MapExistCheck.DifferentWeight)
                                     l_EmbedBuilder.AddField("New Weight:", p_Weight, false);
 

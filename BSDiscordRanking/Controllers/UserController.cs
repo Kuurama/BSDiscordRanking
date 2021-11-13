@@ -62,7 +62,7 @@ namespace BSDiscordRanking.Controllers
 
         public static void AddPlayer(string p_DisID, string p_ScoID)
         {
-            m_Users.Add(new UserFormat {DiscordID = p_DisID, ScoreSaberID = p_ScoID});
+            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = p_ScoID });
             Console.WriteLine($"Player {p_DisID} was added with scoresaber: {p_ScoID}");
             GenerateDB();
         }

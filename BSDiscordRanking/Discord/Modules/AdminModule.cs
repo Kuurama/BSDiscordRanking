@@ -44,7 +44,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             if (p_Acc == 0f)
                 return 0;
 
-            return (int) Math.Round(l_MaxScore * (p_Acc / 100));
+            return (int)Math.Round(l_MaxScore * (p_Acc / 100));
         }
 
         private class RequireManagerRoleAttribute : PreconditionAttribute

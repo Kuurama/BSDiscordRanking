@@ -15,6 +15,7 @@ namespace BSDiscordRanking.Formats.Player
         public string name { get; set; }
         public List<InPlayerPassFormat> DiffList { get; set; }
     }
+
     public class InPlayerPassFormat
     {
         public Difficulty Difficulty { get; set; }

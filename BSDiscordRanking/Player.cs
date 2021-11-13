@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
-using BSDiscordRanking.Formats.Level;
 using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;

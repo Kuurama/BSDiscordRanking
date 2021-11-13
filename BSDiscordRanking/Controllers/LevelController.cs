@@ -25,10 +25,10 @@ namespace BSDiscordRanking.Controllers
             try
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
-                m_LevelController = new LevelControllerFormat {LevelID = new List<int>()};
+                m_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
                 string l_StringLevelID;
                 int l_MyInt;
-                
+
                 foreach (string l_FileName in l_Files)
                 {
                     l_StringLevelID = "";
@@ -188,39 +188,43 @@ namespace BSDiscordRanking.Controllers
                             if (l_Difficulty.name == p_Difficulty && l_Difficulty.characteristic == p_Characteristic)
                             {
                                 Console.WriteLine($"Map already exist in level {l_Level}");
-                                
+
                                 l_MapExistFormat.MapExist = true;
                                 l_MapExistFormat.Level = l_LevelID;
 
                                 if (l_Difficulty.customData.minScoreRequirement != p_MinScoreRequirement)
                                     l_MapExistFormat.DifferentMinScore = true;
-                                
+
                                 if (l_Difficulty.customData.customPassText != p_CustomPassText)
                                 {
                                     l_MapExistFormat.CustomPassText = p_CustomPassText;
                                     l_MapExistFormat.DifferentPassText = true;
                                 }
+
                                 if (l_Difficulty.customData.infoOnGGP != p_InfoOnGGP)
                                 {
                                     l_MapExistFormat.InfoOnGGP = p_InfoOnGGP;
                                     l_MapExistFormat.DifferentInfoOnGGP = true;
                                 }
+
                                 if (l_Difficulty.customData.category != p_Category)
                                 {
                                     l_MapExistFormat.Category = p_Category;
                                     l_MapExistFormat.DifferentCategory = true;
                                 }
+
                                 if (l_Difficulty.customData.forceManualWeight != p_ForceManualWeight)
                                 {
                                     l_MapExistFormat.ForceManualWeight = p_ForceManualWeight;
                                     l_MapExistFormat.DifferentForceManualWeight = true;
                                 }
+
                                 if (Math.Abs(l_Difficulty.customData.manualWeight - p_Weight) > 0.001)
                                 {
                                     l_MapExistFormat.Weight = p_Weight;
                                     l_MapExistFormat.DifferentWeight = true;
                                 }
-                                
+
                                 return l_MapExistFormat;
                             }
                         }

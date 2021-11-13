@@ -10,7 +10,7 @@ namespace BSDiscordRanking.Formats.Controller
         public int MaxScore { get; set; }
         public List<MapPlayerPass> Leaderboard { get; set; }
     }
-    
+
     public class MapPlayerPass
     {
         public string Name { get; set; }
