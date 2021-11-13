@@ -45,6 +45,53 @@ namespace BSDiscordRanking.Discord
                         var l_GuildCommand = new SlashCommandBuilder();
                         l_GuildCommand.WithName(l_SlashCommand.Name);
                         l_GuildCommand.WithDescription(l_SlashCommand.Description);
+
+                        foreach (var l_MyOthersAttribute in l_MyAttributes) /// Will implement every Requirement Attribute found.
+                        {
+                            switch (l_MyOthersAttribute)
+                            {
+                                case SetBooleanRequirementAttribute l_SetBooleanRequirement:
+                                    l_GuildCommand.AddOption(l_SetBooleanRequirement.Name, ApplicationCommandOptionType.Boolean, l_SetBooleanRequirement.Description,l_SetBooleanRequirement.Required);
+                                    break;
+                                
+                                case SetChannelRequirementAttribute l_SetChannelRequirement:
+                                    l_GuildCommand.AddOption(l_SetChannelRequirement.Name, ApplicationCommandOptionType.Channel, l_SetChannelRequirement.Description, l_SetChannelRequirement.Required);
+                                    break;
+                                    
+                                case SetIntegerRequirementAttribute l_SetIntegerRequirement:
+                                    l_GuildCommand.AddOption(l_SetIntegerRequirement.Name, ApplicationCommandOptionType.Boolean, l_SetIntegerRequirement.Description, l_SetIntegerRequirement.Required);
+                                    break;
+                                
+                                case SetMentionableRequirementAttribute l_SetMentionableRequirement:
+                                    l_GuildCommand.AddOption(l_SetMentionableRequirement.Name, ApplicationCommandOptionType.Mentionable, l_SetMentionableRequirement.Description, l_SetMentionableRequirement.Required);
+                                    break;
+                                
+                                case SetNumberRequirementAttribute l_SetNumberRequirement:
+                                    l_GuildCommand.AddOption(l_SetNumberRequirement.Name, ApplicationCommandOptionType.Number, l_SetNumberRequirement.Description, l_SetNumberRequirement.Required);
+                                    break;
+                                
+                                case SetRoleRequirementAttribute l_SetRoleRequirement:
+                                    l_GuildCommand.AddOption(l_SetRoleRequirement.Name, ApplicationCommandOptionType.Role, l_SetRoleRequirement.Description, l_SetRoleRequirement.Required);
+                                    break;
+                                
+                                case SetStringRequirementAttribute l_SetStringRequirement:
+                                    l_GuildCommand.AddOption(l_SetStringRequirement.Name, ApplicationCommandOptionType.String, l_SetStringRequirement.Description, l_SetStringRequirement.Required);
+                                    break;
+                                
+                                case SetSubCommandRequirementAttribute l_SetSubCommandRequirement:
+                                    l_GuildCommand.AddOption(l_SetSubCommandRequirement.Name, ApplicationCommandOptionType.SubCommand, l_SetSubCommandRequirement.Description, l_SetSubCommandRequirement.Required);
+                                    break;
+                                
+                                case SetSubCommandGroupRequirementAttribute l_SetSubCommandGroupRequirement:
+                                    l_GuildCommand.AddOption(l_SetSubCommandGroupRequirement.Name, ApplicationCommandOptionType.Mentionable, l_SetSubCommandGroupRequirement.Description, l_SetSubCommandGroupRequirement.Required);
+                                    break;
+                                
+                                case SetUserRequirementAttribute l_SetUserRequirement:
+                                    l_GuildCommand.AddOption(l_SetUserRequirement.Name, ApplicationCommandOptionType.User, l_SetUserRequirement.Description, l_SetUserRequirement.Required);
+                                    break;
+                            }
+                        }
+                        
                         try
                         {
                             // Now that we have our builder, we can call the rest API to make our slash command.
@@ -60,6 +107,8 @@ namespace BSDiscordRanking.Discord
                             // You can send this error somewhere or just print it to the console, for this example we're just going to print it.
                             Console.WriteLine(l_Json);
                         }
+
+                        break;
                     }
                 }
             }
@@ -76,6 +125,156 @@ namespace BSDiscordRanking.Discord
         {
             this.Name = Name;
             this.Description = Description;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetBooleanRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetBooleanRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetChannelRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetChannelRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetIntegerRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetIntegerRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetMentionableRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetMentionableRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetNumberRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetNumberRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetRoleRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetRoleRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetStringRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetStringRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetSubCommandRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetSubCommandRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetSubCommandGroupRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetSubCommandGroupRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
+        }
+    }
+    
+    [AttributeUsage(AttributeTargets.Method)]
+    public class SetUserRequirementAttribute : Attribute
+    {
+        public string Name { get; }
+        public string Description { get; }
+        public bool Required { get; }
+
+        public SetUserRequirementAttribute(string Name, string Description, bool Required)
+        {
+            this.Name = Name;
+            this.Description = Description;
+            this.Required = Required;
         }
     }
 }
