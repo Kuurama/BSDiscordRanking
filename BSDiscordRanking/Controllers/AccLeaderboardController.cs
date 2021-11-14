@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using BSDiscordRanking.Discord;
 using BSDiscordRanking.Formats;
 using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Player;
@@ -160,6 +161,7 @@ namespace BSDiscordRanking.Controllers
 
             Player l_Player = new Player(p_Snipe.Player.ScoreSaberID);
             bool l_SnipeExist = false;
+            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             var l_Builder = new EmbedBuilder()
                 .WithAuthor(p_Author =>
                 {
@@ -168,9 +170,9 @@ namespace BSDiscordRanking.Controllers
                         .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId)
                         .WithIconUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                 })
-                .AddField("\u200B", $"Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**");
+                .AddField("\u200B", $"({l_ConfigFormat.AccPointsName} Leaderboard) Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**");
 
-            l_Builder.WithDescription($"Your Current ping choice for leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+            l_Builder.WithDescription($"Your Current ping choice for {l_ConfigFormat.AccPointsName} leaderboard snipe is **{p_Snipe.Player.IsPingAllowed}**, if you want to change it:\nType the `{BotHandler.m_Prefix}accpingtoggle` command");
 
             l_Builder.WithColor(p_Snipe.Player.OldRank < p_Snipe.Player.NewRank ? new Color(255, 0, 0) : new Color(0, 255, 0));
 
@@ -191,12 +193,12 @@ namespace BSDiscordRanking.Controllers
                         if (!l_EmbedDone)
                         {
                             l_Builder = new EmbedBuilder()
-                                .WithTitle($"Get sniped! <:Sniped:898696818093875230> (by {p_Snipe.Player.Name})")
+                                .WithTitle($"({l_ConfigFormat.AccPointsName} Leaderboard) Get sniped! <:Sniped:898696818093875230> (by {p_Snipe.Player.Name})")
                                 .WithColor(new Color(255, 0, 0))
                                 .WithFooter(p_Footer =>
                                 {
                                     p_Footer
-                                        .WithText($"To allow or disallow personal pings, type the `{ConfigController.GetConfig().CommandPrefix[0]}pingtoggle` command");
+                                        .WithText($"To allow or disallow personal pings on the {l_ConfigFormat.AccPointsName} Leaderboard, type the `{BotHandler.m_Prefix}accpingtoggle` command");
                                 });
                             l_EmbedDone = true;
                         }

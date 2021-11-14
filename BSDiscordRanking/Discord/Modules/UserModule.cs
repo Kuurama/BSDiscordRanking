@@ -271,6 +271,77 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             return l_Color;
         }
+        
+        public static PlayerFromDiscordOrScoreSaberIDFormat PlayerFromDiscordOrScoreSaberID(string p_DiscordOrScoreSaberID, SocketCommandContext p_Context)
+        {
+            bool l_IsDiscordLinked = false;
+            string l_ScoreSaberOrDiscordName = "";
+            string l_DiscordID = "";
+            SocketGuildUser l_User = null;
+
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+
+            if (UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                l_DiscordID = p_DiscordOrScoreSaberID;
+                l_User = p_Context.Guild.GetUser(Convert.ToUInt64(p_DiscordOrScoreSaberID));
+                p_DiscordOrScoreSaberID = UserController.GetPlayer(p_DiscordOrScoreSaberID);
+                if (l_User != null)
+                {
+                    l_IsDiscordLinked = true;
+                    l_ScoreSaberOrDiscordName = l_User.Username;
+                }
+                else
+                {
+                    return new PlayerFromDiscordOrScoreSaberIDFormat()
+                    {
+                        IsScoreSaberAccount = l_IsScoreSaberAccount,
+                        DiscordID = l_DiscordID,
+                        IsDiscordLinked = true,
+                        ScoreSaberOrDiscordName = null
+                    };
+                }
+            }
+            else if (l_IsScoreSaberAccount)
+            {
+                if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
+                {
+                    l_User = p_Context.Guild.GetUser(Convert.ToUInt64(UserController.GetDiscordID(p_DiscordOrScoreSaberID)));
+                    if (l_User != null)
+                    {
+                        l_IsDiscordLinked = true;
+                        l_DiscordID = l_User.Id.ToString();
+                        l_ScoreSaberOrDiscordName = l_User.Username;
+                    }
+                }
+            }
+            else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
+            {
+                return new PlayerFromDiscordOrScoreSaberIDFormat()
+                {
+                    IsScoreSaberAccount = false,
+                    DiscordID = p_DiscordOrScoreSaberID,
+                    IsDiscordLinked = false,
+                    ScoreSaberOrDiscordName = null
+                };
+            }
+
+            return new PlayerFromDiscordOrScoreSaberIDFormat()
+            {
+                IsScoreSaberAccount = l_IsScoreSaberAccount,
+                DiscordID = l_DiscordID,
+                IsDiscordLinked = l_IsDiscordLinked,
+                ScoreSaberOrDiscordName = l_ScoreSaberOrDiscordName
+            };
+        }
+        
+        public class PlayerFromDiscordOrScoreSaberIDFormat
+        {
+            public bool IsDiscordLinked { get; set; }
+            public bool IsScoreSaberAccount { get; set; }
+            public string DiscordID { get; set; }
+            public string ScoreSaberOrDiscordName { get; set; }
+        }
 
         class CheckChannelAttribute : PreconditionAttribute
         {
