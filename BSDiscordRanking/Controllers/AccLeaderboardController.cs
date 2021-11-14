@@ -76,6 +76,7 @@ namespace BSDiscordRanking.Controllers
                         l_Snipe.Player.ScoreSaberID = m_Leaderboard.Leaderboard[l_I].ScoreSaberID;
                         l_Snipe.Player.DiscordID = m_Leaderboard.Leaderboard[l_I].DiscordID;
                         l_Snipe.Player.OldRank = l_I + 1;
+                        l_Snipe.Player.NewRank = l_I + 1;
                         l_Snipe.Player.IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed;
                         ///////////////////
                         m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
@@ -89,6 +90,7 @@ namespace BSDiscordRanking.Controllers
                         DiscordID = m_Leaderboard.Leaderboard[l_I].DiscordID,
                         ScoreSaberID = m_Leaderboard.Leaderboard[l_I].ScoreSaberID,
                         OldRank = l_I + 1,
+                        NewRank = l_I + 1,
                         IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed
                     });
                 }
@@ -109,7 +111,7 @@ namespace BSDiscordRanking.Controllers
                         Name = p_Name,
                         ScoreSaberID = p_ScoreSaberID,
                         DiscordID = UserController.GetDiscordID(p_ScoreSaberID),
-                        IsPingAllowed = false
+                        IsPingAllowed = false,
                     };
 
                     if (p_Points >= 0)

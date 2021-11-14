@@ -4,14 +4,8 @@ namespace BSDiscordRanking.Formats.Player
 {
     public class PlayerStatsFormat
     {
-        public List<bool> LevelIsPassed { get; set; }
+        public List<PassedLevel> Levels { get; set; }
         public int TotalNumberOfPass { get; set; }
-
-        public List<Trophy> Trophy { get; set; }
-        //plastic 0% 1
-        //silver 40% 2
-        //gold 70% 3
-        //diamond 100% 4
 
         public float PassPoints { get; set; }
         public float AccPoints { get; set; }
@@ -25,5 +19,12 @@ namespace BSDiscordRanking.Formats.Player
         public int Silver { get; set; }
         public int Gold { get; set; }
         public int Diamond { get; set; }
+    }
+
+    public class PassedLevel
+    {
+        public int LevelID { get; set; }
+        public bool Passed { get; set; }
+        public Trophy Trophy { get; set; }
     }
 }

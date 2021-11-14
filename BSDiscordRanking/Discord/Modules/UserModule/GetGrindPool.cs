@@ -66,6 +66,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_IDExist)
             {
+                
+                
                 Level l_Level = new Level(p_Level);
                 try
                 {
@@ -79,6 +81,23 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     l_Player.LoadStats();
+                    int l_LevelIndex = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_Level);
+                    if (l_LevelIndex < 0)
+                    {
+                        l_LevelIndex = l_Player.m_PlayerStats.Levels.Count;
+                        l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
+                        {
+                            LevelID = p_Level,
+                            Passed = false,
+                            Trophy = new Trophy()
+                            {
+                                Plastic = 0,
+                                Silver = 0,
+                                Gold = 0,
+                                Diamond = 0
+                            }
+                        });
+                    }
 
                     if (l_Level.m_Level.songs.Count > 0)
                     {
@@ -197,17 +216,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     string l_PlayerTrophy = "";
 
-                    while (l_Player.m_PlayerStats.Trophy.Count <= p_Level - 1)
-                    {
-                        l_Player.m_PlayerStats.Trophy.Add(new Trophy
-                        {
-                            Plastic = 0,
-                            Silver = 0,
-                            Gold = 0,
-                            Diamond = 0
-                        });
-                    }
-
                     // ReSharper disable once IntDivisionByZero
                     if (l_NumberOfDifficulties != 0)
                     {
@@ -220,26 +228,26 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             case <= 39:
                             {
-                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Plastic = 1;
+                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Plastic = 1;
                                 l_PlayerTrophy = "<:plastic:874215132874571787>";
                                 break;
                             }
                             case <= 69:
                             {
-                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Silver = 1;
+                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Silver = 1;
                                 l_PlayerTrophy = "<:silver:874215133197500446>";
                                 break;
                             }
                             case <= 99:
                             {
-                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Gold = 1;
+                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Gold = 1;
                                 l_PlayerTrophy = "<:gold:874215133147197460>";
                                 break;
                             }
 
                             case 100:
                             {
-                                l_Player.m_PlayerStats.Trophy[p_Level - 1].Diamond = 1;
+                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Diamond = 1;
                                 l_PlayerTrophy = "<:diamond:874215133289795584>";
                                 break;
                             }
@@ -268,7 +276,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             await Context.Channel.SendMessageAsync("", false, l_GGP.EmbedBuilder.Build());
                         }
 
-                        l_Player.SetGrindInfo(p_Level, l_LevelIsPassed, -1, l_Player.m_PlayerStats.Trophy[p_Level - 1], -1, -1, -1);
+                        l_Player.SetGrindInfo(p_Level, l_LevelIsPassed, -1, l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy, -1, -1, -1);
                     }
 
                     List<string> l_Messages = new List<string> { $"" }; /// Reset the Message between Passed and Unpassed maps

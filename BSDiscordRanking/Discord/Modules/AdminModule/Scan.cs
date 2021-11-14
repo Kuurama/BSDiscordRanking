@@ -108,12 +108,13 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 Gold = 0,
                 Diamond = 0
             };
-            foreach (var l_Trophy in l_Player.m_PlayerStats.Trophy)
+            foreach (var l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
             {
-                l_TotalTrophy.Plastic += l_Trophy.Plastic;
-                l_TotalTrophy.Silver += l_Trophy.Silver;
-                l_TotalTrophy.Gold += l_Trophy.Gold;
-                l_TotalTrophy.Diamond += l_Trophy.Diamond;
+                l_PlayerStatsLevel.Trophy ??= new Trophy();
+                l_TotalTrophy.Plastic += l_PlayerStatsLevel.Trophy.Plastic;
+                l_TotalTrophy.Silver += l_PlayerStatsLevel.Trophy.Silver;
+                l_TotalTrophy.Gold += l_PlayerStatsLevel.Trophy.Gold;
+                l_TotalTrophy.Diamond += l_PlayerStatsLevel.Trophy.Diamond;
             }
             /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///////////////////////////
 

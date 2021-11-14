@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Player;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -43,9 +44,13 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             }
 
             l_Player.ResetLevels();
-            for (int l_I = 0; l_I < p_Level; l_I++)
+            for (int l_I = 0; l_I <= p_Level; l_I++)
             {
-                l_Player.m_PlayerStats.LevelIsPassed.Add(true);
+                l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
+                {
+                    LevelID = l_I,
+                    Passed = true
+                });
             }
 
             l_Player.ReWriteStats();

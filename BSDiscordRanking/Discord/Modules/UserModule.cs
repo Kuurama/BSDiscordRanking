@@ -155,12 +155,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             int l_Golds = 0;
 
             int l_Diamonds = 0;
-            foreach (var l_Trophy in l_PlayerStats.Trophy)
+            if (l_Player.m_PlayerStats.Levels is not null)
             {
-                l_Plastics += l_Trophy.Plastic;
-                l_Silvers += l_Trophy.Silver;
-                l_Golds += l_Trophy.Gold;
-                l_Diamonds += l_Trophy.Diamond;
+                foreach (var l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
+                {
+                    l_PlayerStatsLevel.Trophy ??= new Trophy();
+                    l_Plastics += l_PlayerStatsLevel.Trophy.Plastic;
+                    l_Silvers += l_PlayerStatsLevel.Trophy.Silver;
+                    l_Golds += l_PlayerStatsLevel.Trophy.Gold;
+                    l_Diamonds += l_PlayerStatsLevel.Trophy.Diamond;
+                }
             }
 
             ConfigFormat l_Config = ConfigController.GetConfig();
