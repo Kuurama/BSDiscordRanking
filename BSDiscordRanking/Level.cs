@@ -745,9 +745,9 @@ namespace BSDiscordRanking
         {
             float l_SumOfPercentage = 0;
             MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
-            if (l_MapLeaderboard.m_MapLeaderboard.Leaderboard.Count >= ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight)
+            if (l_MapLeaderboard.m_MapLeaderboard.Leaderboard.Count >= ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight)
             {
-                for (int l_Index = 0; l_Index < ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight; l_Index++)
+                for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++)
                 {
                     if (l_MapLeaderboard.m_MapLeaderboard.MaxScore > 0)
                     {
@@ -760,7 +760,7 @@ namespace BSDiscordRanking
                     }
                 }
 
-                float l_AveragePercentage = (l_SumOfPercentage / ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight);
+                float l_AveragePercentage = (l_SumOfPercentage / ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight);
                 float l_AverageNeededPercentage = 100f - l_AveragePercentage;
                 float l_NewWeight = (l_AverageNeededPercentage * 0.66f * m_LevelID) / 32;
                 return l_NewWeight;

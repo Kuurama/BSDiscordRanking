@@ -7,6 +7,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Discord.Modules.UserModule;
+using BSDiscordRanking.Formats;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Player;
@@ -524,6 +526,7 @@ namespace BSDiscordRanking
                 float l_Weighting = 0f;
                 int l_PoolID = 0;
                 string l_DifficultyShown = "";
+                ConfigFormat l_Config = ConfigController.GetConfig();
                 int l_OldPlayerFirstScanStatus = m_PlayerStats.IsFirstScan;
                 bool l_DiffGotLeaderboardID = false;
                 bool l_DiffGotNewAutoWeight = false;
@@ -534,6 +537,7 @@ namespace BSDiscordRanking
                 int l_BiggerLevelID = 0;
                 bool l_AboveLVLFourteenPass = false; /// Funny
                 var l_LevelController = new LevelController(); /// Constructor makes levelcontroller FetchLevel()
+                int l_OldPlayerLevel = GetPlayerLevel();
                 LoadLevelControllerCache();
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
                 m_PlayerPass = new PlayerPassFormat
@@ -586,7 +590,11 @@ namespace BSDiscordRanking
                         }
 
                         if (!l_LevelExist)
+                        {
+                            SetGrindInfo(l_Y+1, false, -1, null, -1, -1, -1);
                             continue;
+                        }
+
                         l_Weighting = l_Levels[l_Y].m_Level.customData.weighting;
                         l_PoolID = l_Levels[l_Y].m_LevelID;
                         foreach (var l_Song in l_Levels[l_Y].m_Level.songs)
@@ -604,10 +612,12 @@ namespace BSDiscordRanking
                                             {
                                                 if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                 {
+                                                    bool l_DiffExist = false;
+                                                    bool l_OldDiffExist = false;
+                                                    bool l_PassWeightAlreadySet = false;
+                                                    bool l_AccWeightAlreadySet = false;
                                                     foreach (var l_CachedPassedSong in m_PlayerPass.SongList)
                                                     {
-                                                        bool l_DiffExist = false;
-                                                        bool l_OldDiffExist = false;
                                                         if (l_CachedPassedSong.DiffList != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                         {
                                                             l_MapStored = true;
@@ -779,18 +789,44 @@ namespace BSDiscordRanking
 
                                                     if (l_Difficulty.customData.forceManualWeight)
                                                     {
-                                                        l_TotalAccPoints += ((float)l_Score.score / l_Difficulty.customData.maxScore) * 100f * l_Difficulty.customData.manualWeight;
-                                                        l_TotalPassPoints += 0.375f * l_Difficulty.customData.manualWeight;
+                                                        if (!l_Config.OnlyAutoWeightForAccLeaderboard)
+                                                        {
+                                                            l_TotalAccPoints += ((float)l_Score.score / l_Difficulty.customData.maxScore) * 100f * 0.375f * l_Difficulty.customData.manualWeight;
+                                                            l_AccWeightAlreadySet = true;
+                                                        }
+
+                                                        if (!l_Config.OnlyAutoWeightForPassLeaderboard)
+                                                        {
+                                                            l_TotalPassPoints += 0.375f * l_Difficulty.customData.manualWeight;
+                                                            l_PassWeightAlreadySet = true;
+                                                        }
                                                     }
-                                                    else if (l_Difficulty.customData.AutoWeight > 0 && ConfigController.GetConfig().automaticWeightCalculation)
+                                                    
+                                                    if (l_Difficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
                                                     {
-                                                        l_TotalAccPoints += ((float)l_Score.score / l_Difficulty.customData.maxScore) * 100f * l_Difficulty.customData.AutoWeight;
-                                                        l_TotalPassPoints += 0.375f * l_Difficulty.customData.AutoWeight;
+                                                        if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard)
+                                                        {
+                                                            l_TotalAccPoints += ((float)l_Score.score / l_Difficulty.customData.maxScore) * 100f * 0.375f * l_Difficulty.customData.AutoWeight;
+                                                            l_AccWeightAlreadySet = true;
+                                                        }
+
+                                                        if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard)
+                                                        {
+                                                            l_TotalPassPoints += 0.375f * l_Difficulty.customData.AutoWeight;
+                                                            l_PassWeightAlreadySet = true;
+                                                        }
                                                     }
-                                                    else if (ConfigController.GetConfig().perPlaylistWeighting)
+                                                    if (l_Config.PerPlaylistWeighting)
                                                     {
-                                                        l_TotalAccPoints += ((float)l_Score.score / l_Difficulty.customData.maxScore) * 100f * l_Levels[l_Y].m_Level.customData.weighting;
-                                                        l_TotalPassPoints += 0.375f * l_Levels[l_Y].m_Level.customData.weighting;
+                                                        if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
+                                                        {
+                                                            l_TotalAccPoints += ((float)l_Score.score / l_Difficulty.customData.maxScore) * 100f * 0.375f * l_Levels[l_Y].m_Level.customData.weighting;
+                                                        }
+
+                                                        if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
+                                                        {
+                                                            l_TotalPassPoints += 0.375f * l_Levels[l_Y].m_Level.customData.weighting;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -865,7 +901,7 @@ namespace BSDiscordRanking
 
 
                             /// Display new pass on first scan message.
-                            if (ConfigController.GetConfig().perPlaylistWeighting)
+                            if (ConfigController.GetConfig().PerPlaylistWeighting)
                             {
                                 l_Messages[l_MessagesIndex] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Y + 1}** (+{l_Weighting * 0.375f * l_PassesPerLevel} RPL)\n";
                             }
@@ -883,6 +919,10 @@ namespace BSDiscordRanking
 
                         if (m_PlayerStats.Trophy.ElementAtOrDefault(l_Y) == null)
                         {
+                            while (m_PlayerStats.Trophy.Count < l_Y)
+                            {
+                                m_PlayerStats.Trophy.Add(new Trophy());
+                            }
                             m_PlayerStats.Trophy.Insert(l_Y, l_Trophy);
                         }
                         else
@@ -894,7 +934,7 @@ namespace BSDiscordRanking
 
                         l_TotalAmountOfPass += l_PassesPerLevel;
 
-                        /*if (ConfigController.GetConfig().perPlaylistWeighting)
+                        /*if (ConfigController.GetConfig().PerPlaylistWeighting)
                         {
                             
                             l_TotalPoints += l_Weighting * 0.375f * l_PassesPerLevel; /// Current RPL formula from BSCC
@@ -922,6 +962,9 @@ namespace BSDiscordRanking
                     ReWriteStats();
 
                     ReWritePass();
+                    
+                    Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, l_OldPlayerLevel);
+                    
                     bool l_IsFirstMessage = true;
                     if (l_Passes >= 1)
                         foreach (var l_Message in l_Messages)
@@ -931,7 +974,7 @@ namespace BSDiscordRanking
 
                             l_IsFirstMessage = false;
                             l_Builder.WithDescription(l_Message);
-                            l_Builder.WithColor(new Color(94, 34, 122));
+                            l_Builder.WithColor(l_Color);
                             var l_Embed = l_Builder.Build();
                             await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                         }

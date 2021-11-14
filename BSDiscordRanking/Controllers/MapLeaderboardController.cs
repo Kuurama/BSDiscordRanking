@@ -187,7 +187,7 @@ namespace BSDiscordRanking.Controllers
                 int l_SumOfFirstScores = 0;
                 int l_NewSumOfFirstScores = 0;
 
-                int l_MinimumNumberOfScore = ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight;
+                int l_MinimumNumberOfScore = ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight;
                 if (m_MapLeaderboard.Leaderboard.Count == l_MinimumNumberOfScore - 1)
                 {
                     for (int l_Index = 0; l_Index < l_MinimumNumberOfScore - 1; l_Index++)
@@ -248,7 +248,7 @@ namespace BSDiscordRanking.Controllers
                 {
                     if (m_MapLeaderboard.Leaderboard.Count >= l_MinimumNumberOfScore)
                     {
-                        for (int l_Index = 0; l_Index < ConfigController.GetConfig().minimumNumberOfScoreForAutoWeight; l_Index++)
+                        for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++)
                         {
                             l_NewSumOfFirstScores += m_MapLeaderboard.Leaderboard[l_Index].Score;
                         }

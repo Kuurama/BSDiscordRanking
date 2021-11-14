@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using BSDiscordRanking.Formats.Player;
 using Discord;
@@ -144,6 +147,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            int l_PlayerLevel = l_Player.GetPlayerLevel();
             var l_PlayerStats = l_Player.GetStats();
 
             int l_Plastics = 0;
@@ -159,28 +163,64 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 l_Diamonds += l_Trophy.Diamond;
             }
 
-            PassLeaderboardController l_LeaderboardController = new PassLeaderboardController();
+            ConfigFormat l_Config = ConfigController.GetConfig();
 
-            int l_FindIndex = l_LeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X =>
-                p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
+            int l_PassFindIndex = -1;
+            PassLeaderboardController l_PassLeaderboardController = null;
+            if (l_Config.EnableAccBasedLeaderboard)
+            {
+                l_PassLeaderboardController = new PassLeaderboardController();
+                l_PassFindIndex = l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
+            }
+
+            int l_AccFindIndex = -1;
+            AccLeaderboardController l_AccLeaderboardController = null;
+            if (l_Config.EnableAccBasedLeaderboard)
+            {
+                l_AccLeaderboardController = new AccLeaderboardController();
+                l_AccFindIndex = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
+            }
+
 
             EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
-            l_EmbedBuilder.AddField("Global Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
-            if (l_FindIndex == -1)
-                l_EmbedBuilder.AddField("Server Rank", $":medal: #0 - 0 {ConfigController.GetConfig().PointsName}",
-                    true);
-            else
+            l_EmbedBuilder.AddField("Score Saber Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
+            
+            Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_PlayerLevel);
 
-                l_EmbedBuilder.AddField("Server Rank",
-                    ":medal: #" +
-                    $"{l_FindIndex + 1} - {l_LeaderboardController.m_Leaderboard.Leaderboard[l_FindIndex].Points} {ConfigController.GetConfig().PointsName}",
-                    true);
+            l_EmbedBuilder.WithColor(l_Color);
+
+            string l_PassRankFieldValue = null;
+            string l_AccRankFieldValue = null;
+
+            if (l_Config.EnablePassBasedLeaderboard && l_PassLeaderboardController is not null)
+            {
+                if (l_PassFindIndex == -1)
+                    l_PassRankFieldValue = $":medal: #0 - 0 {l_Config.PassPointsName}";
+
+                else
+                    l_PassRankFieldValue = $":medal: #{l_PassFindIndex + 1} - {l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_PassFindIndex].Points} {l_Config.PassPointsName}";
+            }
+
+            if (l_Config.EnableAccBasedLeaderboard && l_AccLeaderboardController is not null)
+            {
+                if (l_AccFindIndex == -1)
+                    l_AccRankFieldValue = $":medal: #0 - 0 {l_Config.PassPointsName}";
+
+                else
+                    l_AccRankFieldValue = $":medal: #{l_AccFindIndex + 1} - {l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_AccFindIndex].Points} {l_Config.AccPointsName}";
+            }
+
+            if (l_Config.EnableAccBasedLeaderboard || l_Config.EnablePassBasedLeaderboard)
+            {
+                l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
+            }
+
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
-            l_EmbedBuilder.AddField("Level", ":trophy: " + l_Player.GetPlayerLevel(), true);
+            l_EmbedBuilder.AddField("Level", ":trophy: " + l_PlayerLevel, true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField($"Plastic trophies:", $"<:plastic:874215132874571787>: {l_Plastics}", true);
             l_EmbedBuilder.AddField($"Silver trophies:", $"<:silver:874215133197500446>: {l_Silvers}", true);
@@ -213,6 +253,23 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             return $"[{l_ProgressText}]";
+        }
+
+        public static Color GetRoleColor(List<RoleFormat> p_RoleList, IReadOnlyCollection<SocketRole> p_Roles, int p_Level)
+        {
+            Color l_Color = Color.Default;
+            foreach (var l_UserRole in p_Roles)
+            {
+                foreach (var l_Role in p_RoleList)
+                {
+                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
+                    {
+                        l_Color = l_UserRole.Color;
+                    }
+                }
+            }
+
+            return l_Color;
         }
 
         class CheckChannelAttribute : PreconditionAttribute

@@ -30,9 +30,6 @@ namespace BSDiscordRanking.Discord
 
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
             m_Client.Log += _client_Log;
-
-            
-
             await RegisterCommandsAsync();
             await m_Client.LoginAsync(TokenType.Bot, p_Config.DiscordToken);
             await m_Client.StartAsync();

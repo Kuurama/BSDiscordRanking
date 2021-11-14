@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 .AddField("Can i get playlist with only unpassed maps?",
                     $"Yes you can! To get them, *do the* `{ConfigController.GetConfig().CommandPrefix[0]}gupl all` *command!* (stands for !getunpassedplaylist [MapPoolNumber]")
                 .AddField("About the 'ranking'?",
-                    $"There is a leaderboard using the `{ConfigController.GetConfig().CommandPrefix[0]}ld` command! (or use `{ConfigController.GetConfig().CommandPrefix[0]}leaderboard`)\nEach pass you do give you `{ConfigController.GetConfig().PointsName}`, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
+                    $"There is a leaderboard using the `{ConfigController.GetConfig().CommandPrefix[0]}ld` command! (or use `{ConfigController.GetConfig().CommandPrefix[0]}leaderboard`)\nEach pass you do give you `{ConfigController.GetConfig().PassPointsName}`, those points are used to sort you on the leaderboard, the further you progress in the pools, the harder the maps are, the more points you get!")
                 .AddField("To see your progress through the ranking:", $"Type `{ConfigController.GetConfig().CommandPrefix[0]}progress`")
                 .AddField("How do i look at my profile?", $"```{ConfigController.GetConfig().CommandPrefix[0]}profile```");
             var l_Embed = l_Builder.Build();

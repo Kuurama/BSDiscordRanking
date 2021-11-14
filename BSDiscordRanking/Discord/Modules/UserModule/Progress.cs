@@ -87,7 +87,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 PlayerPassPerLevelFormat l_PlayerPassPerLevel = l_Player.GetPlayerPassPerLevel();
-
                 if (l_PlayerPassPerLevel == null)
                 {
                     Console.WriteLine($"Player {UserController.GetPlayer(Context.User.Id.ToString())} : l_PlayerPassPerLevel is null");
@@ -99,10 +98,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     List<string> l_Messages = new List<string> { "" };
                     if (l_PlayerPassPerLevel.Levels != null)
                     {
+                        Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_Player.GetPlayerLevel());
                         var l_Builder = new EmbedBuilder()
                             .WithTitle($"{l_Player.m_PlayerFull.playerInfo.playerName}'s Progress Tracker")
                             .WithDescription("Here is your current progress through the map pools:")
-                            .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                            .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar)
+                            .WithColor(l_Color);
                         foreach (var l_PerLevelFormat in l_PlayerPassPerLevel.Levels)
                         {
                             if (l_PerLevelFormat.NumberOfMapDiffInLevel > 0)

@@ -97,7 +97,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (l_IsDiscordLinked)
                 {
                     await ReplyAsync($"> :clock1: The bot will now update {l_ScoreSaberOrDiscordName}'s roles. This step can take a while. `(The bot should now be responsive again)`");
-                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_User.Id, l_NewPlayerLevel);
+                    var l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, l_User.Id, l_NewPlayerLevel);
                 }
             }
 

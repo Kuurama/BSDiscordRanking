@@ -56,7 +56,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (l_MyUser != null)
                 {
                     await ReplyAsync($"> :clock1: The bot will now update {l_MyUser.Username}'s roles. This step can take a while. `(The bot should now be responsive again)`");
-                    var l_RoleUpdate = UserController.UpdatePlayerLevel(Context, l_MyUser.Id, p_Level);
+                    var l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, l_MyUser.Id, p_Level);
                 }
 
                 else

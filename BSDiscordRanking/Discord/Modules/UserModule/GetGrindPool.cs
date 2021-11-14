@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using BSDiscordRanking.Formats.Player;
 using Discord;
@@ -21,7 +22,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             bool l_CheckForLastGGP = false;
             bool l_FullEmbeddedGGP = false;
             float l_EarnedPoints = 0f;
-            float l_MaximumPoints = 0f;
+            ConfigFormat l_Config = ConfigController.GetConfig();
+            float l_MaxPassPoints = 0f;
+            float l_MaxAccPoints = 0f;
+            
             if (Int32.TryParse(p_Embed1Or0, out int l_EmbedIntValue))
             {
                 l_FullEmbeddedGGP = l_EmbedIntValue > 0;
@@ -75,6 +79,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
                     l_Player.LoadStats();
+
                     if (l_Level.m_Level.songs.Count > 0)
                     {
                         foreach (var l_Song in l_Level.m_Level.songs.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
@@ -101,7 +106,50 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                         Score = 0,
                                         Rank = 0
                                     });
-                                l_MaximumPoints += l_Level.m_Level.customData.weighting * 0.375f;
+                                bool l_AccWeightAlreadySet = false;
+                                bool l_PassWeightAlreadySet = false;
+                                if (l_SongDifficulty.customData.forceManualWeight)
+                                {
+                                    if (!l_Config.OnlyAutoWeightForAccLeaderboard)
+                                    {
+                                        l_MaxAccPoints += 100f * 0.375f * l_SongDifficulty.customData.manualWeight;
+                                        l_AccWeightAlreadySet = true;
+                                    }
+
+                                    if (!l_Config.OnlyAutoWeightForPassLeaderboard)
+                                    {
+                                        l_MaxPassPoints += 0.375f * l_SongDifficulty.customData.manualWeight;
+                                        l_PassWeightAlreadySet = true;
+                                    }
+                                }
+
+                                if (l_SongDifficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
+                                {
+                                    if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard)
+                                    {
+                                        l_MaxAccPoints += 100f * 0.375f * l_SongDifficulty.customData.AutoWeight;
+                                        l_AccWeightAlreadySet = true;
+                                    }
+
+                                    if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard)
+                                    {
+                                        l_MaxPassPoints += 0.375f * l_SongDifficulty.customData.AutoWeight;
+                                        l_PassWeightAlreadySet = true;
+                                    }
+                                }
+
+                                if (l_Config.PerPlaylistWeighting)
+                                {
+                                    if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
+                                    {
+                                        l_MaxAccPoints += 100f * 0.375f * l_Level.m_Level.customData.weighting;
+                                    }
+
+                                    if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
+                                    {
+                                        l_MaxPassPoints += 0.375f * l_Level.m_Level.customData.weighting;
+                                    }
+                                }
                             }
 
                             if (l_PlayerPasses != null)
@@ -202,7 +250,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                        l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} ({ConfigController.GetConfig().PointsName} earned: {l_EarnedPoints}/{l_MaximumPoints}) {l_PlayerTrophy}");
+                        l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints.ToString("n2")}) {l_PlayerTrophy}");
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {

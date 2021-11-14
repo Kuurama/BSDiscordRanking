@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats;
 using BSDiscordRanking.Formats.API;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json;
@@ -83,9 +85,14 @@ namespace BSDiscordRanking.Controllers
             return false;
         }
 
-        public static async Task UpdatePlayerLevel(SocketCommandContext p_Context, ulong p_DiscordID, int p_Level)
+        public static async Task<UpdatePlayerRoleFormat> UpdatePlayerLevel(SocketCommandContext p_Context, ulong p_DiscordID, int p_Level)
         {
-            if (!UserExist(p_DiscordID.ToString())) return;
+            if (!UserExist(p_DiscordID.ToString()))
+                return new UpdatePlayerRoleFormat()
+                {
+                    Completed = false,
+                    RoleWasAlreadyGiven = false
+                };
             SocketGuildUser l_User = p_Context.Guild.GetUser(p_DiscordID);
             if (l_User != null)
             {
@@ -140,14 +147,57 @@ namespace BSDiscordRanking.Controllers
                 }
 
                 if (l_RolesChanged)
-                    await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{l_User.Id.ToString()}>, Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level).");
+                    return new UpdatePlayerRoleFormat()
+                    {
+                        Completed = true,
+                        RoleWasAlreadyGiven = false
+                    };
+                //await p_Context.Channel.SendMessageAsync($"> :ok_hand: <@{l_User.Id.ToString()}>, Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level).");
                 else
-                    await p_Context.Channel.SendMessageAsync($"> :x: This player already had all his roles.");
+                    return new UpdatePlayerRoleFormat()
+                    {
+                        Completed = true,
+                        RoleWasAlreadyGiven = true
+                    };
+                //await p_Context.Channel.SendMessageAsync($"> :x: This player already had all his roles.");
             }
             else
             {
-                Console.WriteLine("Can't find this user, make him type a message straight before using the command!");
+                return new UpdatePlayerRoleFormat()
+                {
+                    Completed = false,
+                    RoleWasAlreadyGiven = false
+                };
+                //Console.WriteLine("Can't find this user, makes him type a message straight before using the command!");
             }
+        }
+        
+        public static async Task UpdateRoleAndSendMessage(SocketCommandContext p_Context, ulong p_UserID, int p_NewPlayerLevel)
+        {
+             Task<UpdatePlayerRoleFormat> l_RoleUpdate = UserController.UpdatePlayerLevel(p_Context, p_UserID, p_NewPlayerLevel);
+             
+             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+             Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, p_NewPlayerLevel);
+             l_EmbedBuilder.WithColor(l_Color);
+             if (l_RoleUpdate.Result.Completed && l_RoleUpdate.Result.RoleWasAlreadyGiven)
+             {
+                 l_EmbedBuilder.WithDescription($"> :x: This player already had all his roles.");
+             }
+             else if (l_RoleUpdate.Result.Completed && !l_RoleUpdate.Result.RoleWasAlreadyGiven)
+             {
+                 l_EmbedBuilder.WithDescription($"> :ok_hand: Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level).");
+             }
+             else
+             {
+                 l_EmbedBuilder.WithDescription("Can't find this user, makes him type a message straight before using the command!");
+             }
+             await p_Context.Channel.SendMessageAsync($"<@{p_UserID}>", embed:l_EmbedBuilder.Build());
+        }
+
+        public class UpdatePlayerRoleFormat
+        {
+            public bool Completed { get; set; }
+            public bool RoleWasAlreadyGiven { get; set; }
         }
 
         public static bool GiveRemoveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context, bool p_Remove)
