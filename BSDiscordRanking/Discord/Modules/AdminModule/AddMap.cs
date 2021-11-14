@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (p_CustomPassText == "null")
                     p_CustomPassText = null;
 
-                if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
+                if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree" or "NoArrows")
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
@@ -112,10 +112,11 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                         }
                     }
                     else
-                        await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+                        await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
                 }
                 else
-                    await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                    await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree or NoArrows`\"");
+                    
             }
         }
     }

@@ -181,7 +181,7 @@ namespace BSDiscordRanking.Controllers
              l_EmbedBuilder.WithColor(l_Color);
              if (l_RoleUpdate.Result.Completed && l_RoleUpdate.Result.RoleWasAlreadyGiven)
              {
-                 l_EmbedBuilder.WithDescription($"> :x: This player already had all his roles.");
+                 l_EmbedBuilder.WithDescription($"> :x: This player already had all their roles.");
              }
              else if (l_RoleUpdate.Result.Completed && !l_RoleUpdate.Result.RoleWasAlreadyGiven)
              {

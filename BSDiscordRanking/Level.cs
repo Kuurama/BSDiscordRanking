@@ -82,6 +82,7 @@ namespace BSDiscordRanking
                                 customData = new MainCustomData
                                 {
                                     syncURL = m_SyncURL,
+                                    level = m_LevelID,
                                     weighting = 1f
                                 },
                                 image = new string("")
@@ -109,6 +110,7 @@ namespace BSDiscordRanking
                         customData = new MainCustomData
                         {
                             syncURL = m_SyncURL,
+                            level = m_LevelID,
                             weighting = 1f,
                             customPassText = null
                         },
@@ -315,6 +317,7 @@ namespace BSDiscordRanking
                                 characteristic = p_SelectedCharacteristic,
                                 customData = new DiffCustomData
                                 {
+                                    levelWorth = m_LevelID,
                                     leaderboardID = 0,
                                     minScoreRequirement = p_MinScoreRequirement,
                                     manualWeight = p_Weighting,

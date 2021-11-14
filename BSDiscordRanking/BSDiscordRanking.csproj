@@ -5,6 +5,8 @@
         <RootNamespace>BSDiscordRanking</RootNamespace>
         <OutputType>Exe</OutputType>
         <AssemblyName>BSDiscordRanking</AssemblyName>
+        <Configurations>Debug;Release;BSC</Configurations>
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <ItemGroup>

@@ -39,6 +39,7 @@ namespace BSDiscordRanking.Formats.Level
             set => m_SyncURL = String.IsNullOrEmpty(value) ? null : value;
         }
 
+        public int level { get; set; }
         public float weighting { get; set; }
 
         public string customPassText
@@ -53,6 +54,8 @@ namespace BSDiscordRanking.Formats.Level
         private string m_CustomPassText;
         private string m_Category;
         private string m_InfoOnGGP;
+        
+        public int levelWorth { get; set; }
         public int leaderboardID { get; set; }
         public float manualWeight { get; set; }
         public float AutoWeight { get; set; }
