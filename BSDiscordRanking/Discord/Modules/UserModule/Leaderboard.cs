@@ -14,14 +14,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Shows the Acc based leaderboard.")]
         public async Task AccLeaderboard(int p_Page = default)
         {
+            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
             AccLeaderboardController l_AccLeaderboardController = new AccLeaderboardController();
 
-            LeaderboardBuilderFormat l_AccLeaderboardBuilderFormat = BuildLeaderboard(l_AccLeaderboardController.m_Leaderboard, l_EmbedBuilder, p_Page);
+            LeaderboardBuilderFormat l_AccLeaderboardBuilderFormat = BuildLeaderboard(l_AccLeaderboardController.m_Leaderboard, l_ConfigFormat.AccPointsName, l_EmbedBuilder, p_Page);
             
             if (l_AccLeaderboardBuilderFormat.PageExist)
             {
-                l_EmbedBuilder.WithTitle($"{ConfigController.GetConfig().AccPointsName} Leaderboard:");
+                l_EmbedBuilder.WithTitle($"{l_ConfigFormat.AccPointsName} Leaderboard:");
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             }
             else
@@ -33,21 +34,22 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Shows the Pass based leaderboard.")]
         public async Task PassLeaderboard(int p_Page = default)
         {
+            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
             PassLeaderboardController l_PassLeaderboardController = new PassLeaderboardController();
 
-            LeaderboardBuilderFormat l_PassLeaderboardBuilderFormat = BuildLeaderboard(l_PassLeaderboardController.m_Leaderboard, l_EmbedBuilder, p_Page);
+            LeaderboardBuilderFormat l_PassLeaderboardBuilderFormat = BuildLeaderboard(l_PassLeaderboardController.m_Leaderboard, l_ConfigFormat.PassPointsName, l_EmbedBuilder, p_Page);
             
             if (l_PassLeaderboardBuilderFormat.PageExist)
             {
-                l_EmbedBuilder.WithTitle($"{ConfigController.GetConfig().PassPointsName} Leaderboard:");
+                l_EmbedBuilder.WithTitle($"{l_ConfigFormat.PassPointsName} Leaderboard:");
                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             }
             else
                 await ReplyAsync("> :x: Sorry, this page doesn't exist");
         }
 
-        private LeaderboardBuilderFormat BuildLeaderboard(LeaderboardControllerFormat p_LeaderboardController, EmbedBuilder p_EmbedBuilder, int p_Page)
+        private LeaderboardBuilderFormat BuildLeaderboard(LeaderboardControllerFormat p_LeaderboardController, string p_PointsName, EmbedBuilder p_EmbedBuilder, int p_Page)
         {
             if (p_Page == default)
             {
@@ -68,7 +70,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     var l_RankedPlayer = p_LeaderboardController.Leaderboard[l_Index];
                     p_EmbedBuilder.AddField(
-                        $"#{l_Index + 1} - {l_RankedPlayer.Name} : {l_RankedPlayer.Points} {ConfigController.GetConfig().AccPointsName}",
+                        $"#{l_Index + 1} - {l_RankedPlayer.Name} : {l_RankedPlayer.Points} {p_PointsName}",
                         $"Level: {l_RankedPlayer.Level}. [ScoreSaber Profile](https://scoresaber.com/u/{l_RankedPlayer.ScoreSaberID})");
                     l_PageExist = true;
                 }

@@ -207,7 +207,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             if (l_Config.EnableAccBasedLeaderboard && l_AccLeaderboardController is not null)
             {
                 if (l_AccFindIndex == -1)
-                    l_AccRankFieldValue = $":medal: #0 - 0 {l_Config.PassPointsName}";
+                    l_AccRankFieldValue = $":medal: #0 - 0 {l_Config.AccPointsName}";
 
                 else
                     l_AccRankFieldValue = $":medal: #{l_AccFindIndex + 1} - {l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_AccFindIndex].Points} {l_Config.AccPointsName}";
