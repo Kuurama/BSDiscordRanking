@@ -25,7 +25,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             ConfigFormat l_Config = ConfigController.GetConfig();
             float l_MaxPassPoints = 0f;
             float l_MaxAccPoints = 0f;
-            
             if (Int32.TryParse(p_Embed1Or0, out int l_EmbedIntValue))
             {
                 l_FullEmbeddedGGP = l_EmbedIntValue > 0;
@@ -66,8 +65,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_IDExist)
             {
-                
-                
                 Level l_Level = new Level(p_Level);
                 try
                 {
@@ -254,7 +251,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                     }
 
-                    l_Player.ReWriteStats();
                     if (l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -275,9 +271,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             await Context.Channel.SendMessageAsync("", false, l_GGP.EmbedBuilder.Build());
                         }
-
-                        l_Player.SetGrindInfo(p_Level, l_LevelIsPassed, -1, l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy, -1, -1, -1);
+                        
+                        l_Player.m_PlayerStats.Levels[l_LevelIndex].Passed = l_LevelIsPassed;
                     }
+                    
+                    l_Player.ReWriteStats();
 
                     List<string> l_Messages = new List<string> { $"" }; /// Reset the Message between Passed and Unpassed maps
 
@@ -327,6 +325,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             string l_LastMessage = null;
             int l_MessagesIndex = 0;
             List<string> l_Messages = new List<string> { "" };
+
             int l_MessageTotalLength = 0;
             foreach (var l_Map in p_PlayerPassFormat.SongList)
             {

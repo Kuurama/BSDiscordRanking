@@ -675,7 +675,6 @@ namespace BSDiscordRanking
 
                                                                     l_Passes++;
                                                                     l_PassesPerLevel++;
-                                                                    SetGrindInfo(l_Level.index, true, -1, null, -1, -1, -1); /// Mean the Player passed that level.
                                                                 }
                                                                 else
                                                                 {
@@ -752,7 +751,6 @@ namespace BSDiscordRanking
 
                                                             l_Passes++;
                                                             l_PassesPerLevel++;
-                                                            SetGrindInfo(l_Level.value.m_LevelID, true, -1, null, -1, -1, -1); /// Mean the Player passed that level.
                                                         }
                                                         else
                                                         {
@@ -842,39 +840,30 @@ namespace BSDiscordRanking
                             {
                                 case 0:
                                 {
-                                    SetGrindInfo(l_Level.value.m_LevelID, false, -1, null, -1, -1, -1);
                                     break;
                                 }
                                 case <= 39:
                                 {
                                     l_Plastic = 1;
-                                    SetGrindInfo(l_Level.value.m_LevelID, true, -1, null, -1, -1, -1);
                                     break;
                                 }
                                 case <= 69:
                                 {
                                     l_Silver = 1;
-                                    SetGrindInfo(l_Level.value.m_LevelID, true, -1, null, -1, -1, -1);
                                     break;
                                 }
                                 case <= 99:
                                 {
                                     l_Gold = 1;
-                                    SetGrindInfo(l_Level.value.m_LevelID, true, -1, null, -1, -1, -1);
                                     break;
                                 }
 
                                 case 100:
                                 {
                                     l_Diamond = 1;
-                                    SetGrindInfo(l_Level.value.m_LevelID, true, -1, null, -1, -1, -1);
                                     break;
                                 }
                             }
-                        }
-                        else
-                        {
-                            SetGrindInfo(l_Level.value.m_LevelID, false, -1, null, -1, -1, -1);
                         }
 
                         if (l_PassesPerLevel > 0 && (m_PlayerStats.IsFirstScan > 0))
@@ -891,28 +880,33 @@ namespace BSDiscordRanking
 
 
                             /// Display new pass on first scan message.
-                            if (ConfigController.GetConfig().PerPlaylistWeighting)
+                            if (l_Config.PerPlaylistWeighting)
                             {
                                 l_Messages[l_MessagesIndex] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value}** (+{l_Weighting * 0.375f * l_PassesPerLevel} {l_Config.PassPointsName})\n";
                             }
                         }
 
-                        l_Trophy.Plastic = l_Plastic;
-                        l_Trophy.Silver = l_Silver;
-                        l_Trophy.Gold = l_Gold;
-                        l_Trophy.Diamond = l_Diamond;
+                        l_Trophy = new Trophy()
+                        {
+                            Plastic = l_Plastic,
+                            Silver = l_Silver,
+                            Gold = l_Gold,
+                            Diamond = l_Diamond,
+                        };
                         l_Plastic = 0;
                         l_Silver = 0;
                         l_Gold = 0;
                         l_Diamond = 0;
 
-                        if (m_PlayerStats.Levels is not null)
+                        if (m_PlayerStats.Levels is not null) /// If it is maybe you forgot to LoadStats()?
                         {
+                            // ReSharper disable once SuggestVarOrType_BuiltInTypes
                             int l_PlayerLevelIndex = m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_Level.value.m_LevelID);
-
-
                             if (l_PlayerLevelIndex >= 0)
                             {
+                                if (l_PassesPerLevel > 0)
+                                    m_PlayerStats.Levels[l_PlayerLevelIndex].Passed = true;
+
                                 m_PlayerStats.Levels[l_PlayerLevelIndex].Trophy = l_Trophy;
                             }
                             else
@@ -937,7 +931,6 @@ namespace BSDiscordRanking
                                 }
                             }
                         }
-
 
                         ReWriteStats();
 
@@ -1238,7 +1231,7 @@ namespace BSDiscordRanking
                     Console.WriteLine($"This player don't have any stats yet");
                 }
 
-                if (m_PlayerStats.Levels is null)
+                if (m_PlayerStats is { Levels: null })
                 {
                     m_PlayerStats.Levels = new List<PassedLevel>()
                     {
@@ -1425,81 +1418,6 @@ namespace BSDiscordRanking
                 return null;
 
             return l_PlayerPassPerLevelFormat;
-        }
-
-        public void SetGrindInfo(int p_LevelID, bool p_Passed, int p_NumberOfPass, Trophy p_Trophy, float p_PassPoints, float p_AccPoints, short p_IsFirstScan)
-        {
-            if (m_PlayerID != null)
-            {
-                LoadStats();
-                try
-                {
-                    if (p_IsFirstScan >= 0)
-                    {
-                        m_PlayerStats.IsFirstScan = p_IsFirstScan;
-                    }
-
-                    if (p_LevelID >= 0)
-                    {
-                        if (m_PlayerStats.Levels is not null)
-                        {
-                            int l_LevelIndex = m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_LevelID);
-                            if (l_LevelIndex >= 0)
-                            {
-                                m_PlayerStats.Levels[l_LevelIndex].Passed = p_Passed;
-                            }
-                            else
-                            {
-                                m_PlayerStats.Levels.Add(new PassedLevel()
-                                {
-                                    LevelID = p_LevelID,
-                                    Passed = p_Passed,
-                                    Trophy = new Trophy()
-                                    {
-                                        Plastic = 0,
-                                        Silver = 0,
-                                        Gold = 0,
-                                        Diamond = 0
-                                    }
-                                });
-                            }
-                        }
-                    }
-
-                    if (p_NumberOfPass >= 0)
-                    {
-                        m_PlayerStats.TotalNumberOfPass = p_NumberOfPass;
-                    }
-
-                    if (p_Trophy != null)
-                    {
-                        if (m_PlayerStats.Levels is not null)
-                        {
-                            int l_LevelIndex = m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_LevelID);
-                            if (l_LevelIndex >= 0)
-                            {
-                                m_PlayerStats.Levels[l_LevelIndex].Trophy = p_Trophy;
-                            }
-                        }
-                    }
-
-                    if (p_PassPoints >= 0)
-                    {
-                        m_PlayerStats.PassPoints = p_PassPoints;
-                    }
-
-                    if (p_AccPoints >= 0)
-                    {
-                        m_PlayerStats.AccPoints = p_AccPoints;
-                    }
-
-                    ReWriteStats();
-                }
-                catch (Exception l_Exception)
-                {
-                    Console.WriteLine($"SetGrindInfo : {l_Exception.Message}");
-                }
-            }
         }
     }
 }

@@ -32,7 +32,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result} new maps!\n");
                     if (l_FirsScan)
                     {
-                        l_EmbedBuilder.AddField("\u200B", $"To see your progress through the pools, *try the* `{ConfigController.GetConfig().CommandPrefix[0]}progress` *command.*\nAnd to check your profile, *use the* `{ConfigController.GetConfig().CommandPrefix[0]}profile` *command.*\n> You might also want to take the pools playlist:");
+                        l_EmbedBuilder.AddField("\u200B", $"To see your progress through the pools, *try the* `{BotHandler.m_Prefix}progress` *command.*\nAnd to check your profile, *use the* `{BotHandler.m_Prefix}profile` *command.*\n> You might also want to take the pools playlist:");
                     }
                 }
                 else
@@ -82,7 +82,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 };
                 foreach (var l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
                 {
-                    l_PlayerStatsLevel.Trophy ??= new Trophy();
+                    l_PlayerStatsLevel.Trophy ??= new Trophy()
+                    {
+                        Plastic = 0,
+                        Silver = 0,
+                        Gold = 0,
+                        Diamond = 0
+                    };
                     l_TotalTrophy.Plastic += l_PlayerStatsLevel.Trophy.Plastic;
                     l_TotalTrophy.Silver += l_PlayerStatsLevel.Trophy.Silver;
                     l_TotalTrophy.Gold += l_PlayerStatsLevel.Trophy.Gold;
