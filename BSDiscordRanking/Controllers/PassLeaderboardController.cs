@@ -136,7 +136,19 @@ namespace BSDiscordRanking.Controllers
 
                     m_Leaderboard.Leaderboard.Add(l_RankedPlayer);
                     ReWriteLeaderboard();
-                    return null;
+                    return new SnipeFormat()
+                    {
+                        Player = new Sniped()
+                        {
+                            NewRank = 0,
+                            OldRank = 0,
+                            DiscordID = UserController.GetDiscordID(p_ScoreSaberID),
+                            Name = p_Name,
+                            IsPingAllowed = false,
+                            ScoreSaberID = p_ScoreSaberID
+                        },
+                        SnipedByPlayers = new List<Sniped>()
+                    };
                 }
                 else
                 {

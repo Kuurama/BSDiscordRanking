@@ -77,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     bool l_AlreadyHaveThumbnail = UserController.GetPlayer(Context.User.Id.ToString()) == null;
 
                     PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
-                    l_Player.LoadStats();
+                    l_Player.GetStats();
                     int l_LevelIndex = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_Level);
                     if (l_LevelIndex < 0)
                     {

@@ -49,7 +49,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
                         if (l_DiffExist)
                         {
-                            LevelController.MapExistFormat l_MapExistCheck = new LevelController().MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight);
+                            LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight);
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, Context);

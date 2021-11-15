@@ -20,11 +20,9 @@ namespace BSDiscordRanking
 {
     public class Player
     {
-        private const int ERROR_LIMIT = 3;
-        private int m_ErrorNumber = 0;
         private bool m_HavePlayerInfo = false;
         private LevelControllerFormat m_LevelController;
-        private int m_NumberOfTry = 0;
+        private static string m_FolderPath = @"./Players/";
         private string m_Path;
         public ApiPlayerFull m_PlayerFull;
         private string m_PlayerID;
@@ -37,7 +35,7 @@ namespace BSDiscordRanking
             m_PlayerID = p_PlayerID;
             if (m_PlayerID != null)
             {
-                m_Path = @$"./Players/{m_PlayerID}/";
+                m_Path = $"{m_FolderPath}{m_PlayerID}/";
                 Console.WriteLine($"Selected Path is {m_Path}");
             }
             else
@@ -48,20 +46,54 @@ namespace BSDiscordRanking
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
             GetInfos(); ///< Get Full Player Info.
+                        
+            LoadStats();
 
-            CreateDirectory(); ///< Make the score file's directory.
+            JsonDataBaseController.CreateDirectory(m_Path); ///< Make the player's scores file's directory.
 
             OpenSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
 
+            m_LevelController = LevelController.GetLevelControllerCache();
+
             ///////////////////////////////////////////////////////////////////////////////////////
         }
-
+        
         public int GetPlayerLevel()
         {
             if (m_PlayerID != null)
             {
                 int l_PlayerLevel = 0;
-                PlayerStatsFormat l_PlayerStats = GetStats();
+                if (m_PlayerStats is null)
+                    return 0;
+                
+                if (m_PlayerStats.Levels is not null)
+                {
+                    m_PlayerStats.Levels = m_PlayerStats.Levels.OrderBy(p_X => p_X.LevelID).ToList();
+
+                    foreach (var l_Level in m_PlayerStats.Levels)
+                    {
+                        if (l_Level.LevelID >= 0)
+                        {
+                            if (l_Level.Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                l_PlayerLevel = l_Level.LevelID;
+                            else
+                                break;
+                        }
+                    }
+
+                    return l_PlayerLevel;
+                }
+            }
+
+            return 0;
+        }
+
+        public static int GetStaticPlayerLevel(string p_PlayerID)
+        {
+            if (p_PlayerID != null)
+            {
+                int l_PlayerLevel = 0;
+                PlayerStatsFormat l_PlayerStats = GetStaticStats(p_PlayerID);
                 if (l_PlayerStats.Levels is not null)
                 {
                     l_PlayerStats.Levels = l_PlayerStats.Levels.OrderBy(p_X => p_X.LevelID).ToList();
@@ -79,15 +111,9 @@ namespace BSDiscordRanking
 
                     return l_PlayerLevel;
                 }
-                else
-                {
-                    return 0;
-                }
             }
-            else
-            {
-                return 0;
-            }
+
+            return 0;
         }
 
         public string GetPlayerID()
@@ -95,7 +121,7 @@ namespace BSDiscordRanking
             return m_PlayerID;
         }
 
-        private void GetInfos()
+        private void GetInfos(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             /// This Method Get the Player's Info from the api, then Deserialize it to m_PlayerFull for later usage.
             /// It handle most of the exceptions possible
@@ -104,7 +130,7 @@ namespace BSDiscordRanking
             /// and it mean the Score Saber ID is wrong.
             if (m_PlayerID != null)
             {
-                if (m_ErrorNumber < ERROR_LIMIT)
+                if (p_TryLimit > 0)
                 {
                     using (WebClient l_WebClient = new WebClient())
                     {
@@ -130,58 +156,19 @@ namespace BSDiscordRanking
                                 if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
                                 {
                                     Console.WriteLine("Wrong Profile ID, Please contact an administrator");
-                                    m_NumberOfTry = 6;
-                                    m_ErrorNumber = 6;
+                                    return;
                                 }
                             }
                             else ///< Request Error => Internet or ScoreSaber API Down.
                             {
                                 if (!CheckScoreSaberAPI_Response("Player Full")) ///< Checking if ScoreSaber Api Return.
                                 {
-                                    if (m_NumberOfTry <= 5)
-                                    {
-                                        Console.WriteLine(
-                                            $"Retrying to get PLayer's Info in 30 sec : {m_NumberOfTry} out of 5 try");
-                                        m_NumberOfTry++;
-                                        Thread.Sleep(30000);
-                                        GetInfos();
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("No try left, Canceling GetPLayerInfo()");
-                                    }
+                                    p_TryLimit--;
+                                    Console.WriteLine($"Retrying to get PLayer's Info in 30 sec : {p_TryLimit} try left");
+                                    Thread.Sleep(30000);
+                                    GetInfos(p_TryLimit, p_TryTimeout);
                                 }
                             }
-                        }
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                    Console.WriteLine("Please Contact an Administrator.");
-                }
-            }
-        }
-
-        private void CreateDirectory()
-        {
-            /// This Method Create the Directory needed to save and load the Player's score cache file from it's Path parameter.
-            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-            if (m_PlayerID != null)
-            {
-                if (m_ErrorNumber < ERROR_LIMIT)
-                {
-                    if (!Directory.Exists(m_Path))
-                    {
-                        try
-                        {
-                            Directory.CreateDirectory(m_Path);
-                            Console.WriteLine($"Directory {m_Path} Created");
-                        }
-                        catch (Exception l_Exception)
-                        {
-                            Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
-                            m_ErrorNumber++;
                         }
                     }
                 }
@@ -204,41 +191,32 @@ namespace BSDiscordRanking
 
             if (m_PlayerID != null)
             {
-                if (m_ErrorNumber < ERROR_LIMIT)
+                if (!Directory.Exists(m_Path))
                 {
-                    if (!Directory.Exists(m_Path))
-                    {
-                        Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
-                        CreateDirectory();
-                        Console.WriteLine("Continuing Loading Player's Score(s)");
-                    }
+                    Console.WriteLine("Seems like you forgot to Create the Player Directory, returned");
+                    return;
+                }
 
-                    try
+                try
+                {
+                    using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
                     {
-                        using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
-                        {
-                            m_PlayerScore = JsonSerializer.Deserialize<ApiScores>(l_SR.ReadToEnd());
-                            Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        m_PlayerScore = new ApiScores()
-                        {
-                            scores = new List<ApiScore>()
-                        };
-                        Console.WriteLine($"Player {m_PlayerID} Created (Empty Format) => (Nothing to load/Wrong Format)");
+                        m_PlayerScore = JsonSerializer.Deserialize<ApiScores>(l_SR.ReadToEnd());
+                        Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
                     }
                 }
-                else
+                catch (Exception)
                 {
-                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                    Console.WriteLine("Please Contact an Administrator.");
+                    m_PlayerScore = new ApiScores()
+                    {
+                        scores = new List<ApiScore>()
+                    };
+                    Console.WriteLine($"Player {m_PlayerID} Created (Empty Format) => (Nothing to load/Wrong Format)");
                 }
             }
         }
 
-        public bool FetchScores(SocketCommandContext p_Context = null)
+        public bool FetchScores(SocketCommandContext p_Context = null, int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             /// If First Launch : It get ALL the player's score from the api then cache it to a score file. (mean there isn't any cache file yet)
             /// This Method Get the Player's Scores from the api, then call ReWriteScore() to Serialize them into a cache's file.
@@ -255,157 +233,131 @@ namespace BSDiscordRanking
             /// If there is an issue with the scores's downloading and the cache miss some scores,
             /// run ClearScore() and try again downloading all Scores with that method (will act as "First Launch").
 
-            if (m_PlayerID != null)
+            if (m_PlayerID == null) return false;
+
+            if (p_TryLimit > 0)
             {
-                if (m_ErrorNumber < ERROR_LIMIT)
+                if (m_PlayerStats.IsFirstScan)
                 {
-                    if (m_PlayerStats.IsFirstScan > 0)
-                    {
-                        if (p_Context != null)
-                            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> First Time Fetching player scores (downloading all of your passes once), this step will take a while! The bot will be unresponsive during the process.");
-                    }
+                    p_Context?.Channel.SendMessageAsync("> <:clock1:868188979411959808> First Time Fetching player scores (downloading all of your passes once), this step will take a while! The bot will be unresponsive during the process.");
+                }
 
-                    else
-                    {
-                        if (p_Context != null)
-                            p_Context.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot will be unresponsive during the process.");
-                    }
+                else
+                {
+                    p_Context?.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot will be unresponsive during the process.");
+                }
 
-                    if (m_HavePlayerInfo) /// Check if Player have Player's Info
+                if (m_HavePlayerInfo) /// Check if Player have Player's Info
+                {
+                    if (m_PlayerScore != null)
                     {
-                        if (m_PlayerScore != null)
+                        ApiScores l_Result; ///< Result From Request but Serialized.
+                        string l_URL;
+                        int l_Page = 1;
+                        int l_NumberOfAddedScore = 0;
+                        bool l_Skip = false;
+                        /// Avoid doing useless attempt, Check player's number of score (8 score per request).
+                        while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
                         {
-                            ApiScores l_Result; ///< Result From Request but Serialized.
-                            string l_URL;
-                            int l_Page = 1;
-                            int l_NumberOfAddedScore = 0;
-                            bool l_Skip = false;
-                            /// Avoid doing useless attempt, Check player's number of score (8 score per request).
-                            while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
+                            l_URL = @$"https://new.scoresaber.com/api/player/{m_PlayerFull.playerInfo.playerId}/scores/recent/{l_Page.ToString()}";
+                            using (WebClient l_WebClient = new WebClient())
                             {
-                                l_URL = @$"https://new.scoresaber.com/api/player/{m_PlayerFull.playerInfo.playerId}/scores/recent/{l_Page.ToString()}";
-                                using (WebClient l_WebClient = new WebClient())
+                                try
                                 {
-                                    try
+                                    Console.WriteLine(l_URL);
+                                    l_Result = JsonSerializer.Deserialize<ApiScores>(l_WebClient.DownloadString(l_URL));
+                                    l_Page++;
+
+                                    // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+                                    foreach (var l_PlayerScore in m_PlayerScore.scores)
                                     {
-                                        Console.WriteLine(l_URL);
-                                        l_Result = JsonSerializer.Deserialize<ApiScores>(l_WebClient.DownloadString(l_URL));
-                                        l_Page++;
+                                        if (l_Skip)
+                                            break; ///< break the for and l_Skip will cause the end of the While Loop.
+                                        if (l_Result == null) continue;
 
-                                        int l_Index = 0;
-
-                                        for (int i = 0; i < m_PlayerScore.scores.Count; i++)
+                                        if (l_Result.scores.Any(p_ResultScore => p_ResultScore.timeSet == l_PlayerScore.timeSet))
                                         {
-                                            if (l_Skip)
-                                                break; ///< break the for and l_Skip will cause the end of the While Loop.
-                                            if (l_Result != null)
-                                                for (l_Index = 0; l_Index < l_Result.scores.Count; l_Index++)
-                                                {
-                                                    if (l_Result.scores[l_Index].timeSet == m_PlayerScore.scores[i].timeSet)
-                                                    {
-                                                        l_Skip = true; ///< One score already exist (will end the While Loop)
-                                                        break;
-                                                    }
-                                                }
+                                            l_Skip = true; ///< One score already exist (will end the While Loop)
+                                        }
+                                    }
+
+                                    if (l_Result != null)
+                                        foreach (var l_NewScore in l_Result.scores.Where(p_NewScore =>
+                                            m_PlayerScore.scores.RemoveAll(p_X => p_X.leaderboardId == p_NewScore.leaderboardId && p_X.score != p_NewScore.score) > 0
+                                            || !(m_PlayerScore.scores.Any(p_X => p_X.leaderboardId == p_NewScore.leaderboardId))))
+                                        {
+                                            m_PlayerScore.scores.Add(l_NewScore);
+                                            l_NumberOfAddedScore++;
+                                        }
+                                }
+                                catch (WebException l_E)
+                                {
+                                    if (l_E.Response is HttpWebResponse l_Response)
+                                    {
+                                        Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
+                                        if (l_Response.StatusCode == HttpStatusCode.NotFound)
+                                        {
+                                            Console.WriteLine($"No more Page to download, Downloaded {l_Page} Page(s)");
+                                            break;
                                         }
 
-                                        if (l_Result != null)
-                                            foreach (var l_NewScore in l_Result.scores) /// Remove old score and add new score.
-                                            {
-                                                if (m_PlayerScore.scores.RemoveAll(p_X => p_X.leaderboardId == l_NewScore.leaderboardId && p_X.score != l_NewScore.score) > 0 || !(m_PlayerScore.scores.Any(p_X => p_X.leaderboardId == l_NewScore.leaderboardId)))
-                                                {
-                                                    m_PlayerScore.scores.Add(l_NewScore);
-                                                    l_NumberOfAddedScore++;
-                                                }
-                                            }
-                                    }
-                                    catch (WebException l_E)
-                                    {
-                                        if (l_E.Response is HttpWebResponse l_Response)
+                                        if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
                                         {
-                                            Console.WriteLine("Status Code : {0}", l_Response.StatusCode);
-                                            if (l_Response.StatusCode == HttpStatusCode.NotFound)
+                                            p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 50s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
+                                            Thread.Sleep(50000);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (!CheckScoreSaberAPI_Response("Player Score"))
+                                        {
+                                            Console.WriteLine($"But {l_NumberOfAddedScore} new Score(s) will be Added");
+                                            if (p_TryLimit <= 0)
                                             {
-                                                Console.WriteLine($"No more Page to download, Downloaded {l_Page} Page(s)");
-                                                break;
+                                                Console.WriteLine("OK Internet is Dead, Stopped Fetching Score.");
+                                                break; /// End the While Loop.
                                             }
 
-                                            if (l_Response.StatusCode == HttpStatusCode.TooManyRequests)
-                                            {
-                                                p_Context.Channel.SendMessageAsync($"> <:clock1:868188979411959808> The bot got rate-limited, it will continue after 50s. (Page {l_Page} out of {m_PlayerFull.scoreStats.totalPlayCount / 8})");
-                                                Thread.Sleep(50000);
-                                            }
+                                            p_TryLimit--;
+                                            Console.WriteLine($"Retrying to Fetch Player's Scores in 30 sec : {p_TryLimit} try left.");
+                                            Thread.Sleep(30000);
                                         }
                                         else
                                         {
-                                            if (!CheckScoreSaberAPI_Response("Player Score"))
-                                            {
-                                                Console.WriteLine($"But {l_NumberOfAddedScore} new Score(s) will be Added");
-                                                if (m_NumberOfTry > 5)
-                                                {
-                                                    Console.WriteLine("OK Internet is Dead, Stopped Fetching Score.");
-                                                    break; /// End the While Loop.
-                                                }
-
-                                                Console.WriteLine(
-                                                    $"Retrying to Fetch Player's Scores in 30 sec : {m_NumberOfTry} out of 5 try");
-                                                m_NumberOfTry++;
-                                                Thread.Sleep(30000);
-                                            }
-                                            else
-                                            {
-                                                m_NumberOfTry = 6;
-                                                break;
-                                            }
+                                            p_TryLimit = 0;
+                                            break;
                                         }
                                     }
                                 }
                             }
+                        }
 
-                            if (l_Skip)
-                                Console.WriteLine($"Fetched {l_Page - 1} pages");
-                            else
-                                Console.WriteLine($"Fetched {l_Page} pages");
-                            Console.WriteLine($"{l_NumberOfAddedScore} new Score(s) Added");
-                            ReWriteScore(); /// Caching the Score from the player instance.
-                        }
-                        else
-                        {
-                            Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
-                            OpenSavedScore();
-                            FetchScores();
-                        }
+                        Console.WriteLine(l_Skip ? $"Fetched {l_Page - 1} pages" : $"Fetched {l_Page} pages");
+                        Console.WriteLine($"{l_NumberOfAddedScore} new Score(s) Added");
+                        ReWriteScore(); /// Caching the Score from the player instance.
                     }
-                    else /// If Player don't have player's info => Trying to get Player's Info
-                    {
-                        if (m_NumberOfTry <= 5)
-                        {
-                            GetInfos();
-                            FetchScores();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Stopped Getting Player Info, canceling.");
-                            m_ErrorNumber = 6;
-                        }
-                    }
-
-                    if (m_PlayerStats.IsFirstScan > 0)
-                        return true;
                     else
-                        return false;
+                    {
+                        Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
+                        OpenSavedScore();
+                        FetchScores();
+                    }
                 }
-                else
+                else /// If Player don't have player's info => Trying to get Player's Info
                 {
-                    Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                    Console.WriteLine("Please Contact an Administrator.");
+                    Console.WriteLine("Player Is Missing player's info. Returned");
                 }
+
+                return m_PlayerStats.IsFirstScan;
             }
+
+            Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+            Console.WriteLine("Please Contact an Administrator.");
 
             return false;
         }
 
-        private void ReWriteScore()
+        private void ReWriteScore(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             /// This Method Serialise the data from m_PlayerScore and cache it to a file depending on the path parameter
             /// Be Aware that it will replace the current cache file (if there is any), it shouldn't be an issue
@@ -414,7 +366,7 @@ namespace BSDiscordRanking
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
             if (m_PlayerID != null)
             {
-                if (m_ErrorNumber < ERROR_LIMIT)
+                if (p_TryLimit > 0)
                 {
                     try
                     {
@@ -443,13 +395,10 @@ namespace BSDiscordRanking
                     }
                     catch
                     {
-                        Console.WriteLine(
-                            "An error occured While attempting to Write the Player's Cache. (missing directory?)");
-                        Console.WriteLine("Attempting to create the directory..");
-                        m_ErrorNumber++;
-                        CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                        Thread.Sleep(200);
-                        ReWriteScore();
+                        p_TryLimit--;
+                        Console.WriteLine($"An error occured While attempting to Write the Player's Cache. (missing directory?), {p_TryLimit} try left.");
+                        Thread.Sleep(p_TryTimeout);
+                        ReWriteScore(p_TryLimit);
                     }
                 }
                 else
@@ -479,7 +428,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private bool CheckScoreSaberAPI_Response(string p_ApiRequestType) /// Return True if ScoreSaber API is Up.
+        private static bool CheckScoreSaberAPI_Response(string p_ApiRequestType) /// Return True if ScoreSaber API is Up.
         {
             /// <summary>
             /// This Method Check if the Score Saber's API return "hey",
@@ -496,11 +445,9 @@ namespace BSDiscordRanking
             {
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
                 {
-                    Console.WriteLine(
-                        l_WebClient.DownloadString("https://new.scoresaber.com/api/").Contains("hey")
+                    Console.WriteLine(l_WebClient.DownloadString("https://new.scoresaber.com/api/").Contains("hey")
                             ? $"Internet OK, Score Saber {p_ApiRequestType} API must have changed, please contact an administrator"
                             : "Internet OK, Score Saber API response is Weird, something must have changed, please contact an administrator");
-                    m_NumberOfTry = 6;
                     return true;
                 }
                 catch (WebException l_WebException) /// Score Saber Global API Down or Internet Error.
@@ -511,17 +458,6 @@ namespace BSDiscordRanking
                 }
             }
         }
-
-        private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless.
-        {
-            /// <summary>
-            /// This Method Reset m_RetryNumber to 0, because if that number exceed m_RetryLimit, all the "dangerous" method will be locked.
-            /// </summary>
-
-            m_ErrorNumber = 0;
-            Console.WriteLine("RetryNumber set to 0");
-        }
-
 
         public async Task<int> FetchPass(SocketCommandContext p_Context = null)
         {
@@ -538,18 +474,14 @@ namespace BSDiscordRanking
                 float l_Weighting = 0f;
                 string l_DifficultyShown = "";
                 ConfigFormat l_Config = ConfigController.GetConfig();
-                int l_OldPlayerFirstScanStatus = m_PlayerStats.IsFirstScan;
+                bool l_OldPlayerFirstScanStatus = m_PlayerStats.IsFirstScan;
                 bool l_DiffGotLeaderboardID = false;
                 bool l_DiffGotNewAutoWeight = false;
                 int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
-                Trophy l_Trophy = new Trophy();
                 List<string> l_Messages = new List<string> { "" };
-                List<int> l_ExistingLevelID = new List<int>();
                 int l_BiggerLevelID = Int32.MinValue;
                 bool l_AboveLVLFourteenPass = false; /// Funny
-                var l_LevelController = new LevelController(); /// Constructor makes levelcontroller FetchLevel()
                 int l_OldPlayerLevel = GetPlayerLevel();
-                LoadLevelControllerCache();
                 PlayerPassFormat l_OldPlayerPass = ReturnPass();
                 m_PlayerPass = new PlayerPassFormat
                 {
@@ -568,23 +500,6 @@ namespace BSDiscordRanking
                 {
                     foreach (var l_Level in l_Levels.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
                     {
-                        l_Weighting = 0f;
-                        // l_LevelExist = false;
-                        // foreach (var l_ID in l_ExistingLevelID)
-                        // {
-                        //     if (l_ID - 1 == l_Y)
-                        //     {
-                        //         l_LevelExist = true;
-                        //         break;
-                        //     }
-                        // }
-                        //
-                        // if (!l_LevelExist)
-                        // {
-                        //     SetGrindInfo(l_Y+1, false, -1, null, -1, -1, -1); /// Allow Level unrank on level removing
-                        //     continue;
-                        // }
-
                         l_Weighting = l_Level.value.m_Level.customData.weighting;
                         foreach (var l_Song in l_Level.value.m_Level.songs)
                         {
@@ -649,7 +564,7 @@ namespace BSDiscordRanking
                                                                 if (!l_OldDiffExist)
                                                                 {
                                                                     l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
-                                                                    if (m_PlayerStats.IsFirstScan <= 0)
+                                                                    if (m_PlayerStats.IsFirstScan)
                                                                     {
                                                                         if (l_Messages[l_MessagesIndex].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                                 .Length
@@ -723,7 +638,7 @@ namespace BSDiscordRanking
                                                         if (!l_WasStored)
                                                         {
                                                             l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
-                                                            if (m_PlayerStats.IsFirstScan <= 0)
+                                                            if (m_PlayerStats.IsFirstScan)
                                                             {
                                                                 if (l_Messages[l_MessagesIndex].Length >
                                                                     1900 -
@@ -866,7 +781,7 @@ namespace BSDiscordRanking
                             }
                         }
 
-                        if (l_PassesPerLevel > 0 && (m_PlayerStats.IsFirstScan > 0))
+                        if (l_PassesPerLevel > 0 && (m_PlayerStats.IsFirstScan))
                         {
                             if (l_Messages[l_MessagesIndex].Length > 1900 - $"".Length)
                             {
@@ -886,7 +801,7 @@ namespace BSDiscordRanking
                             }
                         }
 
-                        l_Trophy = new Trophy()
+                        Trophy l_Trophy = new Trophy()
                         {
                             Plastic = l_Plastic,
                             Silver = l_Silver,
@@ -898,7 +813,7 @@ namespace BSDiscordRanking
                         l_Gold = 0;
                         l_Diamond = 0;
 
-                        if (m_PlayerStats.Levels is not null) /// If it is maybe you forgot to LoadStats()?
+                        if (m_PlayerStats.Levels is not null) /// If it is maybe you forgot to GetStats()?
                         {
                             // ReSharper disable once SuggestVarOrType_BuiltInTypes
                             int l_PlayerLevelIndex = m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_Level.value.m_LevelID);
@@ -959,7 +874,7 @@ namespace BSDiscordRanking
 
                     m_PlayerStats.PassPoints = l_TotalPassPoints;
                     m_PlayerStats.AccPoints = l_TotalAccPoints;
-                    m_PlayerStats.IsFirstScan = 0;
+                    m_PlayerStats.IsFirstScan = false;
                     m_PlayerStats.TotalNumberOfPass = l_TotalAmountOfPass;
                     ReWriteStats();
 
@@ -972,7 +887,14 @@ namespace BSDiscordRanking
                         foreach (var l_Message in l_Messages)
                         {
                             var l_Builder = new EmbedBuilder();
-                            if (l_IsFirstMessage) l_Builder.WithTitle(l_OldPlayerFirstScanStatus > 0 ? "You passed maps in the following levels:" : "You passed the following maps:");
+                            if (l_IsFirstMessage)
+                            {
+                                if (l_OldPlayerFirstScanStatus)
+                                {
+                                    l_Builder.WithTitle("You passed maps in the following levels:");
+                                    l_Builder.WithTitle("You passed the following maps:");
+                                }
+                            }
 
                             l_IsFirstMessage = false;
                             l_Builder.WithDescription(l_Message);
@@ -1009,9 +931,7 @@ namespace BSDiscordRanking
             {
                 if (!Directory.Exists(m_Path))
                 {
-                    Console.WriteLine("Seems like you forgot to Create the Player Directory, attempting creation..");
-                    CreateDirectory();
-                    Console.WriteLine("Continuing Loading Player's Pass");
+                    Console.WriteLine("Seems like you forgot to Create the Player Directory, Returning empty pass.");
                 }
                 else
                 {
@@ -1064,37 +984,11 @@ namespace BSDiscordRanking
             }
         }
 
-        private void LoadLevelControllerCache()
-        {
-            if (!Directory.Exists(LevelController.GetPath()))
-            {
-                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command : LevelController's directory is missing");
-            }
-            else
-            {
-                try
-                {
-                    using (StreamReader l_SR = new StreamReader($"{LevelController.GetPath()}{LevelController.GetFileName()}.json"))
-                    {
-                        m_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
-                        if (m_LevelController == null) /// json contain "null"
-                            Console.WriteLine("Error LevelControllerCache contain null");
-                        else
-                            Console.WriteLine($"LevelControllerCache Loaded with {m_LevelController.LevelID.Count} Level saved");
-                    }
-                }
-                catch (Exception) /// file format is wrong / there isn't any file.
-                {
-                    Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
-                }
-            }
-        }
-
-        private void ReWritePass()
+        private void ReWritePass(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             if (m_PlayerID != null)
             {
-                if (m_ErrorNumber < ERROR_LIMIT)
+                if (p_TryLimit > 0)
                 {
                     try
                     {
@@ -1120,12 +1014,10 @@ namespace BSDiscordRanking
                     }
                     catch
                     {
-                        Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory?)");
-                        Console.WriteLine("Attempting to create the directory..");
-                        m_ErrorNumber++;
-                        CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                        Thread.Sleep(200);
-                        ReWritePass();
+                        Console.WriteLine("An error occured While attempting to Write the PlayerPass's Cache. (missing directory? or permission?)");
+                        p_TryLimit--;
+                        Thread.Sleep(p_TryTimeout);
+                        ReWritePass(p_TryLimit, p_TryTimeout);
                     }
                 }
             }
@@ -1157,11 +1049,11 @@ namespace BSDiscordRanking
             }
         }
 
-        public void ReWriteStats()
+        public void ReWriteStats(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             if (m_PlayerID != null)
             {
-                if (m_ErrorNumber < ERROR_LIMIT)
+                if (p_TryLimit > 0)
                 {
                     try
                     {
@@ -1179,12 +1071,10 @@ namespace BSDiscordRanking
                     catch
 
                     {
-                        Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory?)");
-                        Console.WriteLine("Attempting to create the directory..");
-                        m_ErrorNumber++;
-                        CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
-                        Thread.Sleep(200);
-                        ReWriteStats();
+                        Console.WriteLine("An error occured While attempting to Write the PlayerStats's Cache. (missing directory? or permission?)");
+                        p_TryLimit--;
+                        Thread.Sleep(p_TryTimeout);
+                        ReWriteStats(p_TryLimit, p_TryTimeout);
                     }
                 }
                 else
@@ -1195,19 +1085,38 @@ namespace BSDiscordRanking
             }
         }
 
-        public void LoadStats()
+        public PlayerStatsFormat GetStats()
         {
             if (m_PlayerID != null)
             {
-                CreateDirectory();
+                if (m_PlayerStats is not null)
+                {
+                    return m_PlayerStats;
+                }
+            }
+            return new PlayerStatsFormat()
+            {
+                Levels = new List<PassedLevel>(),
+                AccPoints = 0,
+                IsFirstScan = true,
+                PassPoints = 0,
+                TotalNumberOfPass = 0
+            };
+        }
+        
+        public static PlayerStatsFormat GetStaticStats(string p_PlayerID)
+        {
+            PlayerStatsFormat l_PlayerStats;
+            if (p_PlayerID != null)
+            {
                 try
                 {
-                    using StreamReader l_SR = new StreamReader($@"{m_Path}stats.json");
-                    m_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
+                    using StreamReader l_SR = new StreamReader($@"{Player.m_FolderPath}{p_PlayerID}/stats.json");
+                    l_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {
-                    m_PlayerStats = new PlayerStatsFormat
+                    l_PlayerStats = new PlayerStatsFormat
                     {
                         Levels = new List<PassedLevel>()
                         {
@@ -1226,14 +1135,14 @@ namespace BSDiscordRanking
                         },
                         TotalNumberOfPass = new int(),
                         PassPoints = new int(),
-                        IsFirstScan = 1
+                        IsFirstScan = true
                     };
                     Console.WriteLine($"This player don't have any stats yet");
                 }
 
-                if (m_PlayerStats is { Levels: null })
+                if (l_PlayerStats is { Levels: null })
                 {
-                    m_PlayerStats.Levels = new List<PassedLevel>()
+                    l_PlayerStats.Levels = new List<PassedLevel>()
                     {
                         new PassedLevel()
                         {
@@ -1252,7 +1161,7 @@ namespace BSDiscordRanking
             }
             else
             {
-                m_PlayerStats = new PlayerStatsFormat
+                l_PlayerStats = new PlayerStatsFormat
                 {
                     Levels = new List<PassedLevel>()
                     {
@@ -1271,22 +1180,21 @@ namespace BSDiscordRanking
                     },
                     TotalNumberOfPass = new int(),
                     PassPoints = new int(),
-                    IsFirstScan = 1
+                    IsFirstScan = true
                 };
             }
+            return l_PlayerStats;
         }
 
-        public PlayerStatsFormat GetStats()
+        public void LoadStats()
         {
-            LoadStats();
-            return m_PlayerStats;
+            m_PlayerStats = GetStaticStats(m_PlayerID);
         }
 
         public PlayerPassFormat GetPass()
         {
             if (m_PlayerID != null)
             {
-                CreateDirectory();
                 try
                 {
                     using StreamReader l_SR = new StreamReader($@"{m_Path}pass.json");
@@ -1319,8 +1227,6 @@ namespace BSDiscordRanking
                 Levels = new List<InPassPerLevelFormat>()
             };
             int l_BiggerLevelID = 0;
-            var l_LevelController = new LevelController(); /// Constructor make levelcontroller FetchLevel()
-            LoadLevelControllerCache();
             PlayerPassFormat l_OldPlayerPass = ReturnPass();
 
             List<Level> l_Levels = new List<Level>();

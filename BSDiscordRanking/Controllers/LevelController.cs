@@ -18,6 +18,7 @@ namespace BSDiscordRanking.Controllers
         public LevelController()
         {
             FetchLevel(); /// Force the Fetch to instanciate m_LevelController.
+            ReWriteController();
         }
 
         public void FetchLevel()
@@ -26,18 +27,16 @@ namespace BSDiscordRanking.Controllers
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
                 m_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
-                string l_StringLevelID;
-                int l_MyInt;
 
                 foreach (string l_FileName in l_Files)
                 {
-                    l_StringLevelID = "";
+                    var l_StringLevelID = "";
                     for (int l_I = 0; l_I < Path.GetFileName(l_FileName).IndexOf("_", StringComparison.Ordinal); l_I++)
                     {
                         l_StringLevelID += Path.GetFileName(l_FileName)[l_I];
                     }
 
-                    l_MyInt = int.Parse(l_StringLevelID);
+                    var l_MyInt = int.Parse(l_StringLevelID);
 
                     try
                     {
@@ -48,8 +47,6 @@ namespace BSDiscordRanking.Controllers
                         Console.WriteLine($"Error with Level name. {l_Exception.Message}");
                     }
                 }
-
-                ReWriteController();
             }
             catch (Exception)
             {
@@ -58,7 +55,45 @@ namespace BSDiscordRanking.Controllers
                 {
                     LevelID = new List<int>()
                 };
-                ReWriteController();
+            }
+        }
+        
+        public LevelControllerFormat GetLevelController()
+        {
+            try
+            {
+                string[] l_Files = Directory.GetFiles(Level.GetPath());
+                LevelControllerFormat l_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
+
+                foreach (string l_FileName in l_Files)
+                {
+                    var l_StringLevelID = "";
+                    for (int l_I = 0; l_I < Path.GetFileName(l_FileName).IndexOf("_", StringComparison.Ordinal); l_I++)
+                    {
+                        l_StringLevelID += Path.GetFileName(l_FileName)[l_I];
+                    }
+
+                    var l_MyInt = int.Parse(l_StringLevelID);
+
+                    try
+                    {
+                        l_LevelController.LevelID.Add(l_MyInt);
+                    }
+                    catch (Exception l_Exception)
+                    {
+                        Console.WriteLine($"Error with Level name. {l_Exception.Message}");
+                    }
+                }
+
+                return l_LevelController;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine($"Don't forget to add Levels before GettingLevelController, creating an Empty LevelController's config file..");
+                return new LevelControllerFormat()
+                {
+                    LevelID = new List<int>()
+                };
             }
         }
 
@@ -152,14 +187,7 @@ namespace BSDiscordRanking.Controllers
             return FILENAME;
         }
 
-        private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
-        {
-            /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.    
-            m_ErrorNumber = 0;
-            Console.WriteLine("RetryNumber set to 0");
-        }
-
-        public MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight)
+        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight)
         {
             new LevelController().FetchLevel();
             MapExistFormat l_MapExistFormat = new MapExistFormat

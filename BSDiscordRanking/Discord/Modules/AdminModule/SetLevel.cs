@@ -32,7 +32,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
             Player l_Player = new Player(p_DiscordOrScoreSaberID);
             l_Player.LoadStats();
-            if (l_Player.m_PlayerStats.IsFirstScan > 0)
+            if (l_Player.m_PlayerStats.IsFirstScan)
             {
                 await ReplyAsync("> :x: Sorry, but this ScoreSaber account isn't registered on the bot yet, !scan it first.");
                 return;

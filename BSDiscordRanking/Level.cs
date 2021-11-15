@@ -38,7 +38,7 @@ namespace BSDiscordRanking
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
-            CreateDirectory(); /// Make the Level file's directory.
+            JsonDataBaseController.CreateDirectory(PATH); /// Make the Level file's directory.
             LoadLevel(); /// Load the Playlist Cache / First Start : Assign needed Playlist Sample.
             ///////////////////////////////////////////////////////////////////////////////////////
             /// check is SyncURL Changed
@@ -61,9 +61,8 @@ namespace BSDiscordRanking
             {
                 if (!Directory.Exists(PATH))
                 {
-                    Console.WriteLine("Seems like you forgot to Create the Level Directory, attempting creation..");
-                    CreateDirectory();
-                    Console.WriteLine("Directory Created, continuing Loading Levels");
+                    Console.WriteLine("Seems like you forgot to Create the Level Directory, returning.");
+                    return;
                 }
 
                 try
@@ -144,34 +143,6 @@ namespace BSDiscordRanking
             ReWritePlaylist(false);
         }
 
-        public void CreateDirectory(string p_Path = PATH)
-        {
-            /// This Method Create the Directory needed to save and load the playlist's file from it's Path parameter.
-            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-
-            if (m_ErrorNumber < ERROR_LIMIT)
-            {
-                if (!Directory.Exists(p_Path))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(p_Path);
-                        Console.WriteLine($"Directory {p_Path} Created");
-                    }
-                    catch (Exception l_Exception)
-                    {
-                        Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
-                        m_ErrorNumber++;
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
-            }
-        }
-
         public void ReWritePlaylist(bool p_WriteDifferentFormat, string p_Path = PATH, LevelFormat p_LevelFormat = null)
         {
             /// This Method Serialise the data from m_Level and create a playlist file depending on the path parameter
@@ -212,11 +183,8 @@ namespace BSDiscordRanking
                 catch
 
                 {
-                    Console.WriteLine(
-                        "An error occured While attempting to Write the Playlist file. (missing directory?)");
-                    Console.WriteLine("Attempting to create the directory..");
+                    Console.WriteLine("An error occured While attempting to Write the Playlist file. (missing directory? or missing permission?).");
                     m_ErrorNumber++;
-                    CreateDirectory(p_Path); /// m_ErrorNumber will increase again if the directory creation fail.
                     Thread.Sleep(200);
                     ReWritePlaylist(false, p_Path, p_LevelFormat);
                 }
@@ -250,11 +218,8 @@ namespace BSDiscordRanking
                 }
                 catch
                 {
-                    Console.WriteLine(
-                        "An error occured While attempting to Delete the Playlist file. (missing directory?)");
-                    Console.WriteLine("Attempting to create the directory..");
+                    Console.WriteLine("An error occured While attempting to Delete the Playlist file. (missing directory? or missing permission?).");
                     m_ErrorNumber++;
-                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
                     Thread.Sleep(200);
                 }
             }

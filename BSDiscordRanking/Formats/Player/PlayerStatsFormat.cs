@@ -10,7 +10,7 @@ namespace BSDiscordRanking.Formats.Player
         public float PassPoints { get; set; }
         public float AccPoints { get; set; }
 
-        public int IsFirstScan { get; set; }
+        public bool IsFirstScan { get; set; }
     }
 
     public class Trophy

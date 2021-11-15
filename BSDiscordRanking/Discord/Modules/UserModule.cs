@@ -74,7 +74,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_LevelFormat.songs.Count <= 0)
                 return; /// Do not create the file if it's empty.
-            l_Level.CreateDirectory(p_Path);
+            JsonDataBaseController.CreateDirectory(p_Path);
             l_Level.ReWritePlaylist(true, p_Path, l_LevelFormat); /// Write the personal playlist file in the PATH folder.
         }
 
