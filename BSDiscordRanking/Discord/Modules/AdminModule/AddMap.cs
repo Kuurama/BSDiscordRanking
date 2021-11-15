@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         [Summary("Adds a map or updates it from a desired level. Not used fields can be wrote null or 0 depending on their types. (or even ignored if you don't need any of the next ones)")]
         public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_ForceManualWeight = false, float p_Weight = 1f)
         {
-            if (p_Level <= 0 || string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
+            if (string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
             {
                 await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}addmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");

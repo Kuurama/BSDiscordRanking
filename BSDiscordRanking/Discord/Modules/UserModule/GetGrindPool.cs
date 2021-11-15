@@ -17,7 +17,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ggp")]
         [Alias("getgrindpool")]
         [Summary("Shows the Level's maps while displaying your passes, not giving a specific level will display the next available level you might want to grind.")]
-        public async Task GetGrindPool(int p_Level = -1, string p_Embed1Or0 = null)
+        public async Task GetGrindPool(int p_Level = default, string p_Embed1Or0 = null)
         {
             bool l_CheckForLastGGP = false;
             bool l_FullEmbeddedGGP = false;
@@ -36,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
             {
-                if (p_Level < 0)
+                if (p_Level == default)
                 {
                     int l_PlayerLevel = l_Player.GetPlayerLevel();
                     int l_LevelTemp = int.MaxValue;
