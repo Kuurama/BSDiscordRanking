@@ -906,7 +906,7 @@ namespace BSDiscordRanking
                         l_Gold = 0;
                         l_Diamond = 0;
 
-                        if (m_PlayerStats.Levels is null)
+                        if (m_PlayerStats.Levels is not null)
                         {
                             int l_PlayerLevelIndex = m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_Level.value.m_LevelID);
 
