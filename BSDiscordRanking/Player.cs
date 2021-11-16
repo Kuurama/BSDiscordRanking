@@ -340,7 +340,7 @@ namespace BSDiscordRanking
                     {
                         Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
                         OpenSavedScore();
-                        FetchScores();
+                        FetchScores(p_Context, p_TryLimit, p_TryTimeout);
                     }
                 }
                 else /// If Player don't have player's info => Trying to get Player's Info

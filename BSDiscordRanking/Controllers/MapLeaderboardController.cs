@@ -28,34 +28,6 @@ namespace BSDiscordRanking.Controllers
             LoadMapLeaderboard();
         }
 
-        private void CreateDirectory()
-        {
-            /// This Method Create the Directory needed to save and load the leaderboard's cache file from it's Path parameter.
-            /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-
-            if (m_ErrorNumber < ERROR_LIMIT)
-            {
-                if (!Directory.Exists(PATH))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(PATH);
-                        Console.WriteLine($"Directory {PATH} Created");
-                    }
-                    catch (Exception l_Exception)
-                    {
-                        Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
-                        m_ErrorNumber++;
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
-                Console.WriteLine("Please Contact an Administrator.");
-            }
-        }
-
         private void ReWriteMapLeaderboard()
         {
             /// This Method Serialise the data from m_Leaderboard and create the Cache.
@@ -91,7 +63,7 @@ namespace BSDiscordRanking.Controllers
                         "An error occured While attempting to Write the Leaderboard's cache file. (missing directory?)");
                     Console.WriteLine("Attempting to create the directory..");
                     m_ErrorNumber++;
-                    CreateDirectory(); /// m_ErrorNumber will increase again if the directory creation fail.
+                    JsonDataBaseController.CreateDirectory(PATH); /// m_ErrorNumber will increase again if the directory creation fail.
                     Thread.Sleep(200);
                     ReWriteMapLeaderboard();
                 }
@@ -110,7 +82,7 @@ namespace BSDiscordRanking.Controllers
                 if (!Directory.Exists(PATH))
                 {
                     Console.WriteLine("Seems like you forgot to Create the Level Directory, attempting creation..");
-                    CreateDirectory();
+                    JsonDataBaseController.CreateDirectory(PATH);
                     Console.WriteLine("Directory Created, continuing Loading Levels");
                 }
 
