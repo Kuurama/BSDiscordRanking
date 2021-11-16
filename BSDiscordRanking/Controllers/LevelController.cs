@@ -7,58 +7,18 @@ using BSDiscordRanking.Formats.Controller;
 
 namespace BSDiscordRanking.Controllers
 {
-    public class LevelController
+    public static class LevelController
     {
         private const string PATH = @"./";
         private const string FILENAME = "LevelController";
-        private const int ERROR_LIMIT = 3;
-        private int m_ErrorNumber = 0;
-        private LevelControllerFormat m_LevelController;
 
-        public LevelController()
+        static LevelController()
         {
-            FetchLevel(); /// Force the Fetch to instanciate m_LevelController.
-            ReWriteController();
+            LevelControllerFormat l_LevelControllerFormat = FetchAndGetLevel(); /// Force the Fetch to instanciate m_LevelController.
+            ReWriteController(l_LevelControllerFormat);
         }
 
-        public void FetchLevel()
-        {
-            try
-            {
-                string[] l_Files = Directory.GetFiles(Level.GetPath());
-                m_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
-
-                foreach (string l_FileName in l_Files)
-                {
-                    var l_StringLevelID = "";
-                    for (int l_I = 0; l_I < Path.GetFileName(l_FileName).IndexOf("_", StringComparison.Ordinal); l_I++)
-                    {
-                        l_StringLevelID += Path.GetFileName(l_FileName)[l_I];
-                    }
-
-                    var l_MyInt = int.Parse(l_StringLevelID);
-
-                    try
-                    {
-                        m_LevelController.LevelID.Add(l_MyInt);
-                    }
-                    catch (Exception l_Exception)
-                    {
-                        Console.WriteLine($"Error with Level name. {l_Exception.Message}");
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                Console.WriteLine($"Don't forget to add Levels before Fetching, creating an Empty LevelController's config file..");
-                m_LevelController = new LevelControllerFormat()
-                {
-                    LevelID = new List<int>()
-                };
-            }
-        }
-        
-        public LevelControllerFormat GetLevelController()
+        public static LevelControllerFormat FetchAndGetLevel()
         {
             try
             {
@@ -89,7 +49,7 @@ namespace BSDiscordRanking.Controllers
             }
             catch (Exception)
             {
-                Console.WriteLine($"Don't forget to add Levels before GettingLevelController, creating an Empty LevelController's config file..");
+                Console.WriteLine($"Don't forget to add Levels before Fetching, creating an Empty LevelController's config file..");
                 return new LevelControllerFormat()
                 {
                     LevelID = new List<int>()
@@ -97,7 +57,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        private void ReWriteController()
+        public static void ReWriteController(LevelControllerFormat p_LevelControllerFormat, int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             /// This Method Serialise the data from m_LevelController and create a cache file depending on the path parameter
             /// and it's PrefixName parameter (Prefix is usefull to sort playlist in the game).
@@ -105,30 +65,27 @@ namespace BSDiscordRanking.Controllers
             /// if you Deserialised that playlist to m_Level by using OpenSavedLevel();
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
-            if (m_ErrorNumber < ERROR_LIMIT)
+            if (p_TryLimit > 0)
             {
                 try
                 {
-                    if (m_LevelController != null)
+                    if (p_LevelControllerFormat != null)
                     {
-                        File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(m_LevelController));
-                        Console.WriteLine($"Updated LevelController Config File at {PATH}{FILENAME}.json ({m_LevelController.LevelID.Count} Level)");
+                        File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(p_LevelControllerFormat));
+                        Console.WriteLine($"Updated LevelController Config File at {PATH}{FILENAME}.json ({p_LevelControllerFormat.LevelID.Count} Level)");
                     }
                     else
                     {
-                        Console.WriteLine("Seems like you forgot to Fetch the Level, Attempting to load..");
-                        FetchLevel();
-                        ReWriteController();
+                        Console.WriteLine("Seems like you forgot to Fetch the Level, Returning.");
                     }
                 }
                 catch
                 {
                     Console.WriteLine(
-                        "An error occured While attempting to Write the Playlist file. (missing directory?)");
-                    Console.WriteLine("Attempting to create the directory..");
-                    m_ErrorNumber++;
-                    Thread.Sleep(200);
-                    ReWriteController();
+                        "An error occured While attempting to Write the Playlist file. (missing directory? or missing permission?)");
+                    p_TryLimit--;
+                    Thread.Sleep(p_TryTimeout);
+                    ReWriteController(p_LevelControllerFormat, p_TryLimit, p_TryTimeout);
                 }
             }
             else
@@ -143,23 +100,16 @@ namespace BSDiscordRanking.Controllers
             if (!File.Exists($"{PATH}{FILENAME}.json"))
             {
                 Console.WriteLine($"{PATH}{FILENAME}.json");
-                Console.WriteLine("Seems like you forgot Fetch Levels (LevelController), please Fetch Them before using this command : LevelController's Cache is missing");
-                Console.WriteLine("Attempting a Fetch..");
-                new LevelController().FetchLevel();
+                Console.WriteLine("Seems like you forgot Fetch Levels (LevelController), please Fetch Them before using this command : LevelController's Cache is missing, Returning.");
                 return null;
             }
             else
             {
                 try
                 {
-                    Console.WriteLine("before Fetch");
-                    new LevelController().FetchLevel();
-                    Console.WriteLine("After Fetch");
                     using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
                     {
-                        Console.WriteLine("Before deserialize");
                         LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
-                        Console.WriteLine("After deserialize");
                         if (l_LevelController == null) /// json contain "null"
                         {
                             Console.WriteLine("Error LevelControllerCache contain null");
@@ -189,7 +139,7 @@ namespace BSDiscordRanking.Controllers
 
         public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight)
         {
-            new LevelController().FetchLevel();
+            LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
             MapExistFormat l_MapExistFormat = new MapExistFormat
             {
                 MapExist = false,
@@ -203,7 +153,7 @@ namespace BSDiscordRanking.Controllers
                 Weight = p_Weight,
                 DifferentWeight = false
             };
-            foreach (var l_LevelID in GetLevelControllerCache().LevelID)
+            foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
                 Console.WriteLine(l_LevelID);

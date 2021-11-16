@@ -8,6 +8,7 @@ using System.Threading;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord.Modules.AdminModule;
 using BSDiscordRanking.Formats.API;
+using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using Discord.Commands;
 
@@ -28,13 +29,13 @@ namespace BSDiscordRanking
         public LevelFormat m_Level;
         public int m_LevelID;
         public bool m_MapAdded;
-        public bool m_MapDeleted;
         private string m_SyncURL;
 
         public Level(int p_LevelID)
         {
+            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             m_LevelID = p_LevelID;
-            m_SyncURL = !string.IsNullOrEmpty(ConfigController.GetConfig().SyncURL) ? $"{ConfigController.GetConfig().SyncURL}{m_LevelID:D3}{SUFFIX_NAME}.bplist" : null;
+            m_SyncURL = !string.IsNullOrEmpty(l_ConfigFormat.SyncURL) ? $"{l_ConfigFormat.SyncURL}{m_LevelID:D3}{SUFFIX_NAME}.bplist" : null;
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
@@ -90,7 +91,6 @@ namespace BSDiscordRanking
                         }
                         else if (m_Level.songs != null)
                         {
-                            Console.WriteLine($"Level {m_LevelID} Loaded");
                             foreach (var l_Songs in m_Level.songs)
                             {
                                 l_Songs.hash = l_Songs.hash.ToUpper();
@@ -165,7 +165,7 @@ namespace BSDiscordRanking
                         {
                             File.WriteAllText($"{p_Path}{m_LevelID:D3}{SUFFIX_NAME}.bplist", JsonSerializer.Serialize(p_LevelFormat));
                             Console.WriteLine($"{m_LevelID}{SUFFIX_NAME} Updated ({m_Level.songs.Count} maps in Playlist)");
-                            new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
+                            LevelController.ReWriteController(LevelController.FetchAndGetLevel()); /// If a new level is created => Update the LevelController Cache.
                         }
                         else
                         {
@@ -209,7 +209,7 @@ namespace BSDiscordRanking
                     {
                         File.Delete($"{PATH}{m_LevelID:D3}{SUFFIX_NAME}.bplist");
                         Console.WriteLine($"{m_LevelID:D3}{SUFFIX_NAME} Deleted");
-                        new LevelController().FetchLevel(); /// If a new level is created => Update the LevelController Cache.
+                        LevelController.ReWriteController(LevelController.FetchAndGetLevel()); /// If a new level is created => Update the LevelController Cache.
                     }
                     else
                     {
@@ -542,7 +542,6 @@ namespace BSDiscordRanking
                                         }
 
                                         p_SocketCommandContext.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
-                                        m_MapDeleted = true;
                                         ReWritePlaylist(false);
                                     }
                                     else
@@ -712,10 +711,11 @@ namespace BSDiscordRanking
         public float RecalculateAutoWeight(int p_LeaderboardID)
         {
             float l_SumOfPercentage = 0;
+            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
-            if (l_MapLeaderboard.m_MapLeaderboard.Leaderboard.Count >= ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight)
+            if (l_MapLeaderboard.m_MapLeaderboard.Leaderboard.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
             {
-                for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++)
+                for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
                 {
                     if (l_MapLeaderboard.m_MapLeaderboard.MaxScore > 0)
                     {
@@ -728,7 +728,7 @@ namespace BSDiscordRanking
                     }
                 }
 
-                float l_AveragePercentage = (l_SumOfPercentage / ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight);
+                float l_AveragePercentage = (l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight);
                 float l_AverageNeededPercentage = 100f - l_AveragePercentage;
                 float l_NewWeight = (l_AverageNeededPercentage * 0.66f * m_LevelID) / 32;
                 return l_NewWeight;

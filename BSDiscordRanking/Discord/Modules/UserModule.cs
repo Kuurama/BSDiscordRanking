@@ -117,6 +117,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
+            ConfigFormat l_Config = ConfigController.GetConfig();
             bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
@@ -129,7 +130,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     bool l_IsAdmin = false;
                     if (Context.User is SocketGuildUser l_User)
-                        if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID))
+                        if (l_User.Roles.Any(p_Role => p_Role.Id == l_Config.BotManagementRoleID))
                             l_IsAdmin = true;
                     if (!l_IsAdmin)
                     {
@@ -166,8 +167,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_Diamonds += l_PlayerStatsLevel.Trophy.Diamond;
                 }
             }
-
-            ConfigFormat l_Config = ConfigController.GetConfig();
+            
 
             int l_PassFindIndex = -1;
             PassLeaderboardController l_PassLeaderboardController = null;

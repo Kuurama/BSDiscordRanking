@@ -107,7 +107,7 @@ namespace BSDiscordRanking.Controllers
                                     }
                                 }
                             };
-                            Console.WriteLine($"Leaderboard Created (Empty Format), contained null");
+                            Console.WriteLine($"Map Leaderboard Created (Empty Format), contained null");
                         }
                         else
                         {

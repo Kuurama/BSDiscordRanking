@@ -7,7 +7,7 @@ namespace BSDiscordRanking
     {
         private static void Main(string[] p_Args)
         {
-            new LevelController().FetchLevel();
+            LevelController.GetLevelControllerCache();
             UserController.ReadDB();
             BotHandler.StartBot(ConfigController.ReadConfig());
         }

@@ -495,6 +495,7 @@ namespace BSDiscordRanking
                     l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
                     if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
                 }
+                Console.WriteLine($"All {l_Levels.Count} Levels loaded.");
 
                 try
                 {
@@ -846,8 +847,6 @@ namespace BSDiscordRanking
                                 }
                             }
                         }
-
-                        ReWriteStats();
 
                         l_TotalAmountOfPass += l_PassesPerLevel;
 
@@ -1235,7 +1234,7 @@ namespace BSDiscordRanking
                 l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
                 if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
             }
-
+            Console.WriteLine($"All {l_Levels.Count} Levels loaded.");
 
             foreach (var l_Level in l_Levels.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
             {

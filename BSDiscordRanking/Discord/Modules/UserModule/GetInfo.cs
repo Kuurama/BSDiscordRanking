@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using Discord;
 using Discord.Commands;
@@ -23,9 +24,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 return;
             }
 
+            LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
+            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             var l_Maps = new List<Tuple<SongFormat, int>>();
-            new LevelController().FetchLevel();
-            foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+            foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
             {
                 var l_Level = new Level(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
@@ -49,7 +51,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             foreach (var l_GroupedMaps in l_Maps.GroupBy(p_Maps => p_Maps.Item1.hash))
             {
                 var l_Map = l_GroupedMaps.First().Item1;
-                if (l_NumberOfMapFound <= ConfigController.GetConfig().MaximumNumberOfMapInGetInfo)
+                if (l_NumberOfMapFound <= l_ConfigFormat.MaximumNumberOfMapInGetInfo)
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                     foreach (var (l_SongFormat, l_Item2) in l_GroupedMaps)
@@ -83,7 +85,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 l_NumberOfMapFound++;
             }
 
-            if (l_NumberOfMapFound > ConfigController.GetConfig().MaximumNumberOfMapInGetInfo)
+            if (l_NumberOfMapFound > l_ConfigFormat.MaximumNumberOfMapInGetInfo)
             {
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                 l_EmbedBuilder.WithColor(new Color(255, 0, 0));

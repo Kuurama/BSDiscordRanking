@@ -38,7 +38,6 @@ namespace BSDiscordRanking.Controllers
                     SnipedByPlayers = new List<Sniped>()
                 };
 
-                LoadLeaderboard();
                 for (int l_I = 0; l_I <= m_Leaderboard.Leaderboard.Count - 1; l_I++)
                 {
                     if (p_ScoreSaberID == m_Leaderboard.Leaderboard[l_I].ScoreSaberID)
@@ -153,7 +152,6 @@ namespace BSDiscordRanking.Controllers
                 else
                 {
                     ReWriteLeaderboard();
-                    Console.WriteLine($"Leaderboard's info updated for player {p_ScoreSaberID}.");
 
                     l_Snipe.Player.NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.Player.ScoreSaberID) + 1;
 
