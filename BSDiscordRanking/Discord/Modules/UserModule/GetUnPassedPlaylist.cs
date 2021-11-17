@@ -33,7 +33,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                 }
 
-                string l_PlayerName = new Player(UserController.GetPlayer(Context.User.Id.ToString())).m_PlayerFull.playerInfo.playerName;
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                l_Player.LoadPass();
+                string l_PlayerName = l_Player.m_PlayerFull.playerInfo.playerName;
                 string l_FileName = RemoveSpecialCharacters(l_PlayerName);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
                 if (!Directory.Exists(l_Path))
@@ -60,7 +62,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             File.Delete(l_PathFile);
 
 
-                        CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), int.Parse(p_Level), l_Path);
+                        CreateUnpassedPlaylist(l_Player.ReturnPass(), int.Parse(p_Level), l_Path);
                         if (File.Exists(l_PathFile))
                             await Context.Channel.SendFileAsync(l_PathFile, $"> :white_check_mark: Here's your personal playlist! <@{Context.User.Id.ToString()}>");
                         else
@@ -77,7 +79,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
                     {
-                        CreateUnpassedPlaylist(UserController.GetPlayer(Context.User.Id.ToString()), l_LevelID, l_Path);
+                        CreateUnpassedPlaylist(l_Player.ReturnPass(), l_LevelID, l_Path);
                     }
 
                     try

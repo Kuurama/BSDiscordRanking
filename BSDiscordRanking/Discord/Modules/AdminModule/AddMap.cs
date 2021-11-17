@@ -116,7 +116,6 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 }
                 else
                     await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree or NoArrows`\"");
-                    
             }
         }
     }

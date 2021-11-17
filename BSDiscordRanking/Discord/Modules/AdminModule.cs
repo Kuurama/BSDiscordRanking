@@ -46,7 +46,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
             return (int)Math.Round(l_MaxScore * (p_Acc / 100));
         }
-        
+
         private class RequireManagerRoleAttribute : PreconditionAttribute
         {
             public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context, CommandInfo p_Command, IServiceProvider p_Services)
@@ -64,5 +64,4 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             }
         }
     }
-    
 }

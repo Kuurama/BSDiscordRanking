@@ -19,14 +19,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
-        private void CreateUnpassedPlaylist(string p_ScoreSaberID, int p_Level, string p_Path)
+        private void CreateUnpassedPlaylist(PlayerPassFormat p_PlayerPass, int p_Level, string p_Path)
         {
-            PlayerPassFormat l_PlayerPass = new Player(p_ScoreSaberID).ReturnPass();
             Level l_Level = new Level(p_Level);
             LevelFormat l_LevelFormat = l_Level.GetLevelData();
             if (l_LevelFormat.songs.Count > 0)
             {
-                foreach (var l_PlayerPassSong in l_PlayerPass.SongList)
+                foreach (var l_PlayerPassSong in p_PlayerPass.SongList)
                 {
                     for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
                     {
@@ -167,7 +166,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_Diamonds += l_PlayerStatsLevel.Trophy.Diamond;
                 }
             }
-            
+
 
             int l_PassFindIndex = -1;
             PassLeaderboardController l_PassLeaderboardController = null;
@@ -191,7 +190,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
             l_EmbedBuilder.AddField("Score Saber Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
-            
+
             Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_PlayerLevel);
 
             l_EmbedBuilder.WithColor(l_Color);
@@ -275,7 +274,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             return l_Color;
         }
-        
+
         public static PlayerFromDiscordOrScoreSaberIDFormat PlayerFromDiscordOrScoreSaberID(string p_DiscordOrScoreSaberID, SocketCommandContext p_Context)
         {
             bool l_IsDiscordLinked = false;
@@ -338,7 +337,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 ScoreSaberOrDiscordName = l_ScoreSaberOrDiscordName
             };
         }
-        
+
         public class PlayerFromDiscordOrScoreSaberIDFormat
         {
             public bool IsDiscordLinked { get; set; }

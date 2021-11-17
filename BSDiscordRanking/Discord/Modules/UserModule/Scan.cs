@@ -16,7 +16,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             int l_OldPlayerLevel = l_Player.GetPlayerLevel();
-            
+
             if (!UserController.UserExist(Context.User.Id.ToString()))
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
             else
@@ -27,6 +27,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
 
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
+                l_Player.LoadPass(); /// Load the player's pass if there is.
                 var l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result >= 1)
                 {
@@ -43,29 +44,29 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     else
                         l_EmbedBuilder.WithDescription($"> :x: Sorry <@{Context.User.Id.ToString()}>, but you didn't pass any new maps.");
                 }
-                
+
                 Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_OldPlayerLevel);
 
                 l_EmbedBuilder.WithColor(l_Color);
                 await ReplyAsync(null, embed: l_EmbedBuilder.Build());
-                
+
                 if (l_FirsScan)
                 {
                     await GetPlaylist("all");
                 }
-                
+
                 l_EmbedBuilder = new EmbedBuilder();
                 string l_Description = "";
 
                 int l_NewPlayerLevel = l_Player.GetPlayerLevel();
-                
+
                 if (l_OldPlayerLevel != l_NewPlayerLevel)
                 {
                     if (l_OldPlayerLevel < l_NewPlayerLevel)
                         l_Description += $"> <:Stonks:884058036371595294> GG! You are now Level {l_NewPlayerLevel}.\n> To see your new pool, try the `{ConfigController.GetConfig().CommandPrefix[0]}ggp` command.\n";
                     else
                         l_Description += $"> <:NotStonks:884057234886238208> You lost levels. You are now Level {l_NewPlayerLevel}\n";
-                    
+
                     l_Description += "> :clock1: The bot will now update your roles. This step can take a while. `(The bot should now be responsive again)`";
                     l_EmbedBuilder.WithDescription(l_Description);
                     l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_NewPlayerLevel);

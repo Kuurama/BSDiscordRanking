@@ -46,6 +46,30 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             l_Player.ResetLevels();
             for (int l_I = 0; l_I <= p_Level; l_I++)
             {
+                int l_Index = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_I);
+                if (l_Index < 0)
+                {
+                    l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
+                    {
+                        LevelID = l_I,
+                        Passed = true,
+                        Trophy = new Trophy()
+                        {
+                            Plastic = 0,
+                            Silver = 0,
+                            Gold = 0,
+                            Diamond = 0
+                        }
+                    });
+                }
+                else
+                {
+                    l_Player.m_PlayerStats.Levels[l_Index].Passed = true;
+                }
+            }
+
+            for (int l_I = 0; l_I <= p_Level; l_I++)
+            {
                 l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
                 {
                     LevelID = l_I,

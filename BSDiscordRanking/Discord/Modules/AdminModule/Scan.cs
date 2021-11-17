@@ -63,6 +63,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.playerInfo.playerName;
             }
 
+            l_Player.LoadPass();
             int l_OldPlayerLevel = l_Player.GetPlayerLevel(); /// By doing so, as a result => loadstats() inside too.
 
             bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.

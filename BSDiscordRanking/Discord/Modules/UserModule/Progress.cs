@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Discord.Modules.AdminModule;
 using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
@@ -37,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             // ReSharper disable once ConstantNullCoalescingCondition
             l_Player ??= new Player(UserController.GetPlayer(l_DiscordOrScoreSaberIDFormat.DiscordID));
-
+            l_Player.LoadPass();
             PlayerPassPerLevelFormat l_PlayerPassPerLevel = l_Player.GetPlayerPassPerLevel();
             if (l_PlayerPassPerLevel == null)
             {
@@ -117,6 +116,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             else
             {
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                l_Player.LoadPass();
                 PlayerPassPerLevelFormat l_PlayerPassPerLevel = l_Player.GetPlayerPassPerLevel();
                 if (l_PlayerPassPerLevel == null)
                 {

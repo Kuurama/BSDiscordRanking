@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;

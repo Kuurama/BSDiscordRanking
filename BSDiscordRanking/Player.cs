@@ -26,7 +26,7 @@ namespace BSDiscordRanking
         private string m_Path;
         public ApiPlayerFull m_PlayerFull;
         private string m_PlayerID;
-        private PlayerPassFormat m_PlayerPass;
+        public PlayerPassFormat m_PlayerPass;
         private ApiScores m_PlayerScore;
         public PlayerStatsFormat m_PlayerStats;
 
@@ -46,18 +46,18 @@ namespace BSDiscordRanking
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
             GetInfos(); ///< Get Full Player Info.
-                        
+
             LoadStats();
 
             JsonDataBaseController.CreateDirectory(m_Path); ///< Make the player's scores file's directory.
 
-            OpenSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
+            LoadSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
 
             m_LevelController = LevelController.GetLevelControllerCache();
 
             ///////////////////////////////////////////////////////////////////////////////////////
         }
-        
+
         public int GetPlayerLevel()
         {
             if (m_PlayerID != null)
@@ -65,7 +65,7 @@ namespace BSDiscordRanking
                 int l_PlayerLevel = 0;
                 if (m_PlayerStats is null)
                     return 0;
-                
+
                 if (m_PlayerStats.Levels is not null)
                 {
                     m_PlayerStats.Levels = m_PlayerStats.Levels.OrderBy(p_X => p_X.LevelID).ToList();
@@ -180,7 +180,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private void OpenSavedScore()
+        private void LoadSavedScore()
         {
             /// If First Launch* : Assign a Scores Sample to m_PlayerScore. (mean there isn't any cache file yet)
             /// This Method Load a cache file from its path. (The player's scores)
@@ -339,7 +339,7 @@ namespace BSDiscordRanking
                     else
                     {
                         Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
-                        OpenSavedScore();
+                        LoadSavedScore();
                         FetchScores(p_Context, p_TryLimit, p_TryTimeout);
                     }
                 }
@@ -361,7 +361,7 @@ namespace BSDiscordRanking
         {
             /// This Method Serialise the data from m_PlayerScore and cache it to a file depending on the path parameter
             /// Be Aware that it will replace the current cache file (if there is any), it shouldn't be an issue
-            /// as you needed to Deserialised that cache (or set an empty format) to m_PlayerScore by using OpenSavedScore();
+            /// as you needed to Deserialised that cache (or set an empty format) to m_PlayerScore by using LoadSavedScore();
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
             if (m_PlayerID != null)
@@ -389,7 +389,7 @@ namespace BSDiscordRanking
                         else
                         {
                             Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
-                            OpenSavedScore();
+                            LoadSavedScore();
                             ReWriteScore();
                         }
                     }
@@ -446,8 +446,8 @@ namespace BSDiscordRanking
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
                 {
                     Console.WriteLine(l_WebClient.DownloadString("https://new.scoresaber.com/api/").Contains("hey")
-                            ? $"Internet OK, Score Saber {p_ApiRequestType} API must have changed, please contact an administrator"
-                            : "Internet OK, Score Saber API response is Weird, something must have changed, please contact an administrator");
+                        ? $"Internet OK, Score Saber {p_ApiRequestType} API must have changed, please contact an administrator"
+                        : "Internet OK, Score Saber API response is Weird, something must have changed, please contact an administrator");
                     return true;
                 }
                 catch (WebException l_WebException) /// Score Saber Global API Down or Internet Error.
@@ -495,6 +495,7 @@ namespace BSDiscordRanking
                     l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
                     if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
                 }
+
                 Console.WriteLine($"All {l_Levels.Count} Levels loaded.");
 
                 try
@@ -565,7 +566,7 @@ namespace BSDiscordRanking
                                                                 if (!l_OldDiffExist)
                                                                 {
                                                                     l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
-                                                                    if (m_PlayerStats.IsFirstScan)
+                                                                    if (!m_PlayerStats.IsFirstScan)
                                                                     {
                                                                         if (l_Messages[l_MessagesIndex].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                                 .Length
@@ -639,7 +640,7 @@ namespace BSDiscordRanking
                                                         if (!l_WasStored)
                                                         {
                                                             l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
-                                                            if (m_PlayerStats.IsFirstScan)
+                                                            if (!m_PlayerStats.IsFirstScan)
                                                             {
                                                                 if (l_Messages[l_MessagesIndex].Length >
                                                                     1900 -
@@ -798,7 +799,7 @@ namespace BSDiscordRanking
                             /// Display new pass on first scan message.
                             if (l_Config.PerPlaylistWeighting)
                             {
-                                l_Messages[l_MessagesIndex] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value}** (+{l_Weighting * 0.375f * l_PassesPerLevel} {l_Config.PassPointsName})\n";
+                                l_Messages[l_MessagesIndex] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f * l_PassesPerLevel} {l_Config.PassPointsName})\n";
                             }
                         }
 
@@ -922,13 +923,13 @@ namespace BSDiscordRanking
             }
         }
 
-        public PlayerPassFormat ReturnPass()
+        public static PlayerPassFormat ReturnStaticPass(string p_PlayerID)
         {
             /// This method return the Serialised version of the current saved Player's pass, ruturn an empty on if none.
             PlayerPassFormat l_PlayerPass = new PlayerPassFormat();
-            if (m_PlayerID != null)
+            if (p_PlayerID != null)
             {
-                if (!Directory.Exists(m_Path))
+                if (!Directory.Exists($"{m_FolderPath}{p_PlayerID}/"))
                 {
                     Console.WriteLine("Seems like you forgot to Create the Player Directory, Returning empty pass.");
                 }
@@ -936,7 +937,7 @@ namespace BSDiscordRanking
                 {
                     try
                     {
-                        using (StreamReader l_SR = new StreamReader($@"{m_Path}pass.json"))
+                        using (StreamReader l_SR = new StreamReader($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json"))
                         {
                             l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                             if (l_PlayerPass == null) /// json contain "null"
@@ -952,7 +953,7 @@ namespace BSDiscordRanking
                             }
                             else
                             {
-                                Console.WriteLine($"pass.json of {m_PlayerID} loaded");
+                                Console.WriteLine($"pass.json of {p_PlayerID} loaded");
                             }
                         }
                     }
@@ -965,12 +966,13 @@ namespace BSDiscordRanking
                                 new InPlayerSong()
                             }
                         };
-                        Console.WriteLine($@"{m_Path}pass.json Created (Empty Format)");
+                        Console.WriteLine($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json Created (Empty Format)");
                     }
                 }
 
                 return l_PlayerPass;
             }
+
             else
             {
                 return l_PlayerPass = new PlayerPassFormat()
@@ -981,6 +983,57 @@ namespace BSDiscordRanking
                     }
                 };
             }
+        }
+
+        public PlayerPassFormat ReturnPass()
+        {
+            // ReSharper disable once InvertIf
+            if (m_PlayerID != null)
+            {
+                if (m_PlayerPass is not null)
+                {
+                    return m_PlayerPass;
+                }
+            }
+
+            return new PlayerPassFormat()
+            {
+                SongList = new List<InPlayerSong>()
+            };
+        }
+
+        public void LoadPass()
+        {
+            m_PlayerPass = GetStaticPass(m_PlayerID);
+        }
+
+        public static PlayerPassFormat GetStaticPass(string p_PlayerID)
+        {
+            PlayerPassFormat l_PlayerPass = new PlayerPassFormat
+            {
+                SongList = new List<InPlayerSong>()
+            };
+
+            if (p_PlayerID != null)
+            {
+                try
+                {
+                    using StreamReader l_SR = new StreamReader($"{m_FolderPath}{p_PlayerID}/pass.json");
+                    l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                    return l_PlayerPass;
+                }
+                catch (Exception) /// file format is wrong / there isn't any file.
+                {
+                    l_PlayerPass = new PlayerPassFormat
+                    {
+                        SongList = new List<InPlayerSong>()
+                    };
+                    Console.WriteLine("This player don't have any pass yet");
+                    return l_PlayerPass;
+                }
+            }
+
+            return l_PlayerPass;
         }
 
         private void ReWritePass(int p_TryLimit = 3, int p_TryTimeout = 200)
@@ -1005,6 +1058,7 @@ namespace BSDiscordRanking
                                 ReWritePass();
                             }
                         }
+
                         else
                         {
                             Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");
@@ -1039,13 +1093,22 @@ namespace BSDiscordRanking
 
         public void ResetLevels()
         {
-            if (m_PlayerStats.Levels != null)
+            m_PlayerStats.Levels?.Clear();
+            m_PlayerStats.Levels = new List<PassedLevel>()
             {
-                foreach (var l_PlayerStatsLevel in m_PlayerStats.Levels)
+                new PassedLevel()
                 {
-                    l_PlayerStatsLevel.Passed = false;
+                    LevelID = 0,
+                    Passed = false,
+                    Trophy = new Trophy()
+                    {
+                        Plastic = 0,
+                        Silver = 0,
+                        Gold = 0,
+                        Diamond = 0
+                    }
                 }
-            }
+            };
         }
 
         public void ReWriteStats(int p_TryLimit = 3, int p_TryTimeout = 200)
@@ -1093,6 +1156,7 @@ namespace BSDiscordRanking
                     return m_PlayerStats;
                 }
             }
+
             return new PlayerStatsFormat()
             {
                 Levels = new List<PassedLevel>(),
@@ -1102,7 +1166,7 @@ namespace BSDiscordRanking
                 TotalNumberOfPass = 0
             };
         }
-        
+
         public static PlayerStatsFormat GetStaticStats(string p_PlayerID)
         {
             PlayerStatsFormat l_PlayerStats;
@@ -1110,7 +1174,7 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    using StreamReader l_SR = new StreamReader($@"{Player.m_FolderPath}{p_PlayerID}/stats.json");
+                    using StreamReader l_SR = new StreamReader($@"{m_FolderPath}{p_PlayerID}/stats.json");
                     l_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
@@ -1182,41 +1246,13 @@ namespace BSDiscordRanking
                     IsFirstScan = true
                 };
             }
+
             return l_PlayerStats;
         }
 
         public void LoadStats()
         {
             m_PlayerStats = GetStaticStats(m_PlayerID);
-        }
-
-        public PlayerPassFormat GetPass()
-        {
-            if (m_PlayerID != null)
-            {
-                try
-                {
-                    using StreamReader l_SR = new StreamReader($@"{m_Path}pass.json");
-                    m_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
-                    return m_PlayerPass;
-                }
-                catch (Exception) /// file format is wrong / there isn't any file.
-                {
-                    m_PlayerPass = new PlayerPassFormat
-                    {
-                        SongList = new List<InPlayerSong>()
-                    };
-                    Console.WriteLine("This player don't have any pass yet");
-                    return m_PlayerPass;
-                }
-            }
-            else
-            {
-                return m_PlayerPass = new PlayerPassFormat
-                {
-                    SongList = new List<InPlayerSong>()
-                };
-            }
         }
 
         public PlayerPassPerLevelFormat GetPlayerPassPerLevel()
@@ -1226,7 +1262,6 @@ namespace BSDiscordRanking
                 Levels = new List<InPassPerLevelFormat>()
             };
             int l_BiggerLevelID = 0;
-            PlayerPassFormat l_OldPlayerPass = ReturnPass();
 
             List<Level> l_Levels = new List<Level>();
             foreach (var l_LevelID in m_LevelController.LevelID)
@@ -1234,6 +1269,7 @@ namespace BSDiscordRanking
                 l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
                 if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
             }
+
             Console.WriteLine($"All {l_Levels.Count} Levels loaded.");
 
             foreach (var l_Level in l_Levels.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
@@ -1249,31 +1285,17 @@ namespace BSDiscordRanking
                 {
                     if (l_Song.difficulties != null)
                     {
-                        foreach (var l_Difficulty in l_Song.difficulties)
-                        {
-                            l_NumberOfMapDiffInLevel++;
-                        }
+                        l_NumberOfMapDiffInLevel += l_Song.difficulties.Count;
                     }
 
-                    foreach (var l_OldPlayerScore in l_OldPlayerPass.SongList)
+                    if (m_PlayerPass?.SongList != null)
                     {
-                        if (String.Equals(l_Song.hash, l_OldPlayerScore.hash, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            if (l_Song.difficulties != null && l_OldPlayerScore.DiffList != null)
-                            {
-                                foreach (var l_Difficulty in l_Song.difficulties)
-                                {
-                                    foreach (var l_OldPlayerScoreDiff in l_OldPlayerScore.DiffList)
-                                    {
-                                        if (l_Difficulty.characteristic == l_OldPlayerScoreDiff.Difficulty.characteristic && l_Difficulty.name == l_OldPlayerScoreDiff.Difficulty.name)
-                                        {
-                                            l_NumberOfPass++;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        l_NumberOfPass += (from l_PlayerPassedSong in m_PlayerPass.SongList
+                            where string.Equals(l_Song.hash, l_PlayerPassedSong.hash, StringComparison.CurrentCultureIgnoreCase)
+                            where l_Song.difficulties != null && l_PlayerPassedSong.DiffList != null
+                            from l_SongDifficulty in l_Song.difficulties
+                            where l_PlayerPassedSong.DiffList.Any(p_PlayerPassedDiff => l_SongDifficulty.characteristic == p_PlayerPassedDiff.Difficulty.characteristic && l_SongDifficulty.name == p_PlayerPassedDiff.Difficulty.name)
+                            select l_PlayerPassedSong).Count();
                     }
                 }
 
@@ -1319,10 +1341,7 @@ namespace BSDiscordRanking
                     { LevelID = l_Level.value.m_LevelID, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy { Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond }, TrophyString = l_TrophyString });
             }
 
-            if (l_PlayerPassPerLevelFormat.Levels == null)
-                return null;
-
-            return l_PlayerPassPerLevelFormat;
+            return l_PlayerPassPerLevelFormat.Levels == null ? null : l_PlayerPassPerLevelFormat;
         }
     }
 }

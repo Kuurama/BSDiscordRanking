@@ -76,7 +76,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     int l_NumberOfPass = 0;
                     bool l_AlreadyHaveThumbnail = UserController.GetPlayer(Context.User.Id.ToString()) == null;
 
-                    PlayerPassFormat l_PlayerPasses = l_Player.GetPass();
+                    l_Player.LoadPass();
                     l_Player.GetStats();
                     int l_LevelIndex = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_Level);
                     if (l_LevelIndex < 0)
@@ -168,8 +168,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 }
                             }
 
-                            if (l_PlayerPasses != null)
-                                foreach (var l_PlayerPass in l_PlayerPasses.SongList)
+                            if (l_Player.m_PlayerPass != null)
+                                foreach (var l_PlayerPass in l_Player.m_PlayerPass.SongList)
                                 {
                                     if (l_Song.value.hash == l_PlayerPass.hash)
                                     {
@@ -271,10 +271,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             await Context.Channel.SendMessageAsync("", false, l_GGP.EmbedBuilder.Build());
                         }
-                        
+
                         l_Player.m_PlayerStats.Levels[l_LevelIndex].Passed = l_LevelIsPassed;
                     }
-                    
+
                     l_Player.ReWriteStats();
 
                     List<string> l_Messages = new List<string> { $"" }; /// Reset the Message between Passed and Unpassed maps

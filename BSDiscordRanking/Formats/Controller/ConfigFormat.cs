@@ -22,13 +22,13 @@ namespace BSDiscordRanking.Formats.Controller
         public bool EnableAccBasedLeaderboard { get; set; } = true;
         public bool AutomaticWeightCalculation { get; set; } = true;
         public int MinimumNumberOfScoreForAutoWeight { get; set; } = 3;
-        
+
         public bool AllowAutoWeightForAccLeaderboard { get; set; } = true;
-        
+
         public bool AllowAutoWeightForPassLeaderboard { get; set; } = false;
-        
+
         public bool OnlyAutoWeightForAccLeaderboard { get; set; } = true;
-        
+
         public bool OnlyAutoWeightForPassLeaderboard { get; set; } = false;
         public bool PerPlaylistWeighting { get; set; } = true;
         public ulong LoggingChannel { get; set; }

@@ -171,27 +171,28 @@ namespace BSDiscordRanking.Controllers
                 //Console.WriteLine("Can't find this user, makes him type a message straight before using the command!");
             }
         }
-        
+
         public static async Task UpdateRoleAndSendMessage(SocketCommandContext p_Context, ulong p_UserID, int p_NewPlayerLevel)
         {
-             Task<UpdatePlayerRoleFormat> l_RoleUpdate = UserController.UpdatePlayerLevel(p_Context, p_UserID, p_NewPlayerLevel);
-             
-             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-             Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, p_NewPlayerLevel);
-             l_EmbedBuilder.WithColor(l_Color);
-             if (l_RoleUpdate.Result.Completed && l_RoleUpdate.Result.RoleWasAlreadyGiven)
-             {
-                 l_EmbedBuilder.WithDescription($"> :x: This player already had all their roles.");
-             }
-             else if (l_RoleUpdate.Result.Completed && !l_RoleUpdate.Result.RoleWasAlreadyGiven)
-             {
-                 l_EmbedBuilder.WithDescription($"> :ok_hand: Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level).");
-             }
-             else
-             {
-                 l_EmbedBuilder.WithDescription("Can't find this user, makes him type a message straight before using the command!");
-             }
-             await p_Context.Channel.SendMessageAsync($"<@{p_UserID}>", embed:l_EmbedBuilder.Build());
+            Task<UpdatePlayerRoleFormat> l_RoleUpdate = UpdatePlayerLevel(p_Context, p_UserID, p_NewPlayerLevel);
+
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, p_NewPlayerLevel);
+            l_EmbedBuilder.WithColor(l_Color);
+            if (l_RoleUpdate.Result.Completed && l_RoleUpdate.Result.RoleWasAlreadyGiven)
+            {
+                l_EmbedBuilder.WithDescription($"> :x: This player already had all their roles.");
+            }
+            else if (l_RoleUpdate.Result.Completed && !l_RoleUpdate.Result.RoleWasAlreadyGiven)
+            {
+                l_EmbedBuilder.WithDescription($"> :ok_hand: Your roles are now updated.\n(if you lost levels, Please consider grinding to keep your Level).");
+            }
+            else
+            {
+                l_EmbedBuilder.WithDescription("Can't find this user, makes him type a message straight before using the command!");
+            }
+
+            await p_Context.Channel.SendMessageAsync($"<@{p_UserID}>", embed: l_EmbedBuilder.Build());
         }
 
         public class UpdatePlayerRoleFormat

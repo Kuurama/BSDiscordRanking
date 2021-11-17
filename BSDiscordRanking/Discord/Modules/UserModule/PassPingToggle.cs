@@ -8,7 +8,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("passpingtoggle")]
-        [Alias("passtoggleping","pingpasstoggle","tooglepassping")]
+        [Alias("passtoggleping", "pingpasstoggle", "tooglepassping")]
         [Summary("Toggles personal ping for leaderboard snipe.")]
         public async Task PassPingToggle()
         {

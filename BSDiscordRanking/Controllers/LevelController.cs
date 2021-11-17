@@ -139,7 +139,7 @@ namespace BSDiscordRanking.Controllers
 
         public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight)
         {
-            LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
+            LevelControllerFormat l_LevelControllerFormat = GetLevelControllerCache();
             MapExistFormat l_MapExistFormat = new MapExistFormat
             {
                 MapExist = false,
