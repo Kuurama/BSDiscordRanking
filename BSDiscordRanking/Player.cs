@@ -10,6 +10,7 @@ using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
+using BSDiscordRanking.Formats.Level;
 using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
@@ -53,7 +54,7 @@ namespace BSDiscordRanking
 
             LoadSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
 
-            m_LevelController = LevelController.GetLevelControllerCache();
+            m_LevelController = LevelController.GetLevelControllerCache(); /// Load The LevelController Cache as we need the available level's list.
 
             ///////////////////////////////////////////////////////////////////////////////////////
         }
@@ -482,7 +483,7 @@ namespace BSDiscordRanking
                 int l_BiggerLevelID = Int32.MinValue;
                 bool l_AboveLVLFourteenPass = false; /// Funny
                 int l_OldPlayerLevel = GetPlayerLevel();
-                PlayerPassFormat l_OldPlayerPass = ReturnPass();
+                PlayerPassFormat l_TempPlayerPass = ReturnPass();
                 m_PlayerPass = new PlayerPassFormat
                 {
                     SongList = new List<InPlayerSong>()
@@ -490,7 +491,7 @@ namespace BSDiscordRanking
                 ResetTrophy();
                 ResetLevels();
                 List<Level> l_Levels = new List<Level>();
-                foreach (var l_LevelID in m_LevelController.LevelID)
+                foreach (int l_LevelID in m_LevelController.LevelID)
                 {
                     l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
                     if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
@@ -503,105 +504,95 @@ namespace BSDiscordRanking
                     foreach (var l_Level in l_Levels.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
                     {
                         l_Weighting = l_Level.value.m_Level.customData.weighting;
-                        foreach (var l_Song in l_Level.value.m_Level.songs)
+                        foreach (SongFormat l_Song in l_Level.value.m_Level.songs)
                         {
-                            foreach (var l_Score in m_PlayerScore.scores)
+                            foreach (ApiScore l_Score in m_PlayerScore.scores)
                             {
                                 if (!l_Score.mods.Contains("NF") && !l_Score.mods.Contains("NA") && !l_Score.mods.Contains("SS") && !l_Score.mods.Contains("NB"))
                                 {
-                                    if (String.Equals(l_Song.hash, l_Score.songHash, StringComparison.CurrentCultureIgnoreCase))
+                                    if (string.Equals(l_Song.hash, l_Score.songHash, StringComparison.CurrentCultureIgnoreCase))
                                     {
                                         bool l_MapStored = false;
                                         if (l_Song.difficulties is not null)
                                         {
-                                            foreach (var l_Difficulty in l_Song.difficulties)
+                                            foreach (Difficulty l_Difficulty in l_Song.difficulties)
                                             {
                                                 if (l_Score.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                 {
                                                     bool l_DiffExist = false;
-                                                    bool l_OldDiffExist = false;
+                                                    bool l_TempDiffExist = false;
                                                     bool l_PassWeightAlreadySet = false;
                                                     bool l_AccWeightAlreadySet = false;
-                                                    foreach (var l_CachedPassedSong in m_PlayerPass.SongList)
+                                                    foreach (InPlayerSong l_CachedPassedSong in m_PlayerPass.SongList
+                                                        .Where(p_CachedPassedSong => p_CachedPassedSong.DiffList != null && string.Equals(p_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase)))
                                                     {
-                                                        if (l_CachedPassedSong.DiffList != null && string.Equals(l_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                        l_MapStored = true;
+                                                        foreach (InPlayerPassFormat l_CachedDifficulty in l_CachedPassedSong.DiffList)
                                                         {
-                                                            l_MapStored = true;
-                                                            foreach (var l_CachedDifficulty in l_CachedPassedSong.DiffList)
+                                                            if (l_TempPlayerPass.SongList != null)
                                                             {
-                                                                if (l_OldPlayerPass.SongList != null)
+                                                                foreach (InPlayerSong l_OldPassedSong in l_TempPlayerPass.SongList
+                                                                    .Where(p_TempPassedSong => l_CachedPassedSong.hash == p_TempPassedSong.hash)
+                                                                    .Where(p_TempPassedSong => p_TempPassedSong.DiffList.Any(p_TempPassedDifficulty => p_TempPassedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && p_TempPassedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)))
                                                                 {
-                                                                    foreach (var l_OldPassedSong in l_OldPlayerPass.SongList)
-                                                                    {
-                                                                        if (l_CachedPassedSong.hash == l_OldPassedSong.hash)
-                                                                        {
-                                                                            foreach (var l_OldPassedDifficulty in l_OldPassedSong.DiffList)
-                                                                            {
-                                                                                if (l_OldPassedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_OldPassedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
-                                                                                {
-                                                                                    l_OldDiffExist = true;
-                                                                                    break;
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-
-                                                                if (l_CachedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
-                                                                {
-                                                                    l_DiffExist = true;
-                                                                    break;
+                                                                    l_TempDiffExist = true;
                                                                 }
                                                             }
 
-                                                            if (!l_DiffExist)
+                                                            if (l_CachedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.unmodififiedScore >= l_Difficulty.customData.minScoreRequirement)
                                                             {
-                                                                l_Difficulty.customData.leaderboardID = l_Score.leaderboardId;
-                                                                l_CachedPassedSong.DiffList.Add(new InPlayerPassFormat()
+                                                                l_DiffExist = true;
+                                                                break;
+                                                            }
+                                                        }
+
+                                                        if (!l_DiffExist)
+                                                        {
+                                                            l_Difficulty.customData.leaderboardID = l_Score.leaderboardId;
+                                                            l_CachedPassedSong.DiffList.Add(new InPlayerPassFormat()
+                                                            {
+                                                                Difficulty = l_Difficulty,
+                                                                Score = l_Score.score,
+                                                                Rank = l_Score.rank
+                                                            });
+                                                            if (!l_TempDiffExist)
+                                                            {
+                                                                l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
+                                                                if (!m_PlayerStats.IsFirstScan)
                                                                 {
-                                                                    Difficulty = l_Difficulty,
-                                                                    Score = l_Score.score,
-                                                                    Rank = l_Score.rank
-                                                                });
-                                                                if (!l_OldDiffExist)
-                                                                {
-                                                                    l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
-                                                                    if (!m_PlayerStats.IsFirstScan)
+                                                                    if (l_Messages[l_MessagesIndex].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
+                                                                            .Length
+                                                                        > 1900)
                                                                     {
-                                                                        if (l_Messages[l_MessagesIndex].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
-                                                                                .Length
-                                                                            > 1900)
-                                                                        {
-                                                                            l_MessagesIndex++;
-                                                                        }
-
-                                                                        if (l_Messages.Count < l_MessagesIndex + 1)
-                                                                        {
-                                                                            l_Messages.Add(""); /// Initialize the next used index.
-                                                                        }
-
-                                                                        /// Display new pass (new diff passed while there was already a passed diff) 1/2
-
-                                                                        if (l_Difficulty.customData.customPassText != null)
-                                                                            l_Messages[l_MessagesIndex] += $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
-                                                                        else
-                                                                            l_Messages[l_MessagesIndex] += $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName})\n";
-                                                                        if (l_Level.value.m_LevelID >= 14)
-                                                                            l_AboveLVLFourteenPass = true; /// Funny 1/2
+                                                                        l_MessagesIndex++;
                                                                     }
 
-                                                                    l_Passes++;
-                                                                    l_PassesPerLevel++;
+                                                                    if (l_Messages.Count < l_MessagesIndex + 1)
+                                                                    {
+                                                                        l_Messages.Add(""); /// Initialize the next used index.
+                                                                    }
+
+                                                                    /// Display new pass (new diff passed while there was already a passed diff) 1/2
+
+                                                                    if (l_Difficulty.customData.customPassText != null)
+                                                                        l_Messages[l_MessagesIndex] += $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
+                                                                    else
+                                                                        l_Messages[l_MessagesIndex] += $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName})\n";
+                                                                    if (l_Level.value.m_LevelID >= 14)
+                                                                        l_AboveLVLFourteenPass = true; /// Funny 1/2
                                                                 }
-                                                                else
-                                                                {
-                                                                    l_PassesPerLevel++;
-                                                                }
+
+                                                                l_Passes++;
+                                                                l_PassesPerLevel++;
                                                             }
                                                             else
                                                             {
                                                                 l_PassesPerLevel++;
                                                             }
+                                                        }
+                                                        else
+                                                        {
+                                                            l_PassesPerLevel++;
                                                         }
                                                     }
 
@@ -625,15 +616,11 @@ namespace BSDiscordRanking
                                                         l_PlayerPassFormat.name = l_Song.name;
                                                         m_PlayerPass.SongList.Add(l_PlayerPassFormat);
 
-                                                        if (l_OldPlayerPass.SongList != null)
+                                                        if (l_TempPlayerPass.SongList != null)
                                                         {
-                                                            foreach (var l_OldPassedSong in l_OldPlayerPass.SongList)
+                                                            if (l_TempPlayerPass.SongList.Any(p_TempPassedSong => string.Equals(p_TempPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase)))
                                                             {
-                                                                if (string.Equals(l_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
-                                                                {
-                                                                    l_WasStored = true;
-                                                                    break;
-                                                                }
+                                                                l_WasStored = true;
                                                             }
                                                         }
 
@@ -742,13 +729,7 @@ namespace BSDiscordRanking
                         }
 
 
-                        foreach (var l_Song in l_Level.value.m_Level.songs)
-                        {
-                            foreach (var l_Difficulty in l_Song.difficulties)
-                            {
-                                l_NumberOfDifficulties++;
-                            }
-                        }
+                        l_NumberOfDifficulties += l_Level.value.m_Level.songs.SelectMany(p_Song => p_Song.difficulties).Count();
 
 
                         if (l_NumberOfDifficulties > 0)
@@ -884,9 +865,9 @@ namespace BSDiscordRanking
 
                     bool l_IsFirstMessage = true;
                     if (l_Passes >= 1)
-                        foreach (var l_Message in l_Messages)
+                        foreach (string l_Message in l_Messages)
                         {
-                            var l_Builder = new EmbedBuilder();
+                            EmbedBuilder l_Builder = new EmbedBuilder();
                             if (l_IsFirstMessage)
                             {
                                 if (l_OldPlayerFirstScanStatus)
@@ -899,7 +880,7 @@ namespace BSDiscordRanking
                             l_IsFirstMessage = false;
                             l_Builder.WithDescription(l_Message);
                             l_Builder.WithColor(l_Color);
-                            var l_Embed = l_Builder.Build();
+                            Embed l_Embed = l_Builder.Build();
                             await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                         }
 

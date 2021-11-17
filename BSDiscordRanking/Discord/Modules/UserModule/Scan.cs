@@ -82,7 +82,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     Gold = 0,
                     Diamond = 0
                 };
-                foreach (var l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
+                foreach (PassedLevel l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
                 {
                     l_PlayerStatsLevel.Trophy ??= new Trophy()
                     {

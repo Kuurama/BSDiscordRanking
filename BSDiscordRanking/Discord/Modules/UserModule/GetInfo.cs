@@ -25,8 +25,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
-            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            var l_Maps = new List<Tuple<SongFormat, int>>();
+            ConfigFormat l_Config = ConfigController.GetConfig();
+            var l_Maps = new List<Tuple<SongFormat, int, float>>();
             foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
             {
                 var l_Level = new Level(l_LevelID);
@@ -34,7 +34,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     if (l_Map.name.Replace(" ", "").Replace("_", "").Contains(p_SearchArg, StringComparison.OrdinalIgnoreCase))
                     {
-                        l_Maps.Add(new Tuple<SongFormat, int>(l_Map, l_LevelID));
+                        l_Maps.Add(new Tuple<SongFormat, int, float>(l_Map, l_LevelID, l_Level.m_Level.customData.weighting));
                     }
                 }
             }
@@ -51,16 +51,78 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             foreach (var l_GroupedMaps in l_Maps.GroupBy(p_Maps => p_Maps.Item1.hash))
             {
                 var l_Map = l_GroupedMaps.First().Item1;
-                if (l_NumberOfMapFound <= l_ConfigFormat.MaximumNumberOfMapInGetInfo)
+                if (l_NumberOfMapFound <= l_Config.MaximumNumberOfMapInGetInfo)
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                    foreach (var (l_SongFormat, l_Item2) in l_GroupedMaps)
+                    bool l_NewDiff = false;
+                    foreach (var (l_SongFormat, l_MapLevelID, l_Weight) in l_GroupedMaps)
                     {
                         foreach (var l_MapDifficulty in l_SongFormat.difficulties)
                         {
+                            
+                            if (l_NewDiff)
+                            {
+                                l_EmbedBuilder.AddField("\u200B", "\u200B", false);
+                            }
+
+                            l_NewDiff = true;
                             l_EmbedBuilder.AddField(l_MapDifficulty.name, l_MapDifficulty.characteristic, true);
-                            l_EmbedBuilder.AddField("Level:", $"Lv.{l_Item2}", true);
-                            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                            l_EmbedBuilder.AddField("Level:", $"Lv.{l_MapLevelID}", true);
+                            if (l_MapDifficulty.customData.category != null)
+                            {
+                                l_EmbedBuilder.AddField("Category:", l_MapDifficulty.customData.category, true);
+                            }
+
+                            if (l_MapDifficulty.customData.minScoreRequirement > 0)
+                            {
+                                l_EmbedBuilder.AddField("Min Score Requirement:", $"{l_MapDifficulty.customData.minScoreRequirement} ({Math.Round((float)l_MapDifficulty.customData.minScoreRequirement / l_MapDifficulty.customData.maxScore * 100f * 100f) / 100f}%)", true);
+                            }
+
+
+                            bool l_PassWeightAlreadySet = false;
+                            bool l_AccWeightAlreadySet = false;
+                            if (l_MapDifficulty.customData.forceManualWeight)
+                            {
+                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
+                                {
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_MapDifficulty.customData.manualWeight, true);
+                                    l_AccWeightAlreadySet = true;
+                                }
+
+                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
+                                {
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_MapDifficulty.customData.manualWeight, true);
+                                    l_PassWeightAlreadySet = true;
+                                }
+                            }
+
+                            if (l_MapDifficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
+                            {
+                                if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
+                                {
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_MapDifficulty.customData.AutoWeight, true);
+                                    l_AccWeightAlreadySet = true;
+                                }
+
+                                if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
+                                {
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_MapDifficulty.customData.AutoWeight, true);
+                                    l_PassWeightAlreadySet = true;
+                                }
+                            }
+
+                            if (l_Config.PerPlaylistWeighting)
+                            {
+                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet && l_Config.EnableAccBasedLeaderboard)
+                                {
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_Weight, true);
+                                }
+
+                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet && l_Config.EnablePassBasedLeaderboard)
+                                {
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_Weight, true);
+                                }
+                            }
                         }
                     }
 
@@ -72,11 +134,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else
                 {
-                    foreach (var (l_SongFormat, l_Item2) in l_GroupedMaps)
+                    foreach (var (l_SongFormat, l_MapLevelID, l_Weight) in l_GroupedMaps)
                     {
                         foreach (var l_MapDifficulty in l_SongFormat.difficulties)
                         {
-                            l_NotDisplayedMaps += $"> {l_Map.name}: *`({l_MapDifficulty.name} - {l_MapDifficulty.characteristic})`* in Lv.{l_Item2}\n";
+                            l_NotDisplayedMaps += $"> {l_Map.name}: *`({l_MapDifficulty.name} - {l_MapDifficulty.characteristic})`* in Lv.{l_MapLevelID}\n";
                             l_NumberOfNotDisplayedMaps++;
                         }
                     }
@@ -85,7 +147,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 l_NumberOfMapFound++;
             }
 
-            if (l_NumberOfMapFound > l_ConfigFormat.MaximumNumberOfMapInGetInfo)
+            if (l_NumberOfMapFound > l_Config.MaximumNumberOfMapInGetInfo)
             {
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                 l_EmbedBuilder.WithColor(new Color(255, 0, 0));
