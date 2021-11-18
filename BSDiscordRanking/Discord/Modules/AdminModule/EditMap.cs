@@ -71,7 +71,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = new EmbedBuilder().WithTitle("Level-Edit").WithDescription("Please choose the level you want this difficulty to be in.").Build());
                     await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                     BotHandler.m_Client.InteractionCreated += LevelEditSelect;
-                    break;gih
+                    break;
             }
         }
 
