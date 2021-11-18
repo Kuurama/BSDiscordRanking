@@ -25,6 +25,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             ConfigFormat l_Config = ConfigController.GetConfig();
             float l_MaxPassPoints = 0f;
             float l_MaxAccPoints = 0f;
+            LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
             if (Int32.TryParse(p_Embed1Or0, out int l_EmbedIntValue))
             {
                 l_FullEmbeddedGGP = l_EmbedIntValue > 0;
@@ -39,12 +40,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     int l_PlayerLevel = l_Player.GetPlayerLevel();
                     int l_LevelTemp = int.MaxValue;
-                    foreach (var l_ID in LevelController.GetLevelControllerCache().LevelID)
+
+                    foreach (int l_ID in l_LevelControllerFormat.LevelID.Where(p_ID => p_ID > l_PlayerLevel && p_ID <= l_LevelTemp))
                     {
-                        if (l_ID > l_PlayerLevel && l_ID <= l_LevelTemp)
-                        {
-                            l_LevelTemp = l_ID;
-                        }
+                        l_LevelTemp = l_ID;
                     }
 
                     p_Level = l_LevelTemp;
@@ -56,12 +55,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 // ignored
             }
 
-            bool l_IDExist = false;
-            foreach (var l_ID in LevelController.GetLevelControllerCache().LevelID)
-            {
-                if (l_ID == p_Level)
-                    l_IDExist = true;
-            }
+            bool l_IDExist = l_LevelControllerFormat.LevelID.Any(p_X => p_X == p_Level);
 
             if (l_IDExist)
             {
@@ -108,7 +102,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 DiffList = new List<InPlayerPassFormat>()
                             });
 
-                            foreach (var l_SongDifficulty in l_Song.value.difficulties)
+                            foreach (Difficulty l_SongDifficulty in l_Song.value.difficulties)
                             {
                                 l_PlayerPassFormat.SongList[l_Song.index].DiffList.Add(
                                     new InPlayerPassFormat()
@@ -169,32 +163,30 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
 
                             if (l_Player.m_PlayerPass != null)
-                                foreach (var l_PlayerPass in l_Player.m_PlayerPass.SongList)
+                                foreach (InPlayerSong l_PlayerPass in l_Player.m_PlayerPass.SongList)
                                 {
                                     if (l_Song.value.hash == l_PlayerPass.hash)
                                     {
-                                        foreach (var l_SongDifficulty in l_Song.value.difficulties)
+                                        foreach (Difficulty l_SongDifficulty in l_Song.value.difficulties)
                                         {
-                                            foreach (var l_PlayerPassDifficulty in l_PlayerPass.DiffList)
+                                            foreach (InPlayerPassFormat l_PlayerPassDifficulty in l_PlayerPass.DiffList
+                                                .Where(p_PlayerPassDifficulty => l_SongDifficulty.characteristic == p_PlayerPassDifficulty.Difficulty.characteristic && l_SongDifficulty.name == p_PlayerPassDifficulty.Difficulty.name))
                                             {
-                                                if (l_SongDifficulty.characteristic == l_PlayerPassDifficulty.Difficulty.characteristic && l_SongDifficulty.name == l_PlayerPassDifficulty.Difficulty.name)
+                                                l_LevelIsPassed = true;
+
+                                                Console.WriteLine($"Pass detected on {l_Song.value.name} {l_SongDifficulty.name} - {l_SongDifficulty.characteristic}");
+                                                l_NumberOfPass++;
+
+                                                int l_DiffIndex = l_PlayerPassFormat.SongList[l_Song.index].DiffList.FindIndex(p_X => p_X.Difficulty.characteristic == l_SongDifficulty.characteristic && p_X.Difficulty.name == l_SongDifficulty.name);
+                                                if (l_DiffIndex >= 0)
                                                 {
-                                                    l_LevelIsPassed = true;
-
-                                                    Console.WriteLine($"Pass detected on {l_Song.value.name} {l_SongDifficulty.name} - {l_SongDifficulty.characteristic}");
-                                                    l_NumberOfPass++;
-
-                                                    int l_DiffIndex = l_PlayerPassFormat.SongList[l_Song.index].DiffList.FindIndex(p_X => p_X.Difficulty.characteristic == l_SongDifficulty.characteristic && p_X.Difficulty.name == l_SongDifficulty.name);
-                                                    if (l_DiffIndex >= 0)
-                                                    {
-                                                        l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Difficulty.customData = l_PlayerPassDifficulty.Difficulty.customData;
-                                                        l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Score = l_PlayerPassDifficulty.Score;
-                                                        l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Rank = l_PlayerPassDifficulty.Rank;
-                                                        l_EarnedPoints += l_Level.m_Level.customData.weighting * 0.375f;
-                                                    }
-
-                                                    break;
+                                                    l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Difficulty.customData = l_PlayerPassDifficulty.Difficulty.customData;
+                                                    l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Score = l_PlayerPassDifficulty.Score;
+                                                    l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Rank = l_PlayerPassDifficulty.Rank;
+                                                    l_EarnedPoints += l_Level.m_Level.customData.weighting * 0.375f;
                                                 }
+
+                                                break;
                                             }
                                         }
                                     }
@@ -202,14 +194,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                     }
 
-                    int l_NumberOfDifficulties = 0;
-                    foreach (var l_Song in l_Level.m_Level.songs)
-                    {
-                        foreach (var l_Difficulty in l_Song.difficulties)
-                        {
-                            l_NumberOfDifficulties++;
-                        }
-                    }
+                    int l_NumberOfDifficulties = l_Level.m_Level.songs.SelectMany(p_Song => p_Song.difficulties).Count();
 
                     string l_PlayerTrophy = "";
 
@@ -254,22 +239,38 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                        l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints.ToString("n2")}) {l_PlayerTrophy}");
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
                             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                             l_AlreadyHaveThumbnail = true;
                         }
+                        l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}");
 
-                        if (l_NumberOfDifficulties - l_NumberOfPass <= 0)
-                            l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level}");
-
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, true);
-
-                        if (l_GGP.EmbedBuilder != null)
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, true, false);
+                        int l_EmbedIndex = 0;
+                        if (l_GGP.Embed != null)
                         {
-                            await Context.Channel.SendMessageAsync("", false, l_GGP.EmbedBuilder.Build());
+                            foreach (Embed l_Embed in l_GGP.Embed)
+                            {
+                                if (l_EmbedIndex == 0 && l_GGP.Embed.Count != 1)
+                                {
+                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                    
+                                }
+                                else if (l_EmbedIndex  + 1 >= l_GGP.Embed.Count && (l_NumberOfDifficulties - l_NumberOfPass <= 0))
+                                {
+                                    
+                                    Embed l_LastEmbed = l_Embed.ToEmbedBuilder().WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level} (or {BotHandler.m_Prefix}getplaylist all) to get all of them.").Build();
+                                    await Context.Channel.SendMessageAsync("", false, l_LastEmbed);
+                                }
+                                else
+                                {
+                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                }
+                                l_EmbedIndex++;
+                            }
+                            
                         }
 
                         l_Player.m_PlayerStats.Levels[l_LevelIndex].Passed = l_LevelIsPassed;
@@ -282,22 +283,39 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_NumberOfDifficulties - l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                        l_EmbedBuilder.WithTitle($"Unpassed maps in level {p_Level}");
+                        
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
                             l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
                             l_AlreadyHaveThumbnail = true;
                         }
+                        l_EmbedBuilder.WithTitle($"Unpassed maps in level {p_Level}");
 
-                        if (l_NumberOfPass >= 0)
-                            l_EmbedBuilder.WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level} (or {BotHandler.m_Prefix}getplaylist all) to get all of them.");
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, false, true);
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, false);
-
-                        if (l_GGP.EmbedBuilder != null)
+                        int l_EmbedIndex = 0;
+                        if (l_GGP.Embed != null)
                         {
-                            await Context.Channel.SendMessageAsync("", false, l_GGP.EmbedBuilder.Build());
+                            foreach (Embed l_Embed in l_GGP.Embed)
+                            {
+                                if (l_EmbedIndex == 0 && l_GGP.Embed.Count != 1)
+                                {
+                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                    
+                                }
+                                else if (l_EmbedIndex + 1 >= l_GGP.Embed.Count && (l_NumberOfPass >= 0))
+                                {
+                                    
+                                    Embed l_LastEmbed = l_Embed.ToEmbedBuilder().WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level} (or {BotHandler.m_Prefix}getplaylist all) to get all of them.").Build();
+                                    await Context.Channel.SendMessageAsync("", false, l_LastEmbed);
+                                }
+                                else
+                                {
+                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                }
+                                l_EmbedIndex++;
+                            }
                         }
                     }
                 }
@@ -318,116 +336,150 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
         }
 
-        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses)
+        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory)
         {
             int l_Y = 0;
             int l_NumbedOfEmbed = 1;
             string l_LastMessage = null;
-            int l_MessagesIndex = 0;
+            int l_NumberOfField = 0;
+            List<Embed> l_EmbedBuildedList = new List<Embed>();
             List<string> l_Messages = new List<string> { "" };
 
             int l_MessageTotalLength = 0;
-            foreach (var l_Map in p_PlayerPassFormat.SongList)
+
+            List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples =
+                (from l_Map in p_PlayerPassFormat.SongList
+                    from l_Diff in l_Map.DiffList
+                    select new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, l_Diff.Difficulty.customData.category)).ToList();
+            IOrderedEnumerable<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_SortedMapsTuples = from l_Category in l_MapsTuples orderby l_Category.Item3 select l_Category;
+
+
+            string l_CurrentCategory = null;
+
+            foreach ((InPlayerSong l_Map, InPlayerPassFormat l_Diff, string l_Category) in l_SortedMapsTuples)
             {
-                foreach (var l_Diff in l_Map.DiffList)
+                if (p_OnlySendPasses) /// Sort passed maps from unpassed maps with score.
                 {
-                    if (p_OnlySendPasses) /// Sort passed maps from unpassed maps with score.
+                    if (l_Diff.Score <= 0)
+                        continue;
+                }
+                else
+                {
+                    if (l_Diff.Score > 0)
+                        continue;
+                }
+
+                if (l_CurrentCategory != l_Category && p_DisplayCategory)
+                {
+                    
+                    l_Messages.Add("");
+                    if (l_LastMessage is not ("" or null))
                     {
-                        if (l_Diff.Score <= 0)
-                            continue;
-                    }
-                    else
-                    {
-                        if (l_Diff.Score > 0)
-                            continue;
-                    }
-
-                    string l_ScoreOnMap = (l_Diff.Score != 0 ? $"- {Math.Round(l_Diff.Score / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%" : null);
-                    string l_RankOnMap = (l_Diff.Rank != 0 ? $"(#{l_Diff.Rank})" : null);
-                    string l_CustomText = (l_Diff.Difficulty.customData.infoOnGGP != null ? $"- {l_Diff.Difficulty.customData.infoOnGGP.Replace("_", " ")}" : "");
-                    if (p_FullEmbeddedGGP)
-                    {
-                        var l_EmbedValue = $"{l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}";
-                        if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
-                            l_EmbedValue += $" - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText}";
-                        else
-                            l_EmbedValue += l_CustomText;
-
-                        p_EmbedBuilder.AddField($"{l_Map.name} {l_ScoreOnMap} {l_RankOnMap}", l_EmbedValue, true);
-
-                        if (l_NumbedOfEmbed % 2 != 0)
-                        {
-                            if (l_Y % 2 == 0)
-                                p_EmbedBuilder.AddField("\u200B", "\u200B", true);
-                        }
-                        else if (l_Y % 2 != 0)
-                            p_EmbedBuilder.AddField("\u200B", "\u200B", true);
-
-                        l_Y++;
-                        if (l_Y % 15 == 0)
-                        {
-                            await Context.Channel.SendMessageAsync("", false, p_EmbedBuilder.Build());
-                            p_EmbedBuilder = new EmbedBuilder();
-
-                            p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
-                            l_NumbedOfEmbed++;
-                        }
-                    }
-                    else
-                    {
-                        if (l_Messages[l_MessagesIndex].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
-                            .Length > 1000)
-                        {
-                            l_MessageTotalLength += l_Messages[l_MessagesIndex].Length;
-                            l_MessagesIndex++;
-                        }
-
-                        if (l_Messages.Count < l_MessagesIndex + 1 && l_MessageTotalLength <= 5600)
-                        {
-                            l_Messages.Add(""); /// Initialize the next used index.
-                            p_EmbedBuilder.AddField("\u200B", l_Messages[l_MessagesIndex - 1]);
-                        }
-                        else if (l_MessageTotalLength > 3900) /// Description/Field lenght limit
-                        {
-                            l_Messages.Add(""); /// Initialize the next used index.
-                            p_EmbedBuilder.AddField("\u200B", l_Messages[l_MessagesIndex - 1]);
-                            var l_Embed = p_EmbedBuilder.Build();
-                            await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
-                            p_EmbedBuilder = new EmbedBuilder();
-                            p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
-                            l_MessageTotalLength = 0;
-                        }
-
-                        l_Messages[l_MessagesIndex] += $"***`{l_Map.name.Replace("`", @"\`").Replace("*", @"\*")}`***";
-
-                        if (l_Diff.Difficulty.characteristic == "Standard")
-                            l_Messages[l_MessagesIndex] += $" *`({l_Diff.Difficulty.name})`*";
-                        else
-                            l_Messages[l_MessagesIndex] += $" *`({l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic})`*";
-
-                        if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
-
-                            l_Messages[l_MessagesIndex] += $" *`- MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%)`*";
-
-
-                        if (l_CustomText != "")
-                            l_Messages[l_MessagesIndex] += $" *`{l_CustomText}`*";
-
-                        if (l_ScoreOnMap != null)
-                        {
-                            l_Messages[l_MessagesIndex] += $" *`{l_ScoreOnMap}`*";
-                        }
-
-                        if (l_RankOnMap != null)
-                        {
-                            l_Messages[l_MessagesIndex] += $" *`{l_RankOnMap}`*";
-                        }
-
-                        l_Messages[l_MessagesIndex] += "\n";
-
-                        l_LastMessage = l_Messages[l_MessagesIndex];
+                        p_EmbedBuilder.WithDescription(l_LastMessage);
+                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        p_EmbedBuilder = new EmbedBuilder();
+                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        l_LastMessage = "";
+                        l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
+                        l_CurrentCategory = l_Category;
                     }
                 }
+                
+                string l_ScoreOnMap = (l_Diff.Score != 0 ? $"- {Math.Round(l_Diff.Score / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%" : null);
+                string l_RankOnMap = (l_Diff.Rank != 0 ? $"(#{l_Diff.Rank})" : null);
+                string l_CustomText = (l_Diff.Difficulty.customData.infoOnGGP != null ? $"- {l_Diff.Difficulty.customData.infoOnGGP.Replace("_", " ")}" : "");
+                if (p_FullEmbeddedGGP)
+                {
+                    string l_EmbedValue = $"{l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}";
+                    if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
+                        l_EmbedValue += $" - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText}";
+                    else
+                        l_EmbedValue += l_CustomText;
+
+                    p_EmbedBuilder.AddField($"{l_Map.name} {l_ScoreOnMap} {l_RankOnMap}", l_EmbedValue, true);
+
+                    if (l_NumbedOfEmbed % 2 != 0)
+                    {
+                        if (l_Y % 2 == 0)
+                            p_EmbedBuilder.AddField("\u200B", "\u200B", true);
+                    }
+                    else if (l_Y % 2 != 0)
+                        p_EmbedBuilder.AddField("\u200B", "\u200B", true);
+
+                    l_Y++;
+                    if (l_Y % 15 == 0)
+                    {
+                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        p_EmbedBuilder = new EmbedBuilder();
+
+                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        l_NumbedOfEmbed++;
+                    }
+                }
+                else
+                {
+                    if (l_Messages[^1].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
+                        .Length > 1000)
+                    {
+                        l_MessageTotalLength += l_Messages[^1].Length;
+                    }
+                    
+                    if (l_MessageTotalLength > 3900) /// Description/Field lenght limit
+                    {
+                        p_EmbedBuilder.WithDescription(l_Messages[^1]);
+                        l_Messages.Add(""); /// Initialize the next used index.
+                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        p_EmbedBuilder = new EmbedBuilder();
+                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        l_MessageTotalLength = 0;
+                    }
+                    else if (p_EmbedBuilder.Fields.Count >= 22)
+                    {
+                        p_EmbedBuilder.WithDescription(l_Messages[^1]);
+                        l_Messages.Add(""); /// Initialize the next used index.
+                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        p_EmbedBuilder = new EmbedBuilder();
+                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        l_MessageTotalLength = 0;
+                    }
+
+                    l_Messages[^1] += $"***`{l_Map.name.Replace("`", @"\`").Replace("*", @"\*")}`***";
+
+                    if (l_Diff.Difficulty.characteristic == "Standard")
+                        l_Messages[^1] += $" *`({l_Diff.Difficulty.name})`*";
+                    else
+                        l_Messages[^1] += $" *`({l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic})`*";
+
+                    if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
+
+                        l_Messages[^1] += $" *`- MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%)`*";
+
+
+                    if (l_CustomText != "")
+                        l_Messages[^1] += $" *`{l_CustomText}`*";
+
+                    if (l_ScoreOnMap != null)
+                    {
+                        l_Messages[^1] += $" *`{l_ScoreOnMap}`*";
+                    }
+
+                    if (l_RankOnMap != null)
+                    {
+                        l_Messages[^1] += $" *`{l_RankOnMap}`*";
+                    }
+
+                    l_Messages[^1] += "\n";
+
+                    l_LastMessage = l_Messages[^1];
+                    
+                }
+
+                if (l_CurrentCategory != l_Category && p_DisplayCategory && l_LastMessage != null)
+                {
+                    l_LastMessage = l_LastMessage.Insert(0, $"**{l_Category} maps:**\n\n");
+                    l_CurrentCategory = l_Category;
+                }
+
             }
 
             if (!p_FullEmbeddedGGP && l_LastMessage != "")
@@ -435,15 +487,23 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 p_EmbedBuilder.AddField("\u200B", l_LastMessage);
             }
 
+            
             if (p_EmbedBuilder.Fields.Count <= 0)
             {
                 p_EmbedBuilder = null;
             }
 
+            if (p_EmbedBuilder != null)
+            {
+                l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+            }
+
+            l_EmbedBuildedList.RemoveAll(p_X => p_X.Description == null && p_X.Fields.Length <= 0 && p_X.Title == null);
+
             return new GGPFormat
             {
                 Messages = l_Messages,
-                EmbedBuilder = p_EmbedBuilder
+                Embed = l_EmbedBuildedList
             };
         }
     }
@@ -452,6 +512,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     public class GGPFormat
     {
         public List<string> Messages { get; set; }
-        public EmbedBuilder EmbedBuilder { get; set; }
+        public List<Embed> Embed { get; set; }
     }
 }

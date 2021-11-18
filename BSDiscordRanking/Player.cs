@@ -1242,14 +1242,8 @@ namespace BSDiscordRanking
             {
                 Levels = new List<InPassPerLevelFormat>()
             };
-            int l_BiggerLevelID = 0;
 
-            List<Level> l_Levels = new List<Level>();
-            foreach (var l_LevelID in m_LevelController.LevelID)
-            {
-                l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
-                if (l_BiggerLevelID < l_LevelID) l_BiggerLevelID = l_LevelID;
-            }
+            List<Level> l_Levels = m_LevelController.LevelID.Select(p_LevelID => new Level(p_LevelID)).ToList();
 
             Console.WriteLine($"All {l_Levels.Count} Levels loaded.");
 
