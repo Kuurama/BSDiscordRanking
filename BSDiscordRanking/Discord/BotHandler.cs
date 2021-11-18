@@ -18,7 +18,7 @@ namespace BSDiscordRanking.Discord
         public static CommandService m_Commands;
 #pragma warning restore CA2211
         // ReSharper disable once MemberCanBePrivate.Global
-        public DiscordSocketClient m_Client;
+        public static DiscordSocketClient m_Client;
         public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
 
         private async Task RunBotAsync(ConfigFormat p_Config)
