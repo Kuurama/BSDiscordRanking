@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord;
@@ -17,15 +18,22 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             if (p_Command == null)
             {
-                bool l_IsAdmin = false;
-                if (Context.User is SocketGuildUser l_User)
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == ConfigController.GetConfig().BotManagementRoleID))
-                        l_IsAdmin = true;
-
-
                 int i = 0;
                 foreach (var l_Module in BotHandler.m_Commands.Modules)
                 {
+                    // This is very bad, should be changed one day but I don't know how to do it
+                    if (l_Module.Name == "AdminModule")
+                    {
+                        if (!(PermissionHandler.GetUserPermLevel(Context) >= 2))
+                            break;
+                    }
+                    else if (l_Module.Name == "EditorModule")
+                    {
+                        if (!(PermissionHandler.GetUserPermLevel(Context) >= 1))
+                            break;
+                    }
+
+
                     EmbedBuilder l_Builder = new EmbedBuilder();
                     l_Builder.WithTitle(l_Module.Name);
                     foreach (var l_Command in l_Module.Commands)
@@ -38,14 +46,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                         l_Builder.AddField(l_Title, l_Command.Summary, true);
                         l_Builder.WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Kuurama#3423 & Julien#1234");
-                    }
-
-                    if (l_Module.Name.Contains("Admin"))
-                    {
-                        if (!l_IsAdmin)
-                            continue;
-                        l_Builder.WithColor(Color.Red);
-                        l_Builder.Footer = null;
                     }
 
                     await Context.Channel.SendMessageAsync("", false, l_Builder.Build());

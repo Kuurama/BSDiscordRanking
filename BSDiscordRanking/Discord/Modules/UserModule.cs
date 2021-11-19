@@ -19,6 +19,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
+        public const int Permission = 0;
         private void CreateUnpassedPlaylist(PlayerPassFormat p_PlayerPass, int p_Level, string p_Path)
         {
             Level l_Level = new Level(p_Level);

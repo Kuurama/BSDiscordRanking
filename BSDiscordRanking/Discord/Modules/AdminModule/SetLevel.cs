@@ -7,7 +7,7 @@ using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
-    [RequireManagerRole]
+    [PermissionHandler.RequirePermissionAttribute(Permission)]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("setlevel")]

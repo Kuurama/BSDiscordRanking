@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 
-namespace BSDiscordRanking.Discord.Modules.AdminModule
+namespace BSDiscordRanking.Discord.Modules.EditorModule
 {
-    [RequireManagerRole]
-    public partial class AdminModule : ModuleBase<SocketCommandContext>
+    [PermissionHandler.RequirePermissionAttribute(Permission)]
+    public partial class EditorModule : ModuleBase<SocketCommandContext>
     {
         [Command("resetscorerequirement")]
         [Summary("Sets all maps's score requirement from a level to 0.")]

@@ -8,9 +8,10 @@ using Discord.WebSocket;
 // ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
-    [RequireManagerRole]
+    [PermissionHandler.RequirePermissionAttribute(Permission)]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
+        public const int Permission = 2;
         public static int ScoreFromAcc(float p_Acc = 0f, int p_NoteCount = 0)
         {
             /// Made by MoreOwO :3
@@ -45,23 +46,6 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 return 0;
 
             return (int)Math.Round(l_MaxScore * (p_Acc / 100));
-        }
-
-        private class RequireManagerRoleAttribute : PreconditionAttribute
-        {
-            public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context, CommandInfo p_Command, IServiceProvider p_Services)
-            {
-                if (p_Context.User is SocketGuildUser l_User)
-                {
-                    ulong l_RoleID = ConfigController.GetConfig().BotManagementRoleID;
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID))
-                    {
-                        return Task.FromResult(PreconditionResult.FromSuccess());
-                    }
-                }
-
-                return Task.FromResult(PreconditionResult.FromError(ExecuteResult.FromError(new Exception(ErrorMessage = "Incorrect user's permissions"))));
-            }
         }
     }
 }

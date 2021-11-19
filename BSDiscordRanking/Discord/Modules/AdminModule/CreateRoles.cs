@@ -5,7 +5,7 @@ using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
-    [RequireManagerRole]
+    [PermissionHandler.RequirePermissionAttribute(Permission)]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("createroles")]
