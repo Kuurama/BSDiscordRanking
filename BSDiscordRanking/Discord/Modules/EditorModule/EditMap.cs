@@ -17,7 +17,8 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
         [Command("editmap")]
         [Alias("rankedit")]
         [Summary("Open the Edit-Map management menu.")]
-        private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", bool p_DisplayEditMap = true, bool p_ChangeLevel = false, int p_NewLevel = default, bool p_ChangeMinPercentageRequirement = false, int p_NewMinPercentageRequirement = default, bool p_ChangeCategory = false, string p_NewCategory = null, bool p_ChangeInfoOnGGP = false, string p_NewInfoOnGGP = null, bool p_ChangeCustomPassText = false, string p_NewCustomPassText = null, bool p_ToggleManualWeight = false, bool p_ChangeWeight = false, float p_NewWeight = default)
+        private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", bool p_DisplayEditMap = true, bool p_ChangeLevel = false, int p_NewLevel = default, bool p_ChangeMinPercentageRequirement = false, int p_NewMinPercentageRequirement = default, bool p_ChangeCategory = false, string p_NewCategory = null, bool p_ChangeInfoOnGGP = false, string p_NewInfoOnGGP = null, bool p_ChangeCustomPassText = false, string p_NewCustomPassText = null, bool p_ToggleManualWeight = false, bool p_ChangeWeight = false, float p_NewWeight = default,
+            ulong p_UserID = default)
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
@@ -141,15 +142,16 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                         {
                                             if (Context != null)
                                             {
+                                                l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
                                                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
                                                     component: new ComponentBuilder()
-                                                        .WithButton(new ButtonBuilder("Change Level", "LevelIDChange", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change MinPercentageRequirement", "MinPercentageRequirementChange", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Category", "CategoryChange", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change InfoOnGGP", "InfoOnGGPChange", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change CustomPassText", "CustomPassTextChange", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Toggle Manual Weight", "ToggleManualWeight", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger))
+                                                        .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Toggle Manual Weight", $"ToggleManualWeight_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitLevelEdit_{Context.User.Id}", ButtonStyle.Danger))
                                                         .Build());
                                             }
                                         }
@@ -218,7 +220,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                                     l_MapChangeEmbedBuilder.AddField($"New manual weight:", p_NewWeight, false);
 
                                                 l_MapChangeEmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
-                                                if (Context != null) l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                                if (p_UserID != default) l_EmbedBuilder.WithFooter($"Operated by <@{p_UserID}>");
                                                 l_MapChangeEmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                                 l_MapChangeEmbedBuilder.WithColor(Color.Blue);
 
@@ -258,81 +260,97 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
 
         public async Task LevelEditButtonHandler(SocketMessageComponent p_MessageComponent)
         {
-            switch (p_MessageComponent.Data.CustomId)
+            ulong l_UserID = p_MessageComponent.User.Id;
+            string[] l_SplicedCustomID = p_MessageComponent.Data.CustomId.Split("_"); /// I choosed to use the button custom ID because adding buttons at a different place or command and making the DiscordID built in footer (or else) of an Embed wouldn't be good (as it would always need an Embed and a Footer).
+            bool l_IsCorrectUserID = l_SplicedCustomID.Any(p_SplicedPartCustomID => p_SplicedPartCustomID == l_UserID.ToString());
+            if (l_IsCorrectUserID)
             {
-                case "LevelIDChange":
-                    List<SelectMenuOptionBuilder> l_SelectMenuOptionBuilders = new List<SelectMenuOptionBuilder>();
-                    List<List<SelectMenuOptionBuilder>> l_ListListMenuOptionBuilder = new List<List<SelectMenuOptionBuilder>>() { new List<SelectMenuOptionBuilder>() };
-                    ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
-                    LevelControllerFormat l_LevelControllerFormat = LevelController.FetchAndGetLevel();
-                    LevelController.ReWriteController(l_LevelControllerFormat);
+                switch (l_SplicedCustomID[0])
+                {
+                    case "LevelIDChange":
+                        List<SelectMenuOptionBuilder> l_SelectMenuOptionBuilders = new List<SelectMenuOptionBuilder>();
+                        List<List<SelectMenuOptionBuilder>> l_ListListMenuOptionBuilder = new List<List<SelectMenuOptionBuilder>>() { new List<SelectMenuOptionBuilder>() };
+                        ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
+                        LevelControllerFormat l_LevelControllerFormat = LevelController.FetchAndGetLevel();
+                        LevelController.ReWriteController(l_LevelControllerFormat);
 
-                    foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
-                    {
-                        l_SelectMenuOptionBuilders.Add(new SelectMenuOptionBuilder($"Level {l_LevelID}", l_LevelID.ToString()));
-                    }
-
-                    int l_Index = 0;
-                    int l_ListListMenuIndex = 0;
-                    foreach (var l_SelectMenuOptionBuilder in l_SelectMenuOptionBuilders)
-                    {
-                        if (l_Index > 23)
+                        foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
                         {
-                            l_ListListMenuOptionBuilder.Add(new List<SelectMenuOptionBuilder>());
-                            l_ListListMenuIndex++;
-                            l_Index = 0;
+                            l_SelectMenuOptionBuilders.Add(new SelectMenuOptionBuilder($"Level {l_LevelID}", l_LevelID.ToString()));
                         }
 
-                        l_ListListMenuOptionBuilder[l_ListListMenuIndex].Add(l_SelectMenuOptionBuilder);
-                        l_Index++;
-                    }
+                        int l_Index = 0;
+                        int l_ListListMenuIndex = 0;
+                        foreach (var l_SelectMenuOptionBuilder in l_SelectMenuOptionBuilders)
+                        {
+                            if (l_Index > 23)
+                            {
+                                l_ListListMenuOptionBuilder.Add(new List<SelectMenuOptionBuilder>());
+                                l_ListListMenuIndex++;
+                                l_Index = 0;
+                            }
 
-                    l_Index = 0;
-                    foreach (var l_ListMenuOptionBuilder in l_ListListMenuOptionBuilder)
-                    {
-                        l_ComponentBuilder.WithSelectMenu($"SelectLevelMenu_{l_Index}", options: l_ListMenuOptionBuilder);
-                        l_Index++;
-                    }
+                            l_ListListMenuOptionBuilder[l_ListListMenuIndex].Add(l_SelectMenuOptionBuilder);
+                            l_Index++;
+                        }
 
-                    EmbedBuilder l_EmbedBuilder = p_MessageComponent.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
-                    l_ComponentBuilder.WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger));
-                    await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("Level-Edit:", "Please choose the level you want this difficulty to be in.").Build());
-                    await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
-                    break;
+                        l_Index = 0;
+                        foreach (var l_ListMenuOptionBuilder in l_ListListMenuOptionBuilder)
+                        {
+                            l_ComponentBuilder.WithSelectMenu($"SelectLevelMenu_{l_Index}", options: l_ListMenuOptionBuilder);
+                            l_Index++;
+                        }
 
-                case "ExitLevelEdit":
-                    await p_MessageComponent.Message.DeleteAsync();
-                    break;
+                        EmbedBuilder l_EmbedBuilder = p_MessageComponent.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
+                        l_ComponentBuilder.WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("Level-Edit:", "Please choose the level you want this difficulty to be in.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
 
-                case "CategoryChange":
-                    EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
-                    await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_ChangeCategory: true, p_NewCategory: "shitpost");
-                    break;
+                    case "ExitLevelEdit":
+                        await p_MessageComponent.Message.DeleteAsync();
+                        break;
+
+                    case "CategoryChange":
+                        EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                        await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_ChangeCategory: true, p_NewCategory: "shitpost");
+                        break;
+                }
             }
         }
 
         public async Task EditMapInteraction(SocketInteraction p_Interaction)
         {
+
             switch (p_Interaction.Type)
             {
                 case InteractionType.MessageComponent:
                     SocketMessageComponent l_Interaction = (SocketMessageComponent)p_Interaction;
-                    if (l_Interaction.Data.CustomId.Contains("SelectLevelMenu"))
+                    ulong l_UserID = p_Interaction.User.Id;
+                    Embed l_Embed = l_Interaction.Message.Embeds.FirstOrDefault();
+                    if (l_Embed != null)
                     {
-                        string l_NewLevelID = l_Interaction.Data.Values.FirstOrDefault();
-                        EmbedBuilder l_EmbedBuilder = l_Interaction.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
+                        string[] l_SplicedCustomID = l_Embed.Footer.ToString()?.Split("_");
+                        bool l_IsCorrectUserID = l_SplicedCustomID != null && l_SplicedCustomID.Any(p_SplicedPartCustomID => p_SplicedPartCustomID == l_UserID.ToString()); /// Find For User's DiscordID in the footer, then compare it to the interaction's UserID.
+                        if (l_IsCorrectUserID)
+                        {
+                            if (l_Interaction.Data.CustomId.Contains("SelectLevelMenu"))
+                            {
+                                EmbedBuilder l_EmbedBuilder = l_Embed.ToEmbedBuilder();
+                                string l_NewLevelID = l_Interaction.Data.Values.FirstOrDefault();
+                                l_EmbedBuilder.Fields.RemoveAt(l_EmbedBuilder.Fields.Count - 1);
+                                int l_LevelFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Level"));
+                                string l_OldLevelID = l_EmbedBuilder.Fields[l_LevelFieldIndex].Value.ToString();
+                                l_EmbedBuilder.Fields[l_LevelFieldIndex].Name = $"New Level:";
+                                l_EmbedBuilder.Fields[l_LevelFieldIndex].Value = $"Lv.{l_NewLevelID}";
+                                await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("Level-Edit Done:", $"Old Level: {l_OldLevelID}").Build());
+                                await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger)).Build());
 
-                        l_EmbedBuilder.Fields.RemoveAt(l_EmbedBuilder.Fields.Count - 1);
-                        int l_LevelFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Level"));
-                        string l_OldLevelID = l_EmbedBuilder.Fields[l_LevelFieldIndex].Value.ToString();
-                        l_EmbedBuilder.Fields[l_LevelFieldIndex].Name = $"New Level:";
-                        l_EmbedBuilder.Fields[l_LevelFieldIndex].Value = $"Lv.{l_NewLevelID}";
-                        await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("Level-Edit Done:", $"Old Level: {l_OldLevelID}").Build());
-                        await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger)).Build());
+                                EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(l_Interaction);
 
-                        EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(l_Interaction);
-
-                        if (l_NewLevelID != null && int.TryParse(l_NewLevelID, out int l_IntNewLevelID)) await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, true, l_IntNewLevelID);
+                                if (l_NewLevelID != null && int.TryParse(l_NewLevelID, out int l_IntNewLevelID)) await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, true, l_IntNewLevelID);
+                            }
+                        }
                     }
 
                     break;
