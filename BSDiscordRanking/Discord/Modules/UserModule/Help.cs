@@ -41,7 +41,35 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_Command.Name;
                         foreach (var l_Parameter in l_Command.Parameters)
                         {
-                            l_Title += " [" + l_Parameter.Name.Replace("p_", "") + "]";
+                            if (l_Parameter.Summary != null)
+                            {
+                                if (l_Parameter.Summary != "DoNotDisplayOnHelp")
+                                {
+                                    if (l_Title.Length + $" [{l_Parameter.Name.Replace("p_", "")}]".Length < 250) /// 250 instead of 256 so i can write "[...]" at the end of the string without being lengh limited by Discord.
+                                    {
+                                        l_Title += $" [{l_Parameter.Name.Replace("p_", "")}]";
+                                    }
+                                    else
+                                    {
+                                        l_Title += "[...]";
+                                        break;
+                                    }
+                                    
+                                }
+                            }
+                            else
+                            {
+                                if (l_Title.Length + $" [{l_Parameter.Name.Replace("p_", "")}]".Length < 250) /// 250 instead of 256 so i can write "[...]" at the end of the string without being lengh limited by Discord.
+                                {
+                                    l_Title += $" [{l_Parameter.Name.Replace("p_", "")}]";
+                                }
+                                else
+                                {
+                                    l_Title += "[...]";
+                                    break;
+                                }
+                            }
+                           
                         }
 
                         l_Builder.AddField(l_Title, l_Command.Summary, true);
@@ -62,7 +90,34 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_FoundCommand.Name;
                     foreach (var l_Parameter in l_FoundCommand.Parameters)
                     {
-                        l_Title += " [" + l_Parameter.Name.Replace("p_", "") + "]";
+                        if (l_Parameter.Summary != null)
+                        {
+                            if (l_Parameter.Summary != "DoNotDisplayOnHelp")
+                            {
+                                if (l_Title.Length + $" [{l_Parameter.Name.Replace("p_", "")}]".Length < 250) /// 250 instead of 256 so i can write "[...]" at the end of the string without being lengh limited by Discord.
+                                {
+                                    l_Title += $" [{l_Parameter.Name.Replace("p_", "")}]";
+                                }
+                                else
+                                {
+                                    l_Title += "[...]";
+                                    break;
+                                }
+                                    
+                            }
+                        }
+                        else
+                        {
+                            if (l_Title.Length + $" [{l_Parameter.Name.Replace("p_", "")}]".Length < 250) /// 250 instead of 256 so i can write "[...]" at the end of the string without being lengh limited by Discord.
+                            {
+                                l_Title += $" [{l_Parameter.Name.Replace("p_", "")}]";
+                            }
+                            else
+                            {
+                                l_Title += "[...]";
+                                break;
+                            }
+                        }
                     }
 
                     l_Builder.AddField(l_Title, l_FoundCommand.Summary, true);

@@ -17,8 +17,8 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
         [Command("editmap")]
         [Alias("rankedit")]
         [Summary("Open the Edit-Map management menu.")]
-        private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", bool p_DisplayEditMap = true, bool p_ChangeLevel = false, int p_NewLevel = default, bool p_ChangeMinPercentageRequirement = false, int p_NewMinPercentageRequirement = default, bool p_ChangeCategory = false, string p_NewCategory = null, bool p_ChangeInfoOnGGP = false, string p_NewInfoOnGGP = null, bool p_ChangeCustomPassText = false, string p_NewCustomPassText = null, bool p_ToggleManualWeight = false, bool p_ChangeWeight = false, float p_NewWeight = default,
-            ulong p_UserID = default)
+        private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", [Summary("DoNotDisplayOnHelp")]bool p_DisplayEditMap = true, [Summary("DoNotDisplayOnHelp")]bool p_ChangeLevel = false, [Summary("DoNotDisplayOnHelp")]int p_NewLevel = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeMinPercentageRequirement = false, [Summary("DoNotDisplayOnHelp")]int p_NewMinPercentageRequirement = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCategory = false, [Summary("DoNotDisplayOnHelp")]string p_NewCategory = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeInfoOnGGP = false, [Summary("DoNotDisplayOnHelp")]string p_NewInfoOnGGP = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCustomPassText = false, [Summary("DoNotDisplayOnHelp")]string p_NewCustomPassText = null, [Summary("DoNotDisplayOnHelp")]bool p_ToggleManualWeight = false, [Summary("DoNotDisplayOnHelp")]bool p_ChangeWeight = false, [Summary("DoNotDisplayOnHelp")]float p_NewWeight = default,
+            [Summary("DoNotDisplayOnHelp")]ulong p_UserID = default)
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
