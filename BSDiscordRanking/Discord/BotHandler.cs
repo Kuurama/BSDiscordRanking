@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Discord.Modules.EditorModule;
 using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
@@ -27,6 +28,12 @@ namespace BSDiscordRanking.Discord
             m_Client = new DiscordSocketClient(new DiscordSocketConfig { GatewayIntents = GatewayIntents.All });
             m_Commands = new CommandService();
 
+            ////////////// EditMap Interaction Implementation //////////////
+            EditorModule l_EditorModule = new EditorModule();
+            m_Client.ButtonExecuted += l_EditorModule.LevelEditButtonHandler;
+            m_Client.InteractionCreated += l_EditorModule.EditMapInteraction;
+            ////////////////////////////////////////////////////////////////
+            
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
             m_Client.Log += _client_Log;
             await RegisterCommandsAsync();

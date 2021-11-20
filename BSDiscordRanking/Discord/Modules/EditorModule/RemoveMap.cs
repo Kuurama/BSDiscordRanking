@@ -53,7 +53,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                         if (l_MapExistCheck.MapExist)
                         {
                             Level l_Level = new Level(l_MapExistCheck.Level);
-                            l_Level.RemoveMap(l_Map, p_Characteristic, p_DifficultyName, Context);
+                            l_Level.RemoveMap(l_Map, p_DifficultyName, p_Characteristic, Context);
 
                             l_Map = Level.FetchBeatMap(p_Code, Context);
                             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
