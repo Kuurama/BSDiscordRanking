@@ -17,8 +17,8 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
         [Command("editmap")]
         [Alias("rankedit")]
         [Summary("Open the Edit-Map management menu.")]
-        private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", [Summary("DoNotDisplayOnHelp")]bool p_DisplayEditMap = true, [Summary("DoNotDisplayOnHelp")]bool p_ChangeLevel = false, [Summary("DoNotDisplayOnHelp")]int p_NewLevel = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeMinPercentageRequirement = false, [Summary("DoNotDisplayOnHelp")]int p_NewMinPercentageRequirement = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCategory = false, [Summary("DoNotDisplayOnHelp")]string p_NewCategory = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeInfoOnGGP = false, [Summary("DoNotDisplayOnHelp")]string p_NewInfoOnGGP = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCustomPassText = false, [Summary("DoNotDisplayOnHelp")]string p_NewCustomPassText = null, [Summary("DoNotDisplayOnHelp")]bool p_ToggleManualWeight = false, [Summary("DoNotDisplayOnHelp")]bool p_ChangeWeight = false, [Summary("DoNotDisplayOnHelp")]float p_NewWeight = default,
-            [Summary("DoNotDisplayOnHelp")]ulong p_UserID = default)
+        private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", [Summary("DoNotDisplayOnHelp")]bool p_DisplayEditMap = true, [Summary("DoNotDisplayOnHelp")]bool p_ChangeLevel = false, [Summary("DoNotDisplayOnHelp")]int p_NewLevel = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeMinScoreRequirement = false, [Summary("DoNotDisplayOnHelp")]float p_NewMinPercentageRequirement = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCategory = false, [Summary("DoNotDisplayOnHelp")]string p_NewCategory = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeInfoOnGGP = false, [Summary("DoNotDisplayOnHelp")]string p_NewInfoOnGGP = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCustomPassText = false, [Summary("DoNotDisplayOnHelp")]string p_NewCustomPassText = null, [Summary("DoNotDisplayOnHelp")]bool p_ToggleManualWeight = false, [Summary("DoNotDisplayOnHelp")]bool p_ChangeWeight = false, [Summary("DoNotDisplayOnHelp")]float p_NewWeight = default,
+            [Summary("DoNotDisplayOnHelp")]ulong p_UserID = default, [Summary("DoNotDisplayOnHelp")]ulong p_ChannelID = default)
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
@@ -40,18 +40,26 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                     {
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
                             component: new ComponentBuilder()
-                                .WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger))
+                                .WithButton(new ButtonBuilder("Close Menu", "ExitEditMap", ButtonStyle.Danger))
+                                .Build());
+                    }
+                    else if(p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
+                    {
+                        await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                            component: new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                 .Build());
                     }
                 }
+                
+                
                 else
                 {
                     ConfigFormat l_Config = ConfigController.GetConfig();
-                    LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, p_NewMinPercentageRequirement, p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight);
+                    LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight);
                     if (l_MapExistCheck.MapExist)
                     {
                         Level l_Level = new Level(l_MapExistCheck.Level);
-                        float l_Weight = l_Level.m_Level.customData.weighting;
                         foreach (var l_LevelSong in l_Level.m_Level.songs)
                         {
                             if (string.Equals(l_LevelSong.hash, l_Map.versions[^1].hash, StringComparison.CurrentCultureIgnoreCase))
@@ -60,65 +68,32 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                 {
                                     if (l_LevelDiff.characteristic == p_Characteristic && l_LevelDiff.name == p_DifficultyName)
                                     {
-                                        l_EmbedBuilder.AddField("BSRCode:", p_BSRCode, true);
+                                        l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight); /// So i can check for New Score Requirement.
+                                        l_EmbedBuilder.AddField("BSRCode", p_BSRCode, true);
                                         l_EmbedBuilder.AddField(l_LevelDiff.name, l_LevelDiff.characteristic, true);
-                                        l_EmbedBuilder.AddField("Level:", $"Lv.{l_MapExistCheck.Level}", true);
+                                        l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
+                                        
                                         if (l_LevelDiff.customData.category != null)
                                         {
-                                            l_EmbedBuilder.AddField("Category:", l_LevelDiff.customData.category, true);
+                                            l_EmbedBuilder.AddField("Category", l_LevelDiff.customData.category, true);
+                                        }
+                                        
+                                        if (l_LevelDiff.customData.infoOnGGP != null)
+                                        {
+                                            l_EmbedBuilder.AddField("InfoOnGGP", l_LevelDiff.customData.infoOnGGP, true);
                                         }
 
                                         if (l_LevelDiff.customData.minScoreRequirement > 0)
                                         {
-                                            l_EmbedBuilder.AddField("Min Score Requirement:", $"{l_LevelDiff.customData.minScoreRequirement} ({Math.Round((float)l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore * 100f * 100f) / 100f}%)", true);
+                                            l_EmbedBuilder.AddField("Min Score Requirement", $"{l_LevelDiff.customData.minScoreRequirement} ({((float)l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore * 100f):n2}%)", true);
                                         }
 
-                                        l_EmbedBuilder.AddField("Manual Weight:", $"{l_LevelDiff.customData.forceManualWeight.ToString()}", true);
-
-                                        bool l_PassWeightAlreadySet = false;
-                                        bool l_AccWeightAlreadySet = false;
-                                        if (l_LevelDiff.customData.forceManualWeight)
+                                        if (l_LevelDiff.customData.customPassText != null)
                                         {
-                                            if (!l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
-                                            {
-                                                l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_LevelDiff.customData.manualWeight, true);
-                                                l_AccWeightAlreadySet = true;
-                                            }
-
-                                            if (!l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
-                                            {
-                                                l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_LevelDiff.customData.manualWeight, true);
-                                                l_PassWeightAlreadySet = true;
-                                            }
+                                            l_EmbedBuilder.AddField("CustomPassText", l_LevelDiff.customData.customPassText, true);
                                         }
-
-                                        if (l_LevelDiff.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
-                                        {
-                                            if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
-                                            {
-                                                l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_LevelDiff.customData.AutoWeight, true);
-                                                l_AccWeightAlreadySet = true;
-                                            }
-
-                                            if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
-                                            {
-                                                l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_LevelDiff.customData.AutoWeight, true);
-                                                l_PassWeightAlreadySet = true;
-                                            }
-                                        }
-
-                                        if (l_Config.PerPlaylistWeighting)
-                                        {
-                                            if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet && l_Config.EnableAccBasedLeaderboard)
-                                            {
-                                                l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_Weight, true);
-                                            }
-
-                                            if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet && l_Config.EnablePassBasedLeaderboard)
-                                            {
-                                                l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_Weight, true);
-                                            }
-                                        }
+                                        
+                                        l_EmbedBuilder.AddField("Manual Weight", $"{l_LevelDiff.customData.forceManualWeight.ToString()} ({l_LevelDiff.customData.manualWeight:n2})", true);
 
                                         l_EmbedBuilder.WithTitle(l_LevelSong.name);
                                         l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
@@ -135,7 +110,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                             NumberOfNote = l_LevelDiff.customData.noteCount,
                                             SelectedCharacteristic = l_LevelDiff.characteristic,
                                             SelectedDifficultyName = l_LevelDiff.name,
-                                            Weighting = l_Weight
+                                            Weighting = l_LevelDiff.customData.manualWeight
                                         };
 
                                         if (p_DisplayEditMap)
@@ -150,8 +125,24 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Toggle Manual Weight", $"ToggleManualWeight_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitLevelEdit_{Context.User.Id}", ButtonStyle.Danger))
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
+                                                        .Build());
+                                            }
+                                            else if (p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
+                                            {
+                                                l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
+                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                                                    component: new ComponentBuilder()
+                                                        .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Toggle Manual Weight", $"ToggleManualWeight_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                                         .Build());
                                             }
                                         }
@@ -160,13 +151,19 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                         {
                                             ChangeMapLevel(l_EditMapFormat, l_MapExistCheck.Level, p_NewLevel);
                                         }
-                                        else if (p_ChangeMinPercentageRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ChangeCustomPassText || p_ToggleManualWeight)
+                                        if (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight) /// || p_ChangeCustomPassText But i choosed to not display it.
                                         {
-                                            if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
+                                            if (p_ChangeLevel || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                                             {
-                                                if (!p_ChangeMinPercentageRequirement)
+                                                int l_OldLevel = default;
+                                                if (p_ChangeLevel)
                                                 {
-                                                    p_NewMinPercentageRequirement = l_LevelDiff.customData.minScoreRequirement;
+                                                    l_OldLevel = l_MapExistCheck.Level;
+                                                }
+                                                
+                                                if (!p_ChangeMinScoreRequirement)
+                                                {
+                                                    p_NewMinPercentageRequirement = 100f*(float)l_LevelDiff.customData.minScoreRequirement/l_LevelDiff.customData.maxScore;
                                                 }
 
                                                 if (!p_ChangeCategory)
@@ -193,16 +190,20 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                                 {
                                                     p_NewWeight = l_EditMapFormat.Weighting;
                                                 }
-
-                                                l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, p_NewMinPercentageRequirement, p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.noteCount, null);
+                                                
+                                                l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText,  l_EditMapFormat.ForceManualWeight, p_NewWeight);
+                                                l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.noteCount, null);
                                                 EmbedBuilder l_MapChangeEmbedBuilder = new EmbedBuilder();
                                                 l_MapChangeEmbedBuilder.WithTitle("Maps infos changed on:");
                                                 l_MapChangeEmbedBuilder.WithDescription(l_Map.name);
                                                 l_MapChangeEmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
-                                                l_MapChangeEmbedBuilder.AddField("Level:", l_MapExistCheck.Level, true);
-
+                                                if (!p_ChangeLevel)
+                                                    l_MapChangeEmbedBuilder.AddField("Level:", $"Lv.{l_MapExistCheck.Level}", true);
+                                                else
+                                                    l_MapChangeEmbedBuilder.AddField("New Level:", $"Lv.{p_NewLevel} (Old: {l_OldLevel})", false);
+                                                
                                                 if (l_MapExistCheck.DifferentMinScore)
-                                                    l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{p_NewMinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount)})", false);
+                                                    l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount)} ({p_NewMinPercentageRequirement:n2}%)", false);
 
                                                 if (l_MapExistCheck.DifferentCategory)
                                                     l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory, false);
@@ -210,14 +211,14 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                                 if (l_MapExistCheck.DifferentInfoOnGGP)
                                                     l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP, false);
 
-                                                if (l_MapExistCheck.DifferentPassText)
+                                                if (l_MapExistCheck.DifferentPassText && l_Config.DisplayCustomPassTextInGetInfo)
                                                     l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText, false);
 
                                                 if (l_MapExistCheck.DifferentForceManualWeight)
-                                                    l_MapChangeEmbedBuilder.AddField("New ManualWeightPreference:", l_EditMapFormat.ForceManualWeight, false);
+                                                    l_MapChangeEmbedBuilder.AddField("New Manual Weight Preference:", l_EditMapFormat.ForceManualWeight, false);
 
                                                 if (l_MapExistCheck.DifferentWeight)
-                                                    l_MapChangeEmbedBuilder.AddField($"New manual weight:", p_NewWeight, false);
+                                                    l_MapChangeEmbedBuilder.AddField($"New Manual Weight:", $"{p_NewWeight:n2}", false);
 
                                                 l_MapChangeEmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                                                 if (p_UserID != default) l_EmbedBuilder.WithFooter($"Operated by <@{p_UserID}>");
@@ -250,7 +251,14 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                         {
                             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
                                 component: new ComponentBuilder()
-                                    .WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger))
+                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
+                                    .Build());
+                        }
+                        else if (p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
+                        {
+                            await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                                component: new ComponentBuilder()
+                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                     .Build());
                         }
                     }
@@ -258,19 +266,24 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
             }
         }
 
-        public async Task LevelEditButtonHandler(SocketMessageComponent p_MessageComponent)
+        public async Task EditMapButtonHandler(SocketMessageComponent p_MessageComponent)
         {
             ulong l_UserID = p_MessageComponent.User.Id;
+            ulong l_ChannelID = p_MessageComponent.Message.Channel.Id;
             string[] l_SplicedCustomID = p_MessageComponent.Data.CustomId.Split("_"); /// I choosed to use the button custom ID because adding buttons at a different place or command and making the DiscordID built in footer (or else) of an Embed wouldn't be good (as it would always need an Embed and a Footer).
             bool l_IsCorrectUserID = l_SplicedCustomID.Any(p_SplicedPartCustomID => p_SplicedPartCustomID == l_UserID.ToString());
             if (l_IsCorrectUserID)
             {
+                EmbedBuilder l_EmbedBuilder = p_MessageComponent.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
+                ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
+                EditMapArgumentFormat l_EditMapArgumentFormat;
+                IEnumerable<IMessage> l_Messages;
+                string l_LastUserMessage;
                 switch (l_SplicedCustomID[0])
                 {
                     case "LevelIDChange":
                         List<SelectMenuOptionBuilder> l_SelectMenuOptionBuilders = new List<SelectMenuOptionBuilder>();
                         List<List<SelectMenuOptionBuilder>> l_ListListMenuOptionBuilder = new List<List<SelectMenuOptionBuilder>>() { new List<SelectMenuOptionBuilder>() };
-                        ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
                         LevelControllerFormat l_LevelControllerFormat = LevelController.FetchAndGetLevel();
                         LevelController.ReWriteController(l_LevelControllerFormat);
 
@@ -300,20 +313,301 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                             l_ComponentBuilder.WithSelectMenu($"SelectLevelMenu_{l_Index}", options: l_ListMenuOptionBuilder);
                             l_Index++;
                         }
-
-                        EmbedBuilder l_EmbedBuilder = p_MessageComponent.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
-                        l_ComponentBuilder.WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger));
-                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("Level-Edit:", "Please choose the level you want this difficulty to be in.").Build());
+                        
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__Level-Edit__", "Please choose the level you want this difficulty to be in.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
-                    case "ExitLevelEdit":
-                        await p_MessageComponent.Message.DeleteAsync();
+                    case "CategoryChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"CategoryChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__Category-Edit__", "Please type the category you want the map to be in. Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+                    
+                    case "CategoryChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(limit: 20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_CategoryEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Category-Edit"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_CategoryEditTitleFieldIndex); /// Removing the "Category-Edit" Field
+                            int l_CategoryFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Category"));
+                            if (l_CategoryFieldIndex < 0)
+                            {
+                                l_EmbedBuilder.AddField("Category", "\u200B");
+                                l_CategoryFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                            }
+                            string l_OldCategory = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value.ToString();
+                            l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = $"New Category";
+                            l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = l_LastUserMessage;
+                            
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCategory: true, p_NewCategory: l_LastUserMessage);
+                            
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__Category-Edit Done__", $"Old Category: {l_OldCategory}").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                        }
+                        break;
+                    
+                    case "ToggleManualWeight":
+                        l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                        int l_ManualWeightTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Manual Weight"));
+                        string l_OldManualWeightPreference = l_EmbedBuilder.Fields[l_ManualWeightTitleFieldIndex].Value.ToString();
+                        if (l_OldManualWeightPreference != null)
+                        {
+                            string l_OldManualWeightPartialText = l_OldManualWeightPreference.Replace("(", "").Replace(")", "");
+                            string[] l_SplicedOldManualWeight = l_OldManualWeightPartialText.Split(" ");
+                            if (l_SplicedOldManualWeight.Length >= 2)
+                            {
+                                bool l_NewManualWeightPreference = l_SplicedOldManualWeight[0] is not ("true" or "True");
+                                l_EmbedBuilder.Fields[l_ManualWeightTitleFieldIndex].Name = l_EmbedBuilder.Fields[l_ManualWeightTitleFieldIndex].Name = $"New Manual Weight Preference";
+                                l_EmbedBuilder.Fields[l_ManualWeightTitleFieldIndex].Value = $"{l_NewManualWeightPreference} ({l_SplicedOldManualWeight[1]})";
+
+                                await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ToggleManualWeight: true);
+                        
+                                await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.Build());
+                            }
+                        }
+                        
+                        break;
+                    
+                    case "MinPercentageRequirementChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"MinPercentageRequirementChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__MinPercentageRequirement-Edit__", $"Please type the Minimum percentage requirement you want this map to have (not including the '%' and respecting the {0.00f:n2} format). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+                    
+                    case "MinPercentageRequirementChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(limit: 20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            if (float.TryParse(l_LastUserMessage, out float l_FloatLastUserMessage))
+                            {
+                                l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                                int l_MinPercentageRequirementEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("MinPercentageRequirement-Edit"));
+                                l_EmbedBuilder.Fields.RemoveAt(l_MinPercentageRequirementEditTitleFieldIndex); /// Removing the "MinPercentageRequirement-Edit" Field
+                                int l_MinPercentageRequirementFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Min Score Requirement"));
+                                if (l_MinPercentageRequirementFieldIndex < 0)
+                                {
+                                    l_EmbedBuilder.AddField("Min Score Requirement", "0 (0%)");
+                                    l_MinPercentageRequirementFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                                }
+                                string l_OldPercentageRequirementFullText = l_EmbedBuilder.Fields[l_MinPercentageRequirementFieldIndex].Value.ToString();
+                                if (l_OldPercentageRequirementFullText != null)
+                                {
+                                    string l_OldPercentageRequirementPartialText = l_OldPercentageRequirementFullText.Replace("(", "").Replace("%)", "");
+                                    string[] l_SplicedOldPercentageRequirement = l_OldPercentageRequirementPartialText.Split(" ");
+                                    if (l_SplicedOldPercentageRequirement.Length >= 2)
+                                    {
+                                        if (int.TryParse(l_SplicedOldPercentageRequirement[0], out int l_IntOldScoreRequirement))
+                                        {
+                                            if (float.TryParse(l_SplicedOldPercentageRequirement[1], out float l_FloatOldPercentageRequirement))
+                                            {
+                                                float l_MaxScore = l_IntOldScoreRequirement/(l_FloatOldPercentageRequirement/100f);
+                                                int l_NewMinScore = (int)(l_FloatLastUserMessage/100f * l_MaxScore);
+                                                l_EmbedBuilder.Fields[l_MinPercentageRequirementFieldIndex].Name = l_EmbedBuilder.Fields[l_MinPercentageRequirementFieldIndex].Name = $"New Min Score Requirement";
+                                                
+                                                
+                                                if (l_IntOldScoreRequirement != 0 || l_FloatOldPercentageRequirement != 0)
+                                                {
+                                                    l_EmbedBuilder.Fields[l_MinPercentageRequirementFieldIndex].Value = $"{l_NewMinScore} ({l_FloatLastUserMessage}%)";
+                                                }
+                                                else
+                                                {
+                                                    l_EmbedBuilder.Fields[l_MinPercentageRequirementFieldIndex].Value = $"({l_FloatLastUserMessage}%)";
+                                                }
+                                                await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeMinScoreRequirement: true, p_NewMinPercentageRequirement: l_FloatLastUserMessage);
+                            
+                                                await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__MinScoreRequirement-Edit Done__", $"Old MinScoreRequirement: {l_OldPercentageRequirementFullText}").Build());
+                                                await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                                    .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }
                         break;
 
-                    case "CategoryChange":
-                        EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
-                        await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_ChangeCategory: true, p_NewCategory: "shitpost");
+                    case "InfoOnGGPChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"InfoOnGGPChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__InfoOnGGP-Edit__", "Please type the InfoOnGGP you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+                    
+                    case "InfoOnGGPChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(limit: 20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_InfoOnGGPEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("InfoOnGGP-Edit"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_InfoOnGGPEditTitleFieldIndex); /// Removing the "InfoOnGGP-Edit" Field
+                            int l_InfoOnGGPFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("InfoOnGGP"));
+                            if (l_InfoOnGGPFieldIndex < 0)
+                            {
+                                l_EmbedBuilder.AddField("InfoOnGGP", "\u200B");
+                                l_InfoOnGGPFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                            }
+                            string l_OldInfoOnGGP = l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value.ToString();
+                            l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = $"New InfoOnGGP";
+                            l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = l_LastUserMessage;
+                            
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeInfoOnGGP: true, p_NewInfoOnGGP: l_LastUserMessage);
+                            
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__InfoOnGGP-Edit Done__", $"Old InfoOnGGP: {l_OldInfoOnGGP}").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                        }
+                        break;
+                    
+                    case "ManualWeightChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"ManualWeightChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__Manual Weight-Edit__", $"Please type the Manual Weight you want the map to have (respecting the {0.00f:n2} format). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+                    
+                    case "ManualWeightChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(limit: 20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            if (float.TryParse(l_LastUserMessage, out float l_FloatUserMessage))
+                            {
+                                
+
+                                l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                                int l_ManualWeightEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Manual Weight-Edit"));
+                                l_EmbedBuilder.Fields.RemoveAt(l_ManualWeightEditTitleFieldIndex); /// Removing the "Manual Weight-Edit" Field
+                                int l_ManualWeightFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Manual Weight"));
+                                if (l_ManualWeightFieldIndex < 0)
+                                {
+                                    l_EmbedBuilder.AddField("Manual Weight", "\u200B");
+                                    l_ManualWeightFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                                }
+                                string l_OldManualWeightFullText = l_EmbedBuilder.Fields[l_ManualWeightFieldIndex].Value.ToString();
+                                if (l_OldManualWeightFullText != null)
+                                {
+                                    string l_OldManualWeightPartialText = l_OldManualWeightFullText.Replace("(", "").Replace(")", "");
+                                    string[] l_SplicedOldManualWeight = l_OldManualWeightPartialText.Split(" ");
+                                    if (l_SplicedOldManualWeight.Length >= 2)
+                                    {
+                                        if (float.TryParse(l_SplicedOldManualWeight[1], out float l_FloatOldManualWeight))
+                                        {
+                                            l_EmbedBuilder.Fields[l_ManualWeightFieldIndex].Name = l_EmbedBuilder.Fields[l_ManualWeightFieldIndex].Name = $"New Manual Weight";
+                                            l_EmbedBuilder.Fields[l_ManualWeightFieldIndex].Value = $"{l_SplicedOldManualWeight[0]} ({l_LastUserMessage})";
+                            
+                                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeWeight: true, p_NewWeight: l_FloatUserMessage);
+                            
+                                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__Manual Weight-Edit Done__", $"Old Manual Weight: {l_OldManualWeightFullText}").Build());
+                                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                                        }
+                                    }
+                                }
+
+                                
+                            }
+                        }
+                        break;
+                    
+                    case "CustomPassTextChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"CustomPassTextChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__CustomPassText-Edit__", "Please type the CustomPassText you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+                    
+                    case "CustomPassTextChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(limit: 20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_CustomPassTextEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomPassText-Edit"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_CustomPassTextEditTitleFieldIndex); /// Removing the "CustomPassText-Edit" Field
+                            int l_CustomPassTextFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomPassText"));
+                            if (l_CustomPassTextFieldIndex < 0)
+                            {
+                                l_EmbedBuilder.AddField("CustomPassTex", "\u200B");
+                                l_CustomPassTextFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                            }
+                            string l_OldCustomPassText = l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value.ToString();
+                            l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = $"New CustomPassText";
+                            l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = l_LastUserMessage;
+                            
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomPassText: true, p_NewCustomPassText: l_LastUserMessage);
+                            
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__CustomPassText-Edit Done__", $"Old CustomPassText: {l_OldCustomPassText}").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                        }
+                        break;
+                    
+                    case "BackToEditMapMenu":
+                        l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                        try
+                        {
+                            await p_MessageComponent.Message.DeleteAsync();
+                        }
+                        catch (Exception l_E)
+                        {
+                            Console.WriteLine(l_E);
+                        }
+                        await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, p_UserID: l_UserID, p_ChannelID: l_ChannelID);
+                        break;
+                    
+                    case "ExitEditMap":
+                        try
+                        {
+                            await p_MessageComponent.Message.DeleteAsync();
+                        }
+                        catch (Exception l_E)
+                        {
+                            Console.WriteLine(l_E);
+                        }
                         break;
                 }
             }
@@ -338,13 +632,16 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                             {
                                 EmbedBuilder l_EmbedBuilder = l_Embed.ToEmbedBuilder();
                                 string l_NewLevelID = l_Interaction.Data.Values.FirstOrDefault();
-                                l_EmbedBuilder.Fields.RemoveAt(l_EmbedBuilder.Fields.Count - 1);
+                                int l_LevelEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Level-Edit"));
+                                l_EmbedBuilder.Fields.RemoveAt(l_LevelEditTitleFieldIndex); /// Removing the "Level-Edit" Field
                                 int l_LevelFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Level"));
                                 string l_OldLevelID = l_EmbedBuilder.Fields[l_LevelFieldIndex].Value.ToString();
-                                l_EmbedBuilder.Fields[l_LevelFieldIndex].Name = $"New Level:";
+                                l_EmbedBuilder.Fields[l_LevelFieldIndex].Name = $"New Level";
                                 l_EmbedBuilder.Fields[l_LevelFieldIndex].Value = $"Lv.{l_NewLevelID}";
-                                await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("Level-Edit Done:", $"Old Level: {l_OldLevelID}").Build());
-                                await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().WithButton(new ButtonBuilder("Close Menu", "ExitLevelEdit", ButtonStyle.Danger)).Build());
+                                await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__Level-Edit Done__", $"Old Level: {l_OldLevelID}").Build());
+                                await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                    .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
 
                                 EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(l_Interaction);
 
@@ -361,7 +658,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
         {
             EmbedBuilder l_EmbedBuilder = p_MessageComponent.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
             int l_DiffFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Value.ToString() == "Standard" || p_X.Value.ToString() == "Lawless" || p_X.Value.ToString() == "Standard" || p_X.Value.ToString() == "90Degree" || p_X.Value.ToString() == "360Degree" || p_X.Value.ToString() == "NoArrows");
-            int l_BSRFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.ToString() == "BSRCode:");
+            int l_BSRFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.ToString() == "BSRCode");
             return new EditMapArgumentFormat()
             {
                 BSRCode = l_EmbedBuilder.Fields[l_BSRFieldIndex].Value.ToString(),
@@ -391,7 +688,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
             public int NumberOfNote { get; set; }
         }
 
-        public static void ChangeMapLevel(EditMapFormat p_EditMapFormat, int p_CurrentLevelID, int p_NewLevelID)
+        private static void ChangeMapLevel(EditMapFormat p_EditMapFormat, int p_CurrentLevelID, int p_NewLevelID)
         {
             Level l_CurrentLevel = new Level(p_CurrentLevelID);
             l_CurrentLevel.RemoveMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic);

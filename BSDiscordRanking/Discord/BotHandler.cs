@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord
 
             ////////////// EditMap Interaction Implementation //////////////
             EditorModule l_EditorModule = new EditorModule();
-            m_Client.ButtonExecuted += l_EditorModule.LevelEditButtonHandler;
+            m_Client.ButtonExecuted += l_EditorModule.EditMapButtonHandler;
             m_Client.InteractionCreated += l_EditorModule.EditMapInteraction;
             ////////////////////////////////////////////////////////////////
             

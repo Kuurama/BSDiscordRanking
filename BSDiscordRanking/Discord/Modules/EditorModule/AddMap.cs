@@ -12,7 +12,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
         [Command("addmap")]
         [Alias("rankmap")]
         [Summary("Adds a map or updates it from a desired level. Not used fields can be wrote null or 0 depending on their types. (or even ignored if you don't need any of the next ones)")]
-        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_ForceManualWeight = false, float p_Weight = 1f)
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_ForceManualWeight = false, float p_Weight = default)
         {
             if (string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -80,13 +80,13 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                 if (l_MapExistCheck.DifferentMinScore)
                                     l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", false);
 
-                                if (l_MapExistCheck.DifferentCategory)
+                                if (l_MapExistCheck.DifferentCategory && p_Category != null)
                                     l_EmbedBuilder.AddField("New Category:", p_Category, false);
 
-                                if (l_MapExistCheck.DifferentInfoOnGGP)
+                                if (l_MapExistCheck.DifferentInfoOnGGP && p_InfoOnGGP != null)
                                     l_EmbedBuilder.AddField("New InfoOnGGP:", p_InfoOnGGP, false);
 
-                                if (l_MapExistCheck.DifferentPassText)
+                                if (l_MapExistCheck.DifferentPassText && p_CustomPassText != null)
                                     l_EmbedBuilder.AddField("New CustomPassText:", p_CustomPassText, false);
 
                                 if (l_MapExistCheck.DifferentForceManualWeight)

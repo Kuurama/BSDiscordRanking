@@ -67,17 +67,26 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                             l_NewDiff = true;
                             l_EmbedBuilder.AddField(l_MapDifficulty.name, l_MapDifficulty.characteristic, true);
-                            l_EmbedBuilder.AddField("Level:", $"Lv.{l_MapLevelID}", true);
+                            l_EmbedBuilder.AddField("Level", $"Lv.{l_MapLevelID}", true);
                             if (l_MapDifficulty.customData.category != null)
                             {
-                                l_EmbedBuilder.AddField("Category:", l_MapDifficulty.customData.category, true);
+                                l_EmbedBuilder.AddField("Category", l_MapDifficulty.customData.category, true);
+                            }
+                            
+                            if (l_MapDifficulty.customData.infoOnGGP != null)
+                            {
+                                l_EmbedBuilder.AddField("InfoOnGGP", l_MapDifficulty.customData.infoOnGGP, true);
                             }
 
                             if (l_MapDifficulty.customData.minScoreRequirement > 0)
                             {
-                                l_EmbedBuilder.AddField("Min Score Requirement:", $"{l_MapDifficulty.customData.minScoreRequirement} ({Math.Round((float)l_MapDifficulty.customData.minScoreRequirement / l_MapDifficulty.customData.maxScore * 100f * 100f) / 100f}%)", true);
+                                l_EmbedBuilder.AddField("Min Score Requirement", $"{l_MapDifficulty.customData.minScoreRequirement} ({Math.Round((float)l_MapDifficulty.customData.minScoreRequirement / l_MapDifficulty.customData.maxScore * 100f * 100f) / 100f}%)", true);
                             }
-
+                            
+                            if (l_MapDifficulty.customData.customPassText != null && l_Config.DisplayCustomPassTextInGetInfo)
+                            {
+                                l_EmbedBuilder.AddField("Custom Pass Text", $"{l_MapDifficulty.customData.customPassText}", true);
+                            }
 
                             bool l_PassWeightAlreadySet = false;
                             bool l_AccWeightAlreadySet = false;
@@ -85,28 +94,28 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (!l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_MapDifficulty.customData.manualWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_MapDifficulty.customData.manualWeight, true);
                                     l_AccWeightAlreadySet = true;
                                 }
 
                                 if (!l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_MapDifficulty.customData.manualWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_MapDifficulty.customData.manualWeight, true);
                                     l_PassWeightAlreadySet = true;
                                 }
                             }
 
-                            if (l_MapDifficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
+                            if (l_Config.AutomaticWeightCalculation)
                             {
                                 if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_MapDifficulty.customData.AutoWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_MapDifficulty.customData.AutoWeight, true);
                                     l_AccWeightAlreadySet = true;
                                 }
 
                                 if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_MapDifficulty.customData.AutoWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_MapDifficulty.customData.AutoWeight, true);
                                     l_PassWeightAlreadySet = true;
                                 }
                             }
@@ -115,14 +124,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet && l_Config.EnableAccBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight:", l_Weight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_Weight, true);
                                 }
 
                                 if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet && l_Config.EnablePassBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight:", l_Weight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_Weight, true);
                                 }
                             }
+                            
+                            l_EmbedBuilder.AddField("Manual Weight", $"{l_MapDifficulty.customData.forceManualWeight.ToString()} ({l_MapDifficulty.customData.manualWeight:n2})", true);
                         }
                     }
 

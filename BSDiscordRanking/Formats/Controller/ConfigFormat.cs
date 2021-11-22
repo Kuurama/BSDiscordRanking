@@ -37,5 +37,7 @@ namespace BSDiscordRanking.Formats.Controller
         public string AccPointsName { get; set; } = "AccPoints";
         public int MaximumNumberOfMapInGetInfo { get; set; } = 8;
         public ulong BotEditorRoleID { get; set; }
+
+        public bool DisplayCustomPassTextInGetInfo { get; set; } = false;
     }
 }
