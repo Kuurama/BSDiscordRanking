@@ -179,8 +179,8 @@ namespace BSDiscordRanking.Controllers
                 {
                     p_Author
                         .WithName(p_Snipe.Player.Name)
-                        .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId)
-                        .WithIconUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                        .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.id)
+                        .WithIconUrl(l_Player.m_PlayerFull.profilePicture);
                 })
                 .AddField("\u200B", $"({l_ConfigFormat.PassPointsName} Leaderboard) Your rank changed from **#{p_Snipe.Player.OldRank}** to **#{p_Snipe.Player.NewRank}**");
 

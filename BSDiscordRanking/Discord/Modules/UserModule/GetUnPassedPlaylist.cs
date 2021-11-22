@@ -35,7 +35,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 l_Player.LoadPass();
-                string l_PlayerName = l_Player.m_PlayerFull.playerInfo.playerName;
+                string l_PlayerName = l_Player.m_PlayerFull.name;
                 string l_FileName = RemoveSpecialCharacters(l_PlayerName);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
                 if (!Directory.Exists(l_Path))

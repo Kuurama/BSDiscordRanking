@@ -53,7 +53,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_Player.GetPlayerLevel());
                     var l_Builder = new EmbedBuilder()
                         .WithDescription("Here is your current progress through the map pools:")
-                        .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar)
+                        .WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture)
                         .WithColor(l_Color);
                     foreach (var l_PerLevelFormat in l_PlayerPassPerLevel.Levels)
                     {
@@ -84,11 +84,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     if (l_HaveAPass)
                     {
-                        l_Builder.WithTitle($"{l_Player.m_PlayerFull.playerInfo.playerName}'s Progress Tracker");
+                        l_Builder.WithTitle($"{l_Player.m_PlayerFull.name}'s Progress Tracker");
                     }
                     else if (!l_DiscordOrScoreSaberIDFormat.IsDiscordLinked)
                     {
-                        l_Builder.WithTitle($"{l_Player.m_PlayerFull.playerInfo.playerName}'s Progress Tracker (Unlinked Account)");
+                        l_Builder.WithTitle($"{l_Player.m_PlayerFull.name}'s Progress Tracker (Unlinked Account)");
                     }
 
                     foreach (var l_Message in l_Messages)
@@ -131,9 +131,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_Player.GetPlayerLevel());
                         var l_Builder = new EmbedBuilder()
-                            .WithTitle($"{l_Player.m_PlayerFull.playerInfo.playerName}'s Progress Tracker")
+                            .WithTitle($"{l_Player.m_PlayerFull.name}'s Progress Tracker")
                             .WithDescription("Here is your current progress through the map pools:")
-                            .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar)
+                            .WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture)
                             .WithColor(l_Color);
                         foreach (var l_PerLevelFormat in l_PlayerPassPerLevel.Levels)
                         {

@@ -78,7 +78,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             }
 
             l_Player.ReWriteStats();
-            new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, p_DiscordOrScoreSaberID, -1, p_Level, null, false);
+            new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, p_DiscordOrScoreSaberID, -1, p_Level, null, false);
             if (l_DiscordID != null)
             {
                 SocketGuildUser l_MyUser = Context.Guild.GetUser(Convert.ToUInt64(l_DiscordID));
@@ -95,7 +95,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             }
             else
             {
-                await ReplyAsync($"{l_Player.m_PlayerFull.playerInfo.playerName}'s Level set to Level {p_Level}");
+                await ReplyAsync($"{l_Player.m_PlayerFull.name}'s Level set to Level {p_Level}");
             }
         }
     }

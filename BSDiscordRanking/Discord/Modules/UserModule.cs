@@ -187,10 +187,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
 
             EmbedBuilder l_EmbedBuilder = new();
-            l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.playerInfo.playerName);
-            l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId);
-            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
-            l_EmbedBuilder.AddField("Score Saber Rank", ":earth_africa: #" + l_Player.m_PlayerFull.playerInfo.rank, true);
+            l_EmbedBuilder.WithTitle(l_Player.m_PlayerFull.name);
+            l_EmbedBuilder.WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.id);
+            l_EmbedBuilder.WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
+            l_EmbedBuilder.AddField("Score Saber Rank", ":earth_africa: #" + l_Player.m_PlayerFull.rank, true);
 
             Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_PlayerLevel);
 

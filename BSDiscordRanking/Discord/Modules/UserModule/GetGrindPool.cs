@@ -242,7 +242,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
-                            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                            l_EmbedBuilder.WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
                             l_AlreadyHaveThumbnail = true;
                         }
                         l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}");
@@ -287,7 +287,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
-                            l_EmbedBuilder.WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                            l_EmbedBuilder.WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
                             l_AlreadyHaveThumbnail = true;
                         }
                         l_EmbedBuilder.WithTitle($"Unpassed maps in level {p_Level}");

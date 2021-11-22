@@ -22,9 +22,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             else
             {
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder()
-                    .WithTitle(l_Player.m_PlayerFull.playerInfo.playerName)
-                    .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.playerInfo.playerId)
-                    .WithThumbnailUrl("https://new.scoresaber.com" + l_Player.m_PlayerFull.playerInfo.avatar);
+                    .WithTitle(l_Player.m_PlayerFull.name)
+                    .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.id)
+                    .WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
 
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 l_Player.LoadPass(); /// Load the player's pass if there is.
@@ -99,8 +99,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///////////////////////////
 
-                await PassLeaderboardController.SendSnipeMessage(Context, new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.PassPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
-                await AccLeaderboardController.SendSnipeMessage(Context, new AccLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.playerInfo.playerName, l_Player.GetPlayerID(), l_Player.m_PlayerStats.AccPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+                await PassLeaderboardController.SendSnipeMessage(Context, new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, l_Player.GetPlayerID(), l_Player.m_PlayerStats.PassPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+                await AccLeaderboardController.SendSnipeMessage(Context, new AccLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, l_Player.GetPlayerID(), l_Player.m_PlayerStats.AccPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
 
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }

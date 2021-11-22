@@ -39,5 +39,7 @@ namespace BSDiscordRanking.Formats.Controller
         public ulong BotEditorRoleID { get; set; }
 
         public bool DisplayCustomPassTextInGetInfo { get; set; } = false;
+
+        public string m_ScoreSaberApiVersion = "3.0.0";
     }
 }
