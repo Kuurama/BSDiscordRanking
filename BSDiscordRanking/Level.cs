@@ -83,7 +83,7 @@ namespace BSDiscordRanking
                                 {
                                     syncURL = m_SyncURL,
                                     level = m_LevelID,
-                                    weighting = 1f
+                                    weighting = m_LevelID
                                 },
                                 image = new string("")
                             };
@@ -110,7 +110,7 @@ namespace BSDiscordRanking
                         {
                             syncURL = m_SyncURL,
                             level = m_LevelID,
-                            weighting = 1f,
+                            weighting = m_LevelID,
                             customPassText = null
                         },
                         songs = new List<SongFormat>(),

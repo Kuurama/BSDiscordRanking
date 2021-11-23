@@ -336,12 +336,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
         }
 
-        private async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory)
+#pragma warning disable 1998
+        private static async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory)
+#pragma warning restore 1998
         {
             int l_Y = 0;
             int l_NumbedOfEmbed = 1;
             string l_LastMessage = null;
-            int l_NumberOfField = 0;
             List<Embed> l_EmbedBuildedList = new List<Embed>();
             List<string> l_Messages = new List<string> { "" };
 

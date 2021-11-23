@@ -24,7 +24,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
                         Thread.Sleep(p_TryTimeout);
-                        CreateDirectory(p_Path, p_TryLimit, p_TryTimeout);
+                        CreateDirectory(p_Path, p_TryLimit-1, p_TryTimeout);
                     }
                 }
             }

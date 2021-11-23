@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
@@ -16,6 +17,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public async Task Progress(string p_DiscordOrScoreSaberID)
         {
             PlayerFromDiscordOrScoreSaberIDFormat l_DiscordOrScoreSaberIDFormat = PlayerFromDiscordOrScoreSaberID(p_DiscordOrScoreSaberID, Context);
+            LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
+            LevelController.ReWriteController(l_LevelControllerFormat);
             Player l_Player = null;
             if (!l_DiscordOrScoreSaberIDFormat.IsDiscordLinked && !l_DiscordOrScoreSaberIDFormat.IsScoreSaberAccount)
             {

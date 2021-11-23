@@ -15,6 +15,7 @@ namespace BSDiscordRanking.Controllers
         static LevelController()
         {
             LevelControllerFormat l_LevelControllerFormat = FetchAndGetLevel(); /// Force the Fetch to instanciate m_LevelController.
+            l_LevelControllerFormat.LevelID.Sort();
             ReWriteController(l_LevelControllerFormat);
         }
 
@@ -44,7 +45,7 @@ namespace BSDiscordRanking.Controllers
                         Console.WriteLine($"Error with Level name. {l_Exception.Message}");
                     }
                 }
-
+                l_LevelController.LevelID.Sort();
                 return l_LevelController;
             }
             catch (Exception)
@@ -71,6 +72,7 @@ namespace BSDiscordRanking.Controllers
                 {
                     if (p_LevelControllerFormat != null)
                     {
+                        p_LevelControllerFormat.LevelID.Sort();
                         File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(p_LevelControllerFormat));
                         Console.WriteLine($"Updated LevelController Config File at {PATH}{FILENAME}.json ({p_LevelControllerFormat.LevelID.Count} Level)");
                     }
@@ -116,7 +118,10 @@ namespace BSDiscordRanking.Controllers
                             return null;
                         }
                         else
+                        {
+                            l_LevelController.LevelID.Sort();
                             return l_LevelController;
+                        }
                     }
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
