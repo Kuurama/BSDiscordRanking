@@ -356,6 +356,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
 
             string l_CurrentCategory = null;
+            int l_MaxLength = 1000;
+            int l_TotalMessageLength = 3900;
 
             foreach ((InPlayerSong l_Map, InPlayerPassFormat l_Diff, string l_Category) in l_SortedMapsTuples)
             {
@@ -372,7 +374,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 if (l_CurrentCategory != l_Category && p_DisplayCategory)
                 {
-                    
                     l_Messages.Add("");
                     if (l_LastMessage is not ("" or null))
                     {
@@ -383,12 +384,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_LastMessage = "";
                         l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
                         l_CurrentCategory = l_Category;
+                        l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
+                        l_TotalMessageLength = 3900 - $"**{l_Category} maps:**\n\n".Length;
                     }
                 }
                 
                 string l_ScoreOnMap = (l_Diff.Score != 0 ? $"- {Math.Round(l_Diff.Score / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%" : null);
                 string l_RankOnMap = (l_Diff.Rank != 0 ? $"(#{l_Diff.Rank})" : null);
                 string l_CustomText = (l_Diff.Difficulty.customData.infoOnGGP != null ? $"- {l_Diff.Difficulty.customData.infoOnGGP.Replace("_", " ")}" : "");
+                
+                
                 if (p_FullEmbeddedGGP)
                 {
                     string l_EmbedValue = $"{l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}";
@@ -420,12 +425,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else
                 {
                     if (l_Messages[^1].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
-                        .Length > 1000)
+                        .Length > l_MaxLength)
                     {
                         l_MessageTotalLength += l_Messages[^1].Length;
+                        p_EmbedBuilder.AddField("\u200B", l_Messages[^1]);
+                        l_Messages.Add(""); /// Initialize the next used index.
+                        l_MessageTotalLength = 0;
                     }
                     
-                    if (l_MessageTotalLength > 3900) /// Description/Field lenght limit
+                    if (l_MessageTotalLength > l_TotalMessageLength) /// Description/Field lenght limit
                     {
                         p_EmbedBuilder.WithDescription(l_Messages[^1]);
                         l_Messages.Add(""); /// Initialize the next used index.
@@ -478,6 +486,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 if (l_CurrentCategory != l_Category && p_DisplayCategory && l_LastMessage != null)
                 {
                     l_LastMessage = l_LastMessage.Insert(0, $"**{l_Category} maps:**\n\n");
+                    l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
                     l_CurrentCategory = l_Category;
                 }
 
