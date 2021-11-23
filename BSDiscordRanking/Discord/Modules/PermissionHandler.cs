@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Controller;
 using Discord.Commands;
 using Discord.WebSocket;
 
@@ -14,11 +15,11 @@ namespace BSDiscordRanking.Discord.Modules
         /// </summary>
         public class RequirePermissionAttribute : PreconditionAttribute
         {
-            private int PermissionLevel;
-
-            public RequirePermissionAttribute(int PermissionLevel)
+            private int m_PermissionLevel;
+            private ConfigFormat m_Config = ConfigController.GetConfig();
+            public RequirePermissionAttribute(int p_PermissionLevel)
             {
-                this.PermissionLevel = PermissionLevel;
+                this.m_PermissionLevel = p_PermissionLevel;
             }
             
             
@@ -27,15 +28,21 @@ namespace BSDiscordRanking.Discord.Modules
                 if (p_Context.User is SocketGuildUser l_User)
                 {
                     ulong l_RoleID = 0;
-                    if (PermissionLevel >= 1)
-                        l_RoleID = ConfigController.GetConfig().BotEditorRoleID;
-                    else if (PermissionLevel >= 2)
-                        l_RoleID = ConfigController.GetConfig().BotManagementRoleID;
-                    else if (PermissionLevel == 0)
-                        l_RoleID = 1;
+                    switch (m_PermissionLevel)
+                    {
+                        case >= 2:
+                            l_RoleID = m_Config.BotManagementRoleID;
+                            break;
+                        case >= 1:
+                            l_RoleID = m_Config.BotEditorRoleID;
+                            break;
+                        case 0:
+                            l_RoleID = 1;
+                            break;
+                    }
                     
                     
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID) && l_RoleID != 0 || l_RoleID == 1)
+                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID || p_Role.Id == m_Config.BotManagementRoleID) && l_RoleID != 0 || l_RoleID == 1) /// Gives moderator the ability to use permission < 2.
                     {
                         return Task.FromResult(PreconditionResult.FromSuccess());
                     }
@@ -49,10 +56,10 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (p_Context.User is SocketGuildUser l_User)
             {
-                if (l_User.Roles.ToList().Find(x => x.Id == ConfigController.GetConfig().BotEditorRoleID) != null)
+                if (l_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotEditorRoleID) != null)
                     return 1;
                 else if (l_User.Roles.ToList()
-                    .Find(x => x.Id == ConfigController.GetConfig().BotManagementRoleID) != null)
+                    .Find(p_X => p_X.Id == ConfigController.GetConfig().BotManagementRoleID) != null)
                     return 2;
             }
             return 0;
