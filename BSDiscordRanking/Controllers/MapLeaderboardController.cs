@@ -2,30 +2,94 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using System.Net;
 using System.Threading;
+using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace BSDiscordRanking.Controllers
 {
     public class MapLeaderboardController
     {
         private const string PATH = @"./Leaderboard/Maps/";
-        private string m_Hash = null, m_Key = null, m_Name = null;
-        private int m_MaxScore = 0;
+        private string m_Key = null;
         private int m_LeaderboardID;
+        private ApiLeaderboard m_ApiLeaderboard;
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber = 0;
         public MapLeaderboardFormat m_MapLeaderboard;
 
-        public MapLeaderboardController(int p_LeaderboardID, string p_Hash = null, string p_Key = null, string p_Name = null, int p_MaxScore = 0)
+        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null)
         {
             m_LeaderboardID = p_LeaderboardID;
-            m_Hash = p_Hash;
             m_Key = p_Key;
-            m_Name = p_Name;
-            m_MaxScore = p_MaxScore;
             LoadMapLeaderboard();
+            if (m_MapLeaderboard.info == null)
+            {
+                m_ApiLeaderboard = GetInfos(m_LeaderboardID);
+                m_MapLeaderboard.info = m_ApiLeaderboard;
+            }
+        }
+        
+        private static ApiLeaderboard GetInfos(int p_LeaderboardID, int p_TryLimit = 3, int p_TryTimeout = 200)
+        {
+            /// This Method Get the Player's Info from the api, then Deserialize it to m_PlayerFull for later usage.
+            /// It handle most of the exceptions possible
+            ///
+            /// If it fail to load the Player's Info, m_NumberOfTry = 6 => the program will stop trying. (limit is 5)
+            /// and it mean the Score Saber ID is wrong.
+            if (p_TryLimit > 0)
+            {
+                using (WebClient l_WebClient = new WebClient())
+                {
+                    try
+                    {
+                        ApiLeaderboard l_MapLeaderboardInfo = JsonConvert.DeserializeObject<ApiLeaderboard>(
+                            l_WebClient.DownloadString(@$"https://scoresaber.com/api/leaderboard/by-id/{p_LeaderboardID}/info"));
+                        return l_MapLeaderboardInfo;
+                    }
+                    catch (WebException l_Exception)
+                    {
+                        if (
+                            l_Exception.Response is HttpWebResponse
+                                l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
+                        {
+                            if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
+                            {
+                                Console.WriteLine("RateLimited, Trying again in 50sec");
+                                Thread.Sleep(50000);
+                                GetInfos(p_LeaderboardID);
+                            }
+
+                            if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
+                            {
+                                Console.WriteLine("Wrong Leaderboard ID, Please contact an administrator");
+                                return null;
+                            }
+                        }
+                        else ///< Request Error => Internet or ScoreSaber API Down.
+                        {
+                            if (!Player.CheckScoreSaberAPI_Response("Leaderboard Full")) ///< Checking if ScoreSaber Api Return.
+                            {
+                                p_TryLimit--;
+                                Console.WriteLine($"Retrying to get Leaderboard's Info in 30 sec : {p_TryLimit} try left");
+                                Thread.Sleep(30000);
+                                GetInfos(p_TryLimit, p_TryTimeout);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Please Contact an Administrator.");
+                return null;
+            }
+            
+            return null;
         }
 
         private void ReWriteMapLeaderboard()
@@ -39,9 +103,9 @@ namespace BSDiscordRanking.Controllers
                 {
                     if (m_MapLeaderboard != null)
                     {
-                        if (m_MapLeaderboard.Leaderboard.Count > 0)
+                        if (m_MapLeaderboard.scores.Count > 0)
                         {
-                            m_MapLeaderboard.Leaderboard = m_MapLeaderboard.Leaderboard.OrderByDescending(p_X => p_X.Score).ToList();
+                            m_MapLeaderboard.scores = m_MapLeaderboard.scores.OrderByDescending(p_X => p_X.baseScore).ToList();
                             File.WriteAllText($"{PATH}{m_LeaderboardID.ToString()}.json", JsonSerializer.Serialize(m_MapLeaderboard));
                             // Console.WriteLine($"{m_LeaderboardID.ToString()}.json Updated and sorted ({m_MapLeaderboard.Leaderboard.Count} player in the leaderboard)");
                         }
@@ -95,28 +159,26 @@ namespace BSDiscordRanking.Controllers
                         {
                             m_MapLeaderboard = new MapLeaderboardFormat()
                             {
-                                hash = m_Hash,
                                 key = m_Key,
-                                name = m_Name,
-                                MaxScore = m_MaxScore,
-                                Leaderboard = new List<MapPlayerPass>()
+                                info = m_ApiLeaderboard,
+                                scores = new List<MapPlayerScore>()
                                 {
-                                    new MapPlayerPass()
+                                    new MapPlayerScore()
                                     {
-                                        Name = "PlayerSample"
+                                        leaderboardPlayerInfo = new ApiLeaderboardPlayerInfo(){name = "PlayerSample"}
                                     }
-                                }
+                                },
                             };
                             Console.WriteLine($"Map Leaderboard Created (Empty Format), contained null");
                         }
                         else
                         {
-                            if (m_MapLeaderboard.Leaderboard != null)
+                            if (m_MapLeaderboard.scores != null)
                             {
                                 /// m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.PassPoints).ToList();
                             }
 
-                            if (m_MapLeaderboard.Leaderboard is { Count: >= 2 }) m_MapLeaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
+                            if (m_MapLeaderboard.scores is { Count: >= 2 }) m_MapLeaderboard.scores.RemoveAll(p_X => p_X.leaderboardPlayerInfo.id == null);
 
                             /// Console.WriteLine($"Map Leaderboard Loaded and Sorted");
                         }
@@ -126,17 +188,15 @@ namespace BSDiscordRanking.Controllers
                 {
                     m_MapLeaderboard = new MapLeaderboardFormat()
                     {
-                        hash = m_Hash,
                         key = m_Key,
-                        name = m_Name,
-                        MaxScore = m_MaxScore,
-                        Leaderboard = new List<MapPlayerPass>()
+                        info = m_ApiLeaderboard,
+                        scores = new List<MapPlayerScore>()
                         {
-                            new MapPlayerPass()
+                            new MapPlayerScore()
                             {
-                                Name = "PlayerSample"
+                                leaderboardPlayerInfo = new ApiLeaderboardPlayerInfo(){name = "PlayerSample"}
                             }
-                        }
+                        },
                     };
                     Console.WriteLine($"Map Leaderboard Created (Empty Format)");
                 }
@@ -148,10 +208,10 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        public bool ManagePlayerAndAutoWeightCheck(string p_Name, string p_ScoreSaberID, int p_Score)
+        public bool ManagePlayerAndAutoWeightCheck(MapPlayerScore p_PlayerScore)
         {
             /// This function Adds a player score to a map leaderboard, then return true if the autoweight need to be changed.
-            if (p_ScoreSaberID != null)
+            if (p_PlayerScore != null)
             {
                 bool l_NewPlayer = true;
                 bool l_AutoWeightCheck = false;
@@ -160,40 +220,31 @@ namespace BSDiscordRanking.Controllers
                 int l_NewSumOfFirstScores = 0;
 
                 int l_MinimumNumberOfScore = ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight;
-                if (m_MapLeaderboard.Leaderboard.Count == l_MinimumNumberOfScore - 1)
+                if (m_MapLeaderboard.scores.Count == l_MinimumNumberOfScore - 1)
                 {
                     for (int l_Index = 0; l_Index < l_MinimumNumberOfScore - 1; l_Index++)
                     {
-                        l_SumOfFirstScores += m_MapLeaderboard.Leaderboard[l_Index].Score;
+                        l_SumOfFirstScores += m_MapLeaderboard.scores[l_Index].baseScore;
                     }
 
                     l_AutoWeightCheck = true;
                 }
-                else if (m_MapLeaderboard.Leaderboard.Count >= l_MinimumNumberOfScore)
+                else if (m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore)
                 {
                     for (int l_Index = 0; l_Index < l_MinimumNumberOfScore; l_Index++)
                     {
-                        l_SumOfFirstScores += m_MapLeaderboard.Leaderboard[l_Index].Score;
+                        l_SumOfFirstScores += m_MapLeaderboard.scores[l_Index].baseScore;
                     }
 
                     l_AutoWeightCheck = true;
                 }
 
-                for (int l_I = 0; l_I < m_MapLeaderboard.Leaderboard.Count; l_I++)
+                for (int l_I = 0; l_I < m_MapLeaderboard.scores.Count; l_I++)
                 {
-                    if (p_ScoreSaberID == m_MapLeaderboard.Leaderboard[l_I].ScoreSaberID)
+                    if (p_PlayerScore.leaderboardPlayerInfo.id == m_MapLeaderboard.scores[l_I].leaderboardPlayerInfo.id)
                     {
                         l_NewPlayer = false;
-                        if (p_Name != null)
-                        {
-                            m_MapLeaderboard.Leaderboard[l_I].Name = p_Name;
-                        }
-
-                        if (p_Score >= 0)
-                        {
-                            m_MapLeaderboard.Leaderboard[l_I].Score = p_Score;
-                        }
-
+                        m_MapLeaderboard.scores[l_I] = p_PlayerScore;
                         break;
                     }
                 }
@@ -201,28 +252,18 @@ namespace BSDiscordRanking.Controllers
 
                 if (l_NewPlayer)
                 {
-                    MapPlayerPass l_MapPlayerPass = new MapPlayerPass()
-                    {
-                        Name = p_Name,
-                        ScoreSaberID = p_ScoreSaberID,
-                        Score = 0
-                    };
-
-                    if (p_Score >= 0)
-                        l_MapPlayerPass.Score = p_Score;
-
-                    m_MapLeaderboard.Leaderboard.Add(l_MapPlayerPass);
+                    m_MapLeaderboard.scores.Add(p_PlayerScore);
                 }
 
                 ReWriteMapLeaderboard();
 
                 if (l_AutoWeightCheck)
                 {
-                    if (m_MapLeaderboard.Leaderboard.Count >= l_MinimumNumberOfScore)
+                    if (m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore)
                     {
                         for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++)
                         {
-                            l_NewSumOfFirstScores += m_MapLeaderboard.Leaderboard[l_Index].Score;
+                            l_NewSumOfFirstScores += m_MapLeaderboard.scores[l_Index].baseScore;
                         }
 
                         if (l_SumOfFirstScores < l_NewSumOfFirstScores && l_SumOfFirstScores != 0)
@@ -236,7 +277,7 @@ namespace BSDiscordRanking.Controllers
             }
             else
             {
-                Console.WriteLine("This player is missing his score saber id");
+                Console.WriteLine("This MapPlayerScore is null. Returning");
                 return false;
             }
         }

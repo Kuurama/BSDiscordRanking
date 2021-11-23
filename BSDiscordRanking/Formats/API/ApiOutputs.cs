@@ -89,7 +89,7 @@ namespace BSDiscordRanking.Formats.API
         public int dailyPlays { get; set; }
         public string coverImage { get; set; }
         public ApiPlayerScore playerScore { get; set; }
-        public ApiDifficulties difficulties { get; set; }
+        public List<ApiDifficulties> difficulties { get; set; }
     }
 
     public class ApiPlayerScore
@@ -106,7 +106,7 @@ namespace BSDiscordRanking.Formats.API
         public int badCuts { get; set; }
         public int missedNotes { get; set; }
         public int maxCombo { get; set; }
-        public bool fullCombo { get; set; }
+        public short fullCombo { get; set; }
         public short hmd { get; set; }
         public bool hasReplay { get; set; }
         public string timeSet { get; set; }

@@ -428,7 +428,7 @@ namespace BSDiscordRanking
             }
         }
 
-        private static bool CheckScoreSaberAPI_Response(string p_ApiRequestType) /// Return True if ScoreSaber API is Up.
+        public static bool CheckScoreSaberAPI_Response(string p_ApiRequestType) /// Return True if ScoreSaber API is Up.
         {
             /// <summary>
             /// This Method Check if the Score Saber's API return "hey",
@@ -448,11 +448,8 @@ namespace BSDiscordRanking
                     ApiCheck l_ApiCheck = JsonSerializer.Deserialize<ApiCheck>(l_WebClient.DownloadString("https://scoresaber.com/api/"));
                     if (ConfigController.GetConfig().m_ScoreSaberApiVersion != l_ApiCheck.version)
                     {
+                        Console.WriteLine($"Api version changed from {ConfigController.GetConfig().m_ScoreSaberApiVersion} to {l_ApiCheck.version}, error occured.");
                     }
-
-                    Console.WriteLine(true
-                        ? $"Internet OK, Score Saber {p_ApiRequestType} API must have changed, please contact an administrator"
-                        : "Internet OK, Score Saber API response is Weird, something must have changed, please contact an administrator");
                     return true;
                 }
                 catch (WebException l_WebException) /// Score Saber Global API Down or Internet Error.
@@ -464,7 +461,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public async Task<int> FetchPass(SocketCommandContext p_Context = null)
+        public async Task<int> FetchPass(SocketCommandContext p_Context = null, bool p_IsBotRegistered = false)
         {
             if (m_PlayerID != null)
             {
@@ -671,9 +668,38 @@ namespace BSDiscordRanking
                                                         l_Difficulty.customData.leaderboardID = l_Score.leaderboard.id;
                                                         l_DiffGotLeaderboardID = true;
                                                     }
-
-                                                    MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.hash, l_Song.key, l_Song.name, l_Difficulty.customData.maxScore);
-                                                    bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(m_PlayerFull.name, m_PlayerID, l_Score.score.baseScore);
+                                                    
+                                                    
+                                                    MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key);
+                                                    ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
+                                                    {
+                                                        country = m_PlayerFull.country,
+                                                        id = m_PlayerFull.id,
+                                                        name = m_PlayerFull.name,
+                                                        profilePicture = m_PlayerFull.profilePicture,
+                                                        permissions = m_PlayerFull.permissions,
+                                                        role = m_PlayerFull.role
+                                                    };
+                                                    bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore()
+                                                    {
+                                                        id = l_Score.score.id,
+                                                        rank = l_Score.score.rank,
+                                                        isBotRegistered = p_IsBotRegistered,
+                                                        leaderboardPlayerInfo = l_LeaderboardPlayerInfo,
+                                                        badCuts = l_Score.score.badCuts,
+                                                        baseScore = l_Score.score.baseScore,
+                                                        fullCombo = l_Score.score.fullCombo,
+                                                        hasReplay = l_Score.score.hasReplay,
+                                                        hmd = l_Score.score.hmd,
+                                                        maxCombo = l_Score.score.maxCombo,
+                                                        timeSet = l_Score.score.timeSet,
+                                                        weight = l_Score.score.weight,
+                                                        modifiers = l_Score.score.modifiers,
+                                                        multiplier = l_Score.score.multiplier,
+                                                        missedNotes = l_Score.score.missedNotes,
+                                                        modifiedScore = l_Score.score.modifiedScore,
+                                                        pp = l_Score.score.pp
+                                                    });
 
                                                     if (l_NeedNewAutoWeight)
                                                     {

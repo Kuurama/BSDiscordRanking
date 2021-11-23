@@ -712,13 +712,13 @@ namespace BSDiscordRanking
             float l_SumOfPercentage = 0;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
-            if (l_MapLeaderboard.m_MapLeaderboard.Leaderboard.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
+            if (l_MapLeaderboard.m_MapLeaderboard.scores.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
             {
                 for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
                 {
-                    if (l_MapLeaderboard.m_MapLeaderboard.MaxScore > 0)
+                    if (l_MapLeaderboard.m_MapLeaderboard.info.maxScore > 0)
                     {
-                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.Leaderboard[l_Index].Score / l_MapLeaderboard.m_MapLeaderboard.MaxScore) * 100;
+                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].baseScore / l_MapLeaderboard.m_MapLeaderboard.info.maxScore) * 100;
                     }
                     else
                     {
