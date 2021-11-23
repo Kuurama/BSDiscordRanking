@@ -17,8 +17,8 @@ namespace BSDiscordRanking.Formats.API
         public ApiPlayerBadge[] badges { get; set; }
         public string history { get; set; }
         public short permissions { get; set; }
-        public short banned { get; set; }
-        public short inactive { get; set; }
+        public bool banned { get; set; }
+        public bool inactive { get; set; }
         public ApiScoreStats scoreStats { get; set; }
     }
 
@@ -58,7 +58,7 @@ namespace BSDiscordRanking.Formats.API
         public int badCuts { get; set; }
         public int missedNotes { get; set; }
         public int maxCombo { get; set; }
-        public short fullCombo { get; set; }
+        public bool fullCombo { get; set; }
         public short hmd { get; set; }
         public bool hasReplay { get; set; }
         public string timeSet { get; set; }
