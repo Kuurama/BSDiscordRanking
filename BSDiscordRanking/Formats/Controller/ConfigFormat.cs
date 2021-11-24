@@ -8,7 +8,8 @@ namespace BSDiscordRanking.Formats.Controller
         public List<string> CommandPrefix { get; set; } = new List<string>();
         public string DiscordStatus { get; set; } = "Made by Kuurama & Julien";
 
-        public ulong BotManagementRoleID { get; set; }
+        public ulong BotAdminRoleID { get; set; }
+        public ulong RankingTeamRoleID { get; set; }
         public bool FullEmbeddedGGP { get; set; } = true;
 
         public string RolePrefix { get; set; } = "";
@@ -16,10 +17,15 @@ namespace BSDiscordRanking.Formats.Controller
         public string SyncURL { get; set; }
 
         public List<ulong> AuthorizedChannels { get; set; }
+        public ulong LoggingChannel { get; set; }
 
         public bool GiveOldRoles { get; set; } = false;
         public bool EnablePassBasedLeaderboard { get; set; } = true;
         public bool EnableAccBasedLeaderboard { get; set; } = true;
+        public string PassPointsName { get; set; } = "PassPoints";
+        public string AccPointsName { get; set; } = "AccPoints";
+        public float PassPointMultiplier { get; set; } = 1;
+        public float AccPointMultiplier { get; set; } = 1;
         public bool AutomaticWeightCalculation { get; set; } = true;
         public int MinimumNumberOfScoreForAutoWeight { get; set; } = 3;
 
@@ -31,15 +37,11 @@ namespace BSDiscordRanking.Formats.Controller
 
         public bool OnlyAutoWeightForPassLeaderboard { get; set; } = false;
         public bool PerPlaylistWeighting { get; set; } = true;
-        public ulong LoggingChannel { get; set; }
-
-        public string PassPointsName { get; set; } = "PassPoints";
-        public string AccPointsName { get; set; } = "AccPoints";
+        
         public int MaximumNumberOfMapInGetInfo { get; set; } = 8;
-        public ulong BotEditorRoleID { get; set; }
 
         public bool DisplayCustomPassTextInGetInfo { get; set; } = false;
 
-        public string m_ScoreSaberApiVersion = "3.0.0";
+        public const string SCORE_SABER_API_VERSION = "3.0.0";
     }
 }

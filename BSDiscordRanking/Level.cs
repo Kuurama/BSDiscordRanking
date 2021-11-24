@@ -46,6 +46,7 @@ namespace BSDiscordRanking
             /// check is SyncURL Changed
             if (m_Level.customData.syncURL == m_SyncURL) return;
             m_Level.customData.syncURL = m_SyncURL;
+
             ReWritePlaylist(false);
         }
 
@@ -84,6 +85,7 @@ namespace BSDiscordRanking
                                 {
                                     syncURL = m_SyncURL,
                                     level = m_LevelID,
+                                    autoWeightDifficultyMultiplier = m_LevelID,
                                     weighting = m_LevelID
                                 },
                                 image = new string("")
@@ -111,6 +113,7 @@ namespace BSDiscordRanking
                         {
                             syncURL = m_SyncURL,
                             level = m_LevelID,
+                            autoWeightDifficultyMultiplier = m_LevelID,
                             weighting = m_LevelID,
                             customPassText = null
                         },
@@ -721,37 +724,6 @@ namespace BSDiscordRanking
                     Console.WriteLine("OK Internet is Dead?");
                     return null;
                 }
-            }
-        }
-
-        public float RecalculateAutoWeight(int p_LeaderboardID)
-        {
-            float l_SumOfPercentage = 0;
-            ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
-            if (l_MapLeaderboard.m_MapLeaderboard.scores.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
-            {
-                for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
-                {
-                    if (l_MapLeaderboard.m_MapLeaderboard.info.maxScore > 0)
-                    {
-                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].baseScore / l_MapLeaderboard.m_MapLeaderboard.info.maxScore) * 100;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Map MaxScore is negative/zero, can't recalculate weight.");
-                        return 0;
-                    }
-                }
-
-                float l_AveragePercentage = (l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight);
-                float l_AverageNeededPercentage = 100f - l_AveragePercentage;
-                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * m_LevelID) / 32;
-                return l_NewWeight;
-            }
-            else
-            {
-                return 0;
             }
         }
     }

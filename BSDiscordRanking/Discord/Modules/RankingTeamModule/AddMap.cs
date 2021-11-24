@@ -4,10 +4,10 @@ using BSDiscordRanking.Formats.API;
 using Discord;
 using Discord.Commands;
 
-namespace BSDiscordRanking.Discord.Modules.EditorModule
+namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 {
     [PermissionHandler.RequirePermissionAttribute(Permission)]
-    public partial class EditorModule : ModuleBase<SocketCommandContext>
+    public partial class RankingTeamModule : ModuleBase<SocketCommandContext>
     {
         [Command("addmap")]
         [Alias("rankmap")]

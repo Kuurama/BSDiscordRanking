@@ -27,7 +27,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (!(PermissionHandler.GetUserPermLevel(Context) >= 2))
                             break;
                     }
-                    else if (l_Module.Name == "EditorModule")
+                    else if (l_Module.Name == "RankingTeamModule")
                     {
                         if (!(PermissionHandler.GetUserPermLevel(Context) >= 1))
                             break;

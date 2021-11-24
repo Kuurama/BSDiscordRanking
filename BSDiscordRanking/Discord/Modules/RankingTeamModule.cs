@@ -1,10 +1,10 @@
 ﻿using Discord.Commands;
 
 // ReSharper disable once CheckNamespace
-namespace BSDiscordRanking.Discord.Modules.EditorModule
+namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 {
     [PermissionHandler.RequirePermissionAttribute(Permission)]
-    public partial class EditorModule : ModuleBase<SocketCommandContext>
+    public partial class RankingTeamModule : ModuleBase<SocketCommandContext>
     {
         public const int Permission = 1;
     }

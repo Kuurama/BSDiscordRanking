@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Discord.Modules.AdminModule;
 using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
@@ -446,9 +447,9 @@ namespace BSDiscordRanking
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
                 {
                     ApiCheck l_ApiCheck = JsonSerializer.Deserialize<ApiCheck>(l_WebClient.DownloadString("https://scoresaber.com/api/"));
-                    if (ConfigController.GetConfig().m_ScoreSaberApiVersion != l_ApiCheck.version)
+                    if (ConfigFormat.SCORE_SABER_API_VERSION != l_ApiCheck.version)
                     {
-                        Console.WriteLine($"Api version changed from {ConfigController.GetConfig().m_ScoreSaberApiVersion} to {l_ApiCheck.version}, error occured.");
+                        Console.WriteLine($"Api version changed from {ConfigFormat.SCORE_SABER_API_VERSION} to {l_ApiCheck.version}, error occured.");
                     }
                     return true;
                 }
@@ -561,7 +562,7 @@ namespace BSDiscordRanking
                                                                 l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
                                                                 if (!m_PlayerStats.IsFirstScan)
                                                                 {
-                                                                    if (l_Messages[l_MessagesIndex].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
+                                                                    if (l_Messages[l_MessagesIndex].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                             .Length
                                                                         > 1900)
                                                                     {
@@ -576,9 +577,9 @@ namespace BSDiscordRanking
                                                                     /// Display new pass (new diff passed while there was already a passed diff) 1/2
 
                                                                     if (l_Difficulty.customData.customPassText != null)
-                                                                        l_Messages[l_MessagesIndex] += $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
+                                                                        l_Messages[l_MessagesIndex] += $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
                                                                     else
-                                                                        l_Messages[l_MessagesIndex] += $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName})\n";
+                                                                        l_Messages[l_MessagesIndex] += $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName})\n";
                                                                     if (l_Level.value.m_LevelID >= 14)
                                                                         l_AboveLVLFourteenPass = true; /// Funny 1/2
                                                                 }
@@ -632,7 +633,7 @@ namespace BSDiscordRanking
                                                             {
                                                                 if (l_Messages[l_MessagesIndex].Length >
                                                                     1900 -
-                                                                    $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
+                                                                    $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                         .Length)
                                                                 {
                                                                     l_MessagesIndex++;
@@ -646,10 +647,10 @@ namespace BSDiscordRanking
                                                                 /// Display new pass (new diff passed while there was already a passed diff) 2/2
                                                                 if (l_Difficulty.customData.customPassText != null)
                                                                     l_Messages[l_MessagesIndex] +=
-                                                                        $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
+                                                                        $"\n:white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
                                                                 else
                                                                     l_Messages[l_MessagesIndex] +=
-                                                                        $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f} {l_Config.PassPointsName})\n";
+                                                                        $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName})\n";
                                                                 if (l_Level.value.m_LevelID >= 14)
                                                                     l_AboveLVLFourteenPass = true; /// Funny 2/2
                                                             }
@@ -680,30 +681,20 @@ namespace BSDiscordRanking
                                                         permissions = m_PlayerFull.permissions,
                                                         role = m_PlayerFull.role
                                                     };
+                                                    l_Score.score.leaderboardPlayerInfo = l_LeaderboardPlayerInfo; /// Needed for map leaderboard.
+                                                    
                                                     bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore()
                                                     {
-                                                        id = l_Score.score.id,
-                                                        rank = l_Score.score.rank,
-                                                        isBotRegistered = p_IsBotRegistered,
-                                                        leaderboardPlayerInfo = l_LeaderboardPlayerInfo,
-                                                        badCuts = l_Score.score.badCuts,
-                                                        baseScore = l_Score.score.baseScore,
-                                                        fullCombo = l_Score.score.fullCombo,
-                                                        hasReplay = l_Score.score.hasReplay,
-                                                        hmd = l_Score.score.hmd,
-                                                        maxCombo = l_Score.score.maxCombo,
-                                                        timeSet = l_Score.score.timeSet,
-                                                        weight = l_Score.score.weight,
-                                                        modifiers = l_Score.score.modifiers,
-                                                        multiplier = l_Score.score.multiplier,
-                                                        missedNotes = l_Score.score.missedNotes,
-                                                        modifiedScore = l_Score.score.modifiedScore,
-                                                        pp = l_Score.score.pp
-                                                    });
+                                                        customData = new LeaderboardCustomData()
+                                                        {
+                                                            isBotRegistered = p_IsBotRegistered
+                                                        },
+                                                        score = l_Score.score
+                                                    }, l_Difficulty.customData.AutoWeight);
 
                                                     if (l_NeedNewAutoWeight)
                                                     {
-                                                        l_Difficulty.customData.AutoWeight = l_Level.value.RecalculateAutoWeight(l_Score.leaderboard.id);
+                                                        l_Difficulty.customData.AutoWeight = MapLeaderboardController.RecalculateAutoWeight(l_Score.leaderboard.id, l_Level.value.m_Level.customData.autoWeightDifficultyMultiplier, l_Difficulty.customData.maxScore);
                                                         Console.WriteLine($"New AutoWeight set on {l_Difficulty.name} {l_DifficultyShown} - {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}");
                                                         l_DiffGotNewAutoWeight = true;
                                                     }
@@ -712,13 +703,13 @@ namespace BSDiscordRanking
                                                     {
                                                         if (!l_Config.OnlyAutoWeightForAccLeaderboard)
                                                         {
-                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * 0.375f * l_Difficulty.customData.manualWeight;
+                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.manualWeight;
                                                             l_AccWeightAlreadySet = true;
                                                         }
 
                                                         if (!l_Config.OnlyAutoWeightForPassLeaderboard)
                                                         {
-                                                            l_TotalPassPoints += 0.375f * l_Difficulty.customData.manualWeight;
+                                                            l_TotalPassPoints += l_Config.PassPointMultiplier * l_Difficulty.customData.manualWeight;
                                                             l_PassWeightAlreadySet = true;
                                                         }
                                                     }
@@ -727,27 +718,32 @@ namespace BSDiscordRanking
                                                     {
                                                         if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard)
                                                         {
-                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * 0.375f * l_Difficulty.customData.AutoWeight;
+                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.AutoWeight;
                                                             l_AccWeightAlreadySet = true;
                                                         }
 
                                                         if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard)
                                                         {
-                                                            l_TotalPassPoints += 0.375f * l_Difficulty.customData.AutoWeight;
+                                                            l_TotalPassPoints += l_Config.PassPointMultiplier * l_Difficulty.customData.AutoWeight;
                                                             l_PassWeightAlreadySet = true;
                                                         }
                                                     }
 
-                                                    if (l_Config.PerPlaylistWeighting)
+                                                    switch (l_Config.PerPlaylistWeighting)
                                                     {
-                                                        if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
+                                                        case true:
                                                         {
-                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * 0.375f * l_Level.value.m_Level.customData.weighting;
-                                                        }
+                                                            if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
+                                                            {
+                                                                l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                            }
 
-                                                        if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
-                                                        {
-                                                            l_TotalPassPoints += 0.375f * l_Level.value.m_Level.customData.weighting;
+                                                            if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
+                                                            {
+                                                                l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                            }
+
+                                                            break;
                                                         }
                                                     }
                                                 }
@@ -810,7 +806,7 @@ namespace BSDiscordRanking
                             /// Display new pass on first scan message.
                             if (l_Config.PerPlaylistWeighting)
                             {
-                                l_Messages[l_MessagesIndex] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * 0.375f * l_PassesPerLevel} {l_Config.PassPointsName})\n";
+                                l_Messages[l_MessagesIndex] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier * l_PassesPerLevel} {l_Config.PassPointsName})\n";
                             }
                         }
 
@@ -861,12 +857,6 @@ namespace BSDiscordRanking
                         }
 
                         l_TotalAmountOfPass += l_PassesPerLevel;
-
-                        /*if (ConfigController.GetConfig().PerPlaylistWeighting)
-                        {
-                            
-                            l_TotalPoints += l_Weighting * 0.375f * l_PassesPerLevel; /// Current RPL formula from BSCC
-                        }*/
                         l_PassesPerLevel = 0;
                         l_NumberOfDifficulties = 0;
 

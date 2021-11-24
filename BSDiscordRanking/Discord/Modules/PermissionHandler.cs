@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Discord.Modules
     public static class PermissionHandler
     {
         /// <summary>
-        ///  Check if user has the correct permission level. 1 = Editor, 2 = Admin
+        ///  Check if user has the correct permission level. 1 = RankingTeam, 2 = Admin
         /// </summary>
         public class RequirePermissionAttribute : PreconditionAttribute
         {
@@ -31,10 +31,10 @@ namespace BSDiscordRanking.Discord.Modules
                     switch (m_PermissionLevel)
                     {
                         case >= 2:
-                            l_RoleID = m_Config.BotManagementRoleID;
+                            l_RoleID = m_Config.BotAdminRoleID;
                             break;
                         case >= 1:
-                            l_RoleID = m_Config.BotEditorRoleID;
+                            l_RoleID = m_Config.RankingTeamRoleID;
                             break;
                         case 0:
                             l_RoleID = 1;
@@ -42,7 +42,7 @@ namespace BSDiscordRanking.Discord.Modules
                     }
                     
                     
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID || p_Role.Id == m_Config.BotManagementRoleID) && l_RoleID != 0 || l_RoleID == 1) /// Gives moderator the ability to use permission < 2.
+                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID || p_Role.Id == m_Config.BotAdminRoleID) && l_RoleID != 0 || l_RoleID == 1) /// Gives moderator the ability to use permission < 2.
                     {
                         return Task.FromResult(PreconditionResult.FromSuccess());
                     }
@@ -56,10 +56,10 @@ namespace BSDiscordRanking.Discord.Modules
         {
             if (p_Context.User is SocketGuildUser l_User)
             {
-                if (l_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotEditorRoleID) != null)
+                if (l_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().RankingTeamRoleID) != null)
                     return 1;
                 else if (l_User.Roles.ToList()
-                    .Find(p_X => p_X.Id == ConfigController.GetConfig().BotManagementRoleID) != null)
+                    .Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null)
                     return 2;
             }
             return 0;

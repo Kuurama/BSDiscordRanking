@@ -130,7 +130,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     bool l_IsAdmin = false;
                     if (Context.User is SocketGuildUser l_User)
-                        if (l_User.Roles.Any(p_Role => p_Role.Id == l_Config.BotManagementRoleID))
+                        if (l_User.Roles.Any(p_Role => p_Role.Id == l_Config.BotAdminRoleID))
                             l_IsAdmin = true;
                     if (!l_IsAdmin)
                     {
