@@ -17,7 +17,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ggp")]
         [Alias("getgrindpool")]
         [Summary("Shows the Level's maps while displaying your passes, not giving a specific level will display the next available level you might want to grind.")]
-        public async Task GetGrindPool(int p_Level = default, string p_Embed1Or0 = null)
+        public async Task GetGrindPool(int p_Level = Int32.MinValue, string p_Embed1Or0 = null)
         {
             bool l_CheckForLastGGP = false;
             bool l_FullEmbeddedGGP = false;
@@ -36,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
             {
-                if (p_Level == default)
+                if (p_Level == Int32.MinValue)
                 {
                     int l_PlayerLevel = l_Player.GetPlayerLevel();
                     int l_LevelTemp = int.MaxValue;
@@ -346,8 +346,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             List<Embed> l_EmbedBuildedList = new List<Embed>();
             List<string> l_Messages = new List<string> { "" };
 
-            int l_MessageTotalLength = 0;
-
             List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples =
                 (from l_Map in p_PlayerPassFormat.SongList
                     from l_Diff in l_Map.DiffList
@@ -358,6 +356,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             string l_CurrentCategory = null;
             int l_MaxLength = 1000;
             int l_TotalMessageLength = 3900;
+            bool l_FirstEmbed = true;
 
             foreach ((InPlayerSong l_Map, InPlayerPassFormat l_Diff, string l_Category) in l_SortedMapsTuples)
             {
@@ -382,6 +381,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         p_EmbedBuilder = new EmbedBuilder();
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
                         l_LastMessage = "";
+                        l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
+                        l_CurrentCategory = l_Category;
+                        l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
+                        l_TotalMessageLength = 3900 - $"**{l_Category} maps:**\n\n".Length;
+                    }
+                    else if(l_FirstEmbed)
+                    {
+                        l_FirstEmbed = false;
                         l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
                         l_CurrentCategory = l_Category;
                         l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
@@ -425,22 +432,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else
                 {
                     if (l_Messages[^1].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
-                        .Length > l_MaxLength)
-                    {
-                        l_MessageTotalLength += l_Messages[^1].Length;
-                        p_EmbedBuilder.AddField("\u200B", l_Messages[^1]);
-                        l_Messages.Add(""); /// Initialize the next used index.
-                        l_MessageTotalLength = 0;
-                    }
-                    
-                    if (l_MessageTotalLength > l_TotalMessageLength) /// Description/Field lenght limit
+                        .Length > l_TotalMessageLength) /// Description/Field lenght limit
                     {
                         p_EmbedBuilder.WithDescription(l_Messages[^1]);
                         l_Messages.Add(""); /// Initialize the next used index.
                         l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
-                        l_MessageTotalLength = 0;
                     }
                     else if (p_EmbedBuilder.Fields.Count >= 22)
                     {
@@ -449,7 +447,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
-                        l_MessageTotalLength = 0;
                     }
 
                     l_Messages[^1] += $"***`{l_Map.name.Replace("`", @"\`").Replace("*", @"\*")}`***";
@@ -494,11 +491,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (!p_FullEmbeddedGGP && l_LastMessage != "")
             {
-                p_EmbedBuilder.AddField("\u200B", l_LastMessage);
+                p_EmbedBuilder.WithDescription(p_EmbedBuilder.Description += l_LastMessage);
             }
 
             
-            if (p_EmbedBuilder.Fields.Count <= 0)
+            if (p_EmbedBuilder.Fields.Count <= 0 && p_EmbedBuilder.Description == null)
             {
                 p_EmbedBuilder = null;
             }
