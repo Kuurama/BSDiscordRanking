@@ -122,13 +122,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (!l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_MapDifficulty.customData.manualWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_MapDifficulty.customData.manualWeight.ToString("n3"), true);
                                     l_AccWeightAlreadySet = true;
                                 }
 
                                 if (!l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_MapDifficulty.customData.manualWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_MapDifficulty.customData.manualWeight.ToString("n3"), true);
                                     l_PassWeightAlreadySet = true;
                                 }
                             }
@@ -137,13 +137,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard && l_Config.EnableAccBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_MapDifficulty.customData.AutoWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_MapDifficulty.customData.AutoWeight.ToString("n3"), true);
                                     l_AccWeightAlreadySet = true;
                                 }
 
                                 if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard && l_Config.EnablePassBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_MapDifficulty.customData.AutoWeight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_MapDifficulty.customData.AutoWeight.ToString("n3"), true);
                                     l_PassWeightAlreadySet = true;
                                 }
                             }
@@ -152,12 +152,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet && l_Config.EnableAccBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_Weight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.AccPointsName} weight", l_Weight.ToString("n3"), true);
                                 }
 
                                 if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet && l_Config.EnablePassBasedLeaderboard)
                                 {
-                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_Weight, true);
+                                    l_EmbedBuilder.AddField($"{l_Config.PassPointsName} weight", l_Weight.ToString("n3"), true);
                                 }
                             }
                             
