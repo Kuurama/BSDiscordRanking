@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using Discord;
@@ -55,10 +56,37 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                     bool l_NewDiff = false;
+                    bool l_TooManyFields = false;
                     foreach (var (l_SongFormat, l_MapLevelID, l_Weight) in l_GroupedMaps)
                     {
+                        l_TooManyFields = false;
+                        BeatSaverFormat l_BeatSaverFormat = Level.FetchBeatMap(l_Map.key);
+                        if (l_BeatSaverFormat != null)
+                        {
+                            if (l_BeatSaverFormat.versions[^1].hash != l_Map.hash)
+                            {
+                                l_EmbedBuilder.AddField(":warning: Map hash changed", "The mapper must have changed the currently uploaded map, consider removing it then adding the newest version.");
+                            }
+                        }
+                        else
+                        { 
+                            l_EmbedBuilder.AddField(":warning: This map has been deleted from beatsaver", $"The mapper must have deleted the map (key doesn't exist anymore), consider removing that map: (key is {l_Map.key}).");
+                            
+                        }
+                        
+                        
                         foreach (var l_MapDifficulty in l_SongFormat.difficulties)
                         {
+                            if (l_EmbedBuilder.Fields.Count > 15)
+                            {
+                                l_EmbedBuilder.WithDescription("Ranked difficulties:");
+                                l_EmbedBuilder.WithTitle(l_Map.name);
+                                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
+                                l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{l_Map.key}");
+                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                l_EmbedBuilder = new EmbedBuilder();
+                                l_TooManyFields = true;
+                            }
                             
                             if (l_NewDiff)
                             {
@@ -137,11 +165,18 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                     }
 
-                    l_EmbedBuilder.WithDescription("Ranked difficulties:");
-                    l_EmbedBuilder.WithTitle(l_Map.name);
-                    l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
-                    l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_Map.hash, Context).id}");
-                    await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                    if (l_TooManyFields == false)
+                    {
+                        l_EmbedBuilder.WithDescription("Ranked difficulties:");
+                        l_EmbedBuilder.WithTitle(l_Map.name);
+                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
+                        l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{l_Map.key}");
+                        await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                    }
+                    else
+                    {
+                        await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
+                    }
                 }
                 else
                 {
