@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Newtonsoft.Json.Converters;
 
 namespace BSDiscordRanking.Formats.API
 {
@@ -14,7 +12,7 @@ namespace BSDiscordRanking.Formats.API
         public int rank { get; set; }
         public int countryRank { get; set; }
         public string role { get; set; }
-        public ApiPlayerBadge[] badges { get; set; }
+        public List<ApiPlayerBadge> badges { get; set; }
         public string history { get; set; }
         public short permissions { get; set; }
         public bool banned { get; set; }
@@ -72,8 +70,7 @@ namespace BSDiscordRanking.Formats.API
         public string songSubName { get; set; }
         public string songAuthorName { get; set; }
         public string levelAuthorName { get; set; }
-        public short difficulty { get; set; }
-        public string difficultyRaw { get; set; }
+        public ApiDifficulty difficulty { get; set; }
         public int maxScore { get; set; }
         public string createdDate { get; set; }
         public string rankedDate { get; set; }
@@ -89,7 +86,7 @@ namespace BSDiscordRanking.Formats.API
         public int dailyPlays { get; set; }
         public string coverImage { get; set; }
         public ApiPlayerScore playerScore { get; set; }
-        public List<ApiDifficulties> difficulties { get; set; }
+        public List<ApiDifficulty> difficulties { get; set; }
     }
 
     public class ApiPlayerScore
@@ -106,7 +103,7 @@ namespace BSDiscordRanking.Formats.API
         public int badCuts { get; set; }
         public int missedNotes { get; set; }
         public int maxCombo { get; set; }
-        public short fullCombo { get; set; }
+        public bool fullCombo { get; set; }
         public short hmd { get; set; }
         public bool hasReplay { get; set; }
         public string timeSet { get; set; }
@@ -122,11 +119,14 @@ namespace BSDiscordRanking.Formats.API
         public string role { get; set; }
     }
 
-    public class ApiDifficulties
+    public class ApiDifficulty
     {
         public int leaderboardID { get; set; }
         public int difficulty { get; set; }
+        public string gameMode { get; set; }
+        public string difficultyRaw { get; set; }
     }
+    
 
     public class ApiCheck
     {

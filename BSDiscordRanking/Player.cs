@@ -518,7 +518,7 @@ namespace BSDiscordRanking
                                         {
                                             foreach (Difficulty l_Difficulty in l_Song.difficulties)
                                             {
-                                                if (l_Score.leaderboard.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
+                                                if (l_Score.leaderboard.difficulty.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                 {
                                                     bool l_DiffExist = false;
                                                     bool l_TempDiffExist = false;

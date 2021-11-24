@@ -29,6 +29,7 @@ namespace BSDiscordRanking
         public LevelFormat m_Level;
         public int m_LevelID;
         public bool m_MapAdded;
+        public bool m_MapDeleted;
         private string m_SyncURL;
 
         public Level(int p_LevelID)
@@ -463,7 +464,7 @@ namespace BSDiscordRanking
                             p_Context?.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
                         }
 
-                        m_MapAdded = l_DifficultyAlreadyExist;
+                        m_MapAdded = !l_DifficultyAlreadyExist;
                     }
                 }
                 else
@@ -555,6 +556,7 @@ namespace BSDiscordRanking
                                             m_Level.songs.RemoveAt(l_I);
                                         }
 
+                                        m_MapDeleted = true;
                                         p_SocketCommandContext?.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
                                         ReWritePlaylist(false);
                                     }
