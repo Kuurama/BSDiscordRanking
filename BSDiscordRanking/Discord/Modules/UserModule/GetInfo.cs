@@ -80,7 +80,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             if (l_EmbedBuilder.Fields.Count > 15)
                             {
                                 l_EmbedBuilder.WithDescription("Ranked difficulties:");
-                                l_EmbedBuilder.WithTitle(l_Map.name);
+                                l_EmbedBuilder.WithTitle($"{l_Map.name} (key-{l_Map.key})");
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{l_Map.key}");
                                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
@@ -161,14 +161,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 }
                             }
                             
-                            l_EmbedBuilder.AddField("Manual Weight", $"{l_MapDifficulty.customData.forceManualWeight.ToString()} ({l_MapDifficulty.customData.manualWeight:n2})", true);
+                            l_EmbedBuilder.AddField("Manual Weight", $"{l_MapDifficulty.customData.forceManualWeight.ToString()} ({l_MapDifficulty.customData.manualWeight:n3})", true);
                         }
                     }
 
                     if (l_TooManyFields == false)
                     {
                         l_EmbedBuilder.WithDescription("Ranked difficulties:");
-                        l_EmbedBuilder.WithTitle(l_Map.name);
+                        l_EmbedBuilder.WithTitle($"{l_Map.name} (key-{l_Map.key})");
                         l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.hash.ToLower()}.jpg");
                         l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{l_Map.key}");
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());

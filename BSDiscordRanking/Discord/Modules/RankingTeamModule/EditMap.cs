@@ -94,7 +94,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             l_EmbedBuilder.AddField("CustomPassText", l_LevelDiff.customData.customPassText, true);
                                         }
 
-                                        l_EmbedBuilder.AddField("Manual Weight", $"{l_LevelDiff.customData.forceManualWeight.ToString()} ({l_LevelDiff.customData.manualWeight:n2})", true);
+                                        l_EmbedBuilder.AddField("Manual Weight", $"{l_LevelDiff.customData.forceManualWeight.ToString()} ({l_LevelDiff.customData.manualWeight})", true);
 
                                         l_EmbedBuilder.WithTitle(p_NewName ?? l_LevelSong.name);
                                         l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
@@ -242,7 +242,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                     l_MapChangeEmbedBuilder.AddField("New Manual Weight Preference:", l_EditMapFormat.ForceManualWeight, false);
 
                                                 if (l_MapExistCheck.DifferentWeight)
-                                                    l_MapChangeEmbedBuilder.AddField($"New Manual Weight:", $"{p_NewWeight:n2}", false);
+                                                    l_MapChangeEmbedBuilder.AddField($"New Manual Weight:", $"{p_NewWeight:n3}", false);
 
                                                 l_MapChangeEmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                                                 if (p_UserID != default) l_EmbedBuilder.WithFooter($"Operated by <@{p_UserID}>");
@@ -527,7 +527,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
                             .AddField("\u200B", "\u200B")
-                            .AddField("__Manual Weight-Edit__", $"Please type the Manual Weight you want the map to have (respecting the {0.00f:n2} format). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                            .AddField("__Manual Weight-Edit__", $"Please type the Manual Weight you want the map to have (respecting the {0.000f:n3} format). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
