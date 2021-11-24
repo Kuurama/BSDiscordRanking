@@ -18,7 +18,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
         [Alias("rankedit")]
         [Summary("Open the Edit-Map management menu.")]
         private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", [Summary("DoNotDisplayOnHelp")]bool p_DisplayEditMap = true, [Summary("DoNotDisplayOnHelp")]bool p_ChangeLevel = false, [Summary("DoNotDisplayOnHelp")]int p_NewLevel = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeMinScoreRequirement = false, [Summary("DoNotDisplayOnHelp")]float p_NewMinPercentageRequirement = default, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCategory = false, [Summary("DoNotDisplayOnHelp")]string p_NewCategory = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeInfoOnGGP = false, [Summary("DoNotDisplayOnHelp")]string p_NewInfoOnGGP = null, [Summary("DoNotDisplayOnHelp")]bool p_ChangeCustomPassText = false, [Summary("DoNotDisplayOnHelp")]string p_NewCustomPassText = null, [Summary("DoNotDisplayOnHelp")]bool p_ToggleManualWeight = false, [Summary("DoNotDisplayOnHelp")]bool p_ChangeWeight = false, [Summary("DoNotDisplayOnHelp")]float p_NewWeight = default,
-            [Summary("DoNotDisplayOnHelp")]ulong p_UserID = default, [Summary("DoNotDisplayOnHelp")]ulong p_ChannelID = default)
+            [Summary("DoNotDisplayOnHelp")]bool p_ChangeName = false, [Summary("DoNotDisplayOnHelp")]string p_NewName = null, [Summary("DoNotDisplayOnHelp")]ulong p_UserID = default, [Summary("DoNotDisplayOnHelp")]ulong p_ChannelID = default)
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
@@ -95,7 +95,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                         
                                         l_EmbedBuilder.AddField("Manual Weight", $"{l_LevelDiff.customData.forceManualWeight.ToString()} ({l_LevelDiff.customData.manualWeight:n2})", true);
 
-                                        l_EmbedBuilder.WithTitle(l_LevelSong.name);
+                                        l_EmbedBuilder.WithTitle(p_NewName ?? l_LevelSong.name);
                                         l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
                                         l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_LevelSong.hash, Context).id}");
 
@@ -120,6 +120,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                                 l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
                                                 await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
                                                     component: new ComponentBuilder()
+                                                        .WithButton(new ButtonBuilder("Change Name", $"NameChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
@@ -135,6 +136,7 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                                 l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
                                                 await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
                                                     component: new ComponentBuilder()
+                                                        .WithButton(new ButtonBuilder("Change Name", $"NameChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{p_UserID}", ButtonStyle.Secondary))
@@ -150,6 +152,11 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                                         if (p_ChangeLevel)
                                         {
                                             ChangeMapLevel(l_EditMapFormat, l_MapExistCheck.Level, p_NewLevel);
+                                        }
+
+                                        if (p_ChangeName)
+                                        {
+                                            ChangeName(l_EditMapFormat, l_MapExistCheck.Level, p_NewName);
                                         }
                                         if (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight) /// || p_ChangeCustomPassText But i choosed to not display it.
                                         {
@@ -586,6 +593,38 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
                         }
                         break;
                     
+                    case "NameChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"NameChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B","\u200B")
+                            .AddField("__Name-Edit__", "Please type the name you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+                    
+                    case "NameChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(limit: 20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_NameEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Name-Edit"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_NameEditTitleFieldIndex); /// Removing the "Name-Edit" Field
+                            string l_OldName = l_EmbedBuilder.Title;
+                            l_EmbedBuilder.Title = $"New Name: {l_LastUserMessage}";
+
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeName: true, p_NewName: l_LastUserMessage);
+                            
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__Name-Edit Done__", $"Old Name: {l_OldName}").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                        }
+                        break;
+
                     case "BackToEditMapMenu":
                         l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                         try
@@ -694,6 +733,12 @@ namespace BSDiscordRanking.Discord.Modules.EditorModule
             l_CurrentLevel.RemoveMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic);
             Level l_NewLevel = new Level(p_NewLevelID);
             l_NewLevel.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote);
+        }
+        
+        private static void ChangeName(EditMapFormat p_EditMapFormat, int p_LevelID, string p_NewName)
+        {
+            Level l_Level = new Level(p_LevelID);
+            l_Level.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, null, p_NewName);
         }
     }
 }

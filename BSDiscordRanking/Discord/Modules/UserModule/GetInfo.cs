@@ -63,7 +63,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         BeatSaverFormat l_BeatSaverFormat = Level.FetchBeatMap(l_Map.key);
                         if (l_BeatSaverFormat != null)
                         {
-                            if (l_BeatSaverFormat.versions[^1].hash != l_Map.hash)
+                            if (!string.Equals(l_BeatSaverFormat.versions[^1].hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase))
                             {
                                 l_EmbedBuilder.AddField(":warning: Map hash changed", "The mapper must have changed the currently uploaded map, consider removing it then adding the newest version.");
                             }

@@ -231,7 +231,7 @@ namespace BSDiscordRanking
         }
 
         public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote,
-            SocketCommandContext p_Context = null)
+            SocketCommandContext p_Context = null, string p_Name = null)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -259,12 +259,14 @@ namespace BSDiscordRanking
                         bool l_InfoOnGGPEdit = false;
                         bool l_CustomPassTextEdit = false;
                         bool l_WeightEdit = false;
+                        bool l_NameEdit = false;
+                        string l_OriginalName = null;
                         string l_NewManualWeightPreference = null;
                         bool l_ForceManualWeightPreferenceEdit = false;
                         try
                         {
-                            StringBuilder l_SBMapName = new StringBuilder(m_BeatSaver.name);
-                            string l_NewMapName = m_BeatSaver.name;
+                            StringBuilder l_SBMapName = new StringBuilder(p_Name ?? m_BeatSaver.name);
+                            string l_NewMapName = p_Name ?? m_BeatSaver.name;
                             do /// Might want to implement Trim()
                             {
                                 if (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0])
@@ -365,11 +367,18 @@ namespace BSDiscordRanking
                                                     l_ForceManualWeightPreferenceEdit = true;
                                                 }
 
+                                                if (l_LevelDifficulty.name != l_NewMapName)
+                                                {
+                                                    l_NameEdit = true;
+                                                    l_OriginalName = m_Level.songs[l_I].name;
+                                                    m_Level.songs[l_I].name = l_NewMapName;
+                                                }
+
                                                 break;
                                             }
                                         }
 
-                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit)
+                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_NameEdit)
                                         {
                                             p_Context?.Channel.SendMessageAsync(
                                                 $"> :ballot_box_with_check: The following maps info has been changed in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID} :\n");
@@ -407,6 +416,12 @@ namespace BSDiscordRanking
                                             {
                                                 p_Context?.Channel.SendMessageAsync(
                                                     $"> Weight: {l_OriginalManualWeight} => {l_Difficulty.customData.manualWeight}.");
+                                            }
+                                            
+                                            if (l_NameEdit)
+                                            {
+                                                p_Context?.Channel.SendMessageAsync(
+                                                    $"> Name: {l_OriginalName} => {l_NewMapName}.");
                                             }
 
                                             ReWritePlaylist(false);
