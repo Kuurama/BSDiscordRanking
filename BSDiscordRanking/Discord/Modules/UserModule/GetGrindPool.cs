@@ -343,7 +343,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             int l_Y = 0;
             int l_NumbedOfEmbed = 1;
             string l_LastMessage = null;
-            List<Embed> l_EmbedBuildedList = new List<Embed>();
+            List<Embed> l_EmbedBuiltList = new List<Embed>();
             List<string> l_Messages = new List<string> { "" };
 
             List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples =
@@ -354,7 +354,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
 
             string l_CurrentCategory = null;
-            int l_MaxLength = 1000;
             int l_TotalMessageLength = 3900;
             bool l_FirstEmbed = true;
 
@@ -377,13 +376,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_LastMessage is not ("" or null))
                     {
                         p_EmbedBuilder.WithDescription(l_LastMessage);
-                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
                         l_LastMessage = "";
                         l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
                         l_CurrentCategory = l_Category;
-                        l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
                         l_TotalMessageLength = 3900 - $"**{l_Category} maps:**\n\n".Length;
                     }
                     else if(l_FirstEmbed)
@@ -391,7 +389,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_FirstEmbed = false;
                         l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
                         l_CurrentCategory = l_Category;
-                        l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
                         l_TotalMessageLength = 3900 - $"**{l_Category} maps:**\n\n".Length;
                     }
                 }
@@ -422,7 +419,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_Y++;
                     if (l_Y % 15 == 0)
                     {
-                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
 
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
@@ -436,7 +433,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         p_EmbedBuilder.WithDescription(l_Messages[^1]);
                         l_Messages.Add(""); /// Initialize the next used index.
-                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
                     }
@@ -444,7 +441,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         p_EmbedBuilder.WithDescription(l_Messages[^1]);
                         l_Messages.Add(""); /// Initialize the next used index.
-                        l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                        l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
                         p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
                     }
@@ -483,7 +480,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 if (l_CurrentCategory != l_Category && p_DisplayCategory && l_LastMessage != null)
                 {
                     l_LastMessage = l_LastMessage.Insert(0, $"**{l_Category} maps:**\n\n");
-                    l_MaxLength = 1000 - $"**{l_Category} maps:**\n\n".Length;
                     l_CurrentCategory = l_Category;
                 }
 
@@ -502,15 +498,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (p_EmbedBuilder != null)
             {
-                l_EmbedBuildedList.Add(p_EmbedBuilder.Build());
+                l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
             }
 
-            l_EmbedBuildedList.RemoveAll(p_X => p_X.Description == null && p_X.Fields.Length <= 0 && p_X.Title == null);
+            l_EmbedBuiltList.RemoveAll(p_X => p_X.Description == null && p_X.Fields.Length <= 0 && p_X.Title == null);
 
             return new GGPFormat
             {
                 Messages = l_Messages,
-                Embed = l_EmbedBuildedList
+                Embed = l_EmbedBuiltList
             };
         }
     }
