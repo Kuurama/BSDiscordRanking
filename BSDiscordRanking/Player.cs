@@ -697,10 +697,6 @@ namespace BSDiscordRanking
 
                                                     if (!l_MinScoreRequirementFailed)
                                                     {
-                                                        if (l_Score.leaderboard.id == 236516)
-                                                        {
-                                                            Console.WriteLine("it is");
-                                                        }
                                                         MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key);
                                                         ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
                                                         {

@@ -53,7 +53,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, Context);
-                                if (!l_Level.m_MapAdded)
+                                if (l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                     l_EmbedBuilder.WithTitle("Map Added:");
