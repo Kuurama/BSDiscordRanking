@@ -462,6 +462,13 @@ namespace BSDiscordRanking
             }
         }
 
+        public class FetchPassFormat
+        {
+            public List<string> newPass { get; set; }
+            public List<string> removedPass { get; set; }
+            public List<string> updatedPass { get; set; }
+        }
+
         public async Task<int> FetchPass(SocketCommandContext p_Context = null, bool p_IsBotRegistered = false)
         {
             if (m_PlayerID != null)
@@ -486,6 +493,12 @@ namespace BSDiscordRanking
                 bool l_AboveLVLFourteenPass = false; /// Funny
                 int l_OldPlayerLevel = GetPlayerLevel();
                 PlayerPassFormat l_TempPlayerPass = ReturnPass();
+                FetchPassFormat l_FetchPassFormat = new FetchPassFormat()
+                {
+                    newPass = new List<string>(),
+                    removedPass = new List<string>(),
+                    updatedPass = new List<string>()
+                };
                 m_PlayerPass = new PlayerPassFormat
                 {
                     SongList = new List<InPlayerSong>()
@@ -530,6 +543,14 @@ namespace BSDiscordRanking
                                                     {
                                                         l_MinScoreRequirementFailed = true;
                                                     }
+
+                                                    if (l_Score.score.baseScore > l_Difficulty.customData.maxScore)
+                                                    {
+                                                        
+                                                        m_PlayerScore.Remove(l_Score); /// Removing potential cheated scores.
+                                                        continue;
+                                                    }
+                                                    
                                                     foreach (InPlayerSong l_CachedPassedSong in m_PlayerPass.SongList
                                                         .Where(p_CachedPassedSong => p_CachedPassedSong.DiffList != null && string.Equals(p_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase)))
                                                     {
@@ -697,7 +718,7 @@ namespace BSDiscordRanking
 
                                                     if (!l_MinScoreRequirementFailed)
                                                     {
-                                                        MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key);
+                                                        MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key, l_Difficulty.customData.maxScore);
                                                         ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
                                                         {
                                                             country = m_PlayerFull.country,
@@ -720,7 +741,7 @@ namespace BSDiscordRanking
 
                                                         if (l_NeedNewAutoWeight)
                                                         {
-                                                            l_Difficulty.customData.AutoWeight = MapLeaderboardController.RecalculateAutoWeight(l_Score.leaderboard.id, l_Level.value.m_Level.customData.autoWeightDifficultyMultiplier, l_Difficulty.customData.maxScore);
+                                                            l_Difficulty.customData.AutoWeight = MapLeaderboardController.RecalculateAutoWeight(l_Score.leaderboard.id, l_Level.value.m_Level.customData.autoWeightDifficultyMultiplier);
                                                             Console.WriteLine($"New AutoWeight set on {l_Difficulty.name} {l_DifficultyShown} - {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}");
                                                             l_DiffGotNewAutoWeight = true;
                                                         }

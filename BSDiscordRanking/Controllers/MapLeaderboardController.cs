@@ -20,21 +20,23 @@ namespace BSDiscordRanking.Controllers
         private int m_ErrorNumber = 0;
         public MapLeaderboardFormat m_MapLeaderboard;
 
-        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null)
+        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default)
         {
             m_LeaderboardID = p_LeaderboardID;
             m_Key = p_Key;
             LoadMapLeaderboard();
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
+            m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
 
             switch (m_MapLeaderboard.scores)
             {
                 case null:
                 {
                     m_MapLeaderboard.scores = new List<MapPlayerScore>();
-                    List<ApiScore> l_ApiScores = GetLeaderboardScores(p_LeaderboardID);
+                    List<ApiScore> l_ApiScores = GetLeaderboardScores(p_LeaderboardID, p_MaxScore);
                     if (l_ApiScores != null)
                     {
+                        l_ApiScores.RemoveAll(p_X => p_X.baseScore > m_MapLeaderboard.info.maxScore);
                         foreach (ApiScore l_Score in l_ApiScores)
                         {
                             m_MapLeaderboard.scores.Add(new MapPlayerScore()
@@ -69,8 +71,7 @@ namespace BSDiscordRanking.Controllers
                     }
                     catch (WebException l_Exception)
                     {
-                        if (
-                            l_Exception.Response is HttpWebResponse
+                        if (l_Exception.Response is HttpWebResponse
                                 l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
                         {
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
@@ -277,6 +278,11 @@ namespace BSDiscordRanking.Controllers
             /// This function Adds a player score to a map leaderboard, then return true if the autoweight need to be changed.
             if (p_PlayerScore != null)
             {
+                if (p_PlayerScore.score.baseScore > m_MapLeaderboard.info.maxScore)
+                {
+                    Console.WriteLine("Score Above 100%, Cheated scores aren't allowed.");
+                    return false;
+                }
                 bool l_NewPlayer = true;
                 bool l_AutoWeightCheck = false;
                 int l_SumOfFirstScores = 0;
@@ -318,6 +324,8 @@ namespace BSDiscordRanking.Controllers
                     m_MapLeaderboard.scores.Add(p_PlayerScore);
                 }
 
+                m_MapLeaderboard.scores.RemoveAll(p_X => p_X.score.baseScore > m_MapLeaderboard.info.maxScore); /// Removing potentially > 100% scores, cheating isn't allowed.
+                
                 ReWriteMapLeaderboard();
 
                 if (l_AutoWeightCheck)
@@ -344,7 +352,7 @@ namespace BSDiscordRanking.Controllers
                 return false;
             }
         }
-        public static float RecalculateAutoWeight(int p_LeaderboardID, int p_DiffilcultyMultiplier, int p_MaxScore)
+        public static float RecalculateAutoWeight(int p_LeaderboardID, int p_DifficultlyMultiplier)
         {
             float l_SumOfPercentage = 0;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
@@ -353,9 +361,9 @@ namespace BSDiscordRanking.Controllers
             {
                 for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
                 {
-                    if (p_MaxScore > 0)
+                    if (l_MapLeaderboard.m_MapLeaderboard.info.maxScore > 0)
                     {
-                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].score.baseScore / p_MaxScore) * 100;
+                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].score.baseScore / l_MapLeaderboard.m_MapLeaderboard.info.maxScore) * 100;
                     }
                     else
                     {
@@ -366,7 +374,7 @@ namespace BSDiscordRanking.Controllers
 
                 float l_AveragePercentage = (l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight);
                 float l_AverageNeededPercentage = 100f - l_AveragePercentage;
-                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * p_DiffilcultyMultiplier) / 32;
+                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * p_DifficultlyMultiplier) / 32;
                 return l_NewWeight;
             }
             else
