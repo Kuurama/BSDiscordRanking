@@ -6,7 +6,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Discord.Modules.AdminModule;
 using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
@@ -451,6 +450,7 @@ namespace BSDiscordRanking
                     {
                         Console.WriteLine($"Api version changed from {ConfigFormat.SCORE_SABER_API_VERSION} to {l_ApiCheck.version}, error occured.");
                     }
+
                     return true;
                 }
                 catch (WebException l_WebException) /// Score Saber Global API Down or Internet Error.
@@ -523,8 +523,13 @@ namespace BSDiscordRanking
                                                 {
                                                     bool l_DiffExist = false;
                                                     bool l_TempDiffExist = false;
+                                                    bool l_MinScoreRequirementFailed = false;
                                                     bool l_PassWeightAlreadySet = false;
                                                     bool l_AccWeightAlreadySet = false;
+                                                    if (l_Score.score.baseScore < l_Difficulty.customData.minScoreRequirement)
+                                                    {
+                                                        l_MinScoreRequirementFailed = true;
+                                                    }
                                                     foreach (InPlayerSong l_CachedPassedSong in m_PlayerPass.SongList
                                                         .Where(p_CachedPassedSong => p_CachedPassedSong.DiffList != null && string.Equals(p_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase)))
                                                     {
@@ -535,20 +540,27 @@ namespace BSDiscordRanking
                                                             {
                                                                 foreach (InPlayerSong l_OldPassedSong in l_TempPlayerPass.SongList
                                                                     .Where(p_TempPassedSong => l_CachedPassedSong.hash == p_TempPassedSong.hash)
-                                                                    .Where(p_TempPassedSong => p_TempPassedSong.DiffList.Any(p_TempPassedDifficulty => p_TempPassedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && p_TempPassedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.score.baseScore >= l_Difficulty.customData.minScoreRequirement)))
+                                                                    .Where(p_TempPassedSong => p_TempPassedSong.DiffList.Any(p_TempPassedDifficulty => p_TempPassedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && p_TempPassedDifficulty.Difficulty.name == l_Difficulty.name)))
                                                                 {
-                                                                    l_TempDiffExist = true;
+                                                                    if (!l_MinScoreRequirementFailed)
+                                                                    {
+                                                                        l_TempDiffExist = true;
+                                                                    }
                                                                 }
                                                             }
 
-                                                            if (l_CachedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.Difficulty.name == l_Difficulty.name && l_Score.score.baseScore >= l_Difficulty.customData.minScoreRequirement)
+                                                            if (l_CachedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.Difficulty.name == l_Difficulty.name)
                                                             {
-                                                                l_DiffExist = true;
+                                                                if (!l_MinScoreRequirementFailed)
+                                                                {
+                                                                    l_DiffExist = true;
+                                                                }
+
                                                                 break;
                                                             }
                                                         }
 
-                                                        if (!l_DiffExist)
+                                                        if (!l_DiffExist && !l_MinScoreRequirementFailed)
                                                         {
                                                             l_Difficulty.customData.leaderboardID = l_Score.leaderboard.id;
                                                             l_CachedPassedSong.DiffList.Add(new InPlayerPassFormat()
@@ -557,7 +569,7 @@ namespace BSDiscordRanking
                                                                 Score = l_Score.score.baseScore,
                                                                 Rank = l_Score.score.rank
                                                             });
-                                                            if (!l_TempDiffExist)
+                                                            if (!l_TempDiffExist && !l_MinScoreRequirementFailed)
                                                             {
                                                                 l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
                                                                 if (!m_PlayerStats.IsFirstScan)
@@ -592,13 +604,26 @@ namespace BSDiscordRanking
                                                                 l_PassesPerLevel++;
                                                             }
                                                         }
-                                                        else
+                                                        else if (l_DiffExist && l_MinScoreRequirementFailed)
+                                                        {
+                                                            if (l_CachedPassedSong.DiffList.Count > 1)
+                                                            {
+                                                                l_CachedPassedSong.DiffList.RemoveAll(p_X => p_X.Difficulty.name == l_Difficulty.name && p_X.Difficulty.characteristic == l_Difficulty.characteristic);
+                                                            }
+                                                            else
+                                                            {
+                                                                m_PlayerPass.SongList.RemoveAll(p_X => string.Equals(p_X.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase));
+                                                                break;
+                                                            }
+                                                        }
+                                                        else if (!l_MinScoreRequirementFailed)
                                                         {
                                                             l_PassesPerLevel++;
                                                         }
                                                     }
+                                                    
 
-                                                    if (!l_MapStored && l_Score.score.baseScore >= l_Difficulty.customData.minScoreRequirement)
+                                                    if (!l_MapStored && !l_MinScoreRequirementFailed)
                                                     {
                                                         bool l_WasStored = false;
                                                         InPlayerSong l_PlayerPassFormat = new InPlayerSong()
@@ -669,81 +694,87 @@ namespace BSDiscordRanking
                                                         l_Difficulty.customData.leaderboardID = l_Score.leaderboard.id;
                                                         l_DiffGotLeaderboardID = true;
                                                     }
-                                                    
-                                                    
-                                                    MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key);
-                                                    ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
-                                                    {
-                                                        country = m_PlayerFull.country,
-                                                        id = m_PlayerFull.id,
-                                                        name = m_PlayerFull.name,
-                                                        profilePicture = m_PlayerFull.profilePicture,
-                                                        permissions = m_PlayerFull.permissions,
-                                                        role = m_PlayerFull.role
-                                                    };
-                                                    l_Score.score.leaderboardPlayerInfo = l_LeaderboardPlayerInfo; /// Needed for map leaderboard.
-                                                    
-                                                    bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore()
-                                                    {
-                                                        customData = new LeaderboardCustomData()
-                                                        {
-                                                            isBotRegistered = p_IsBotRegistered
-                                                        },
-                                                        score = l_Score.score
-                                                    }, l_Difficulty.customData.AutoWeight);
 
-                                                    if (l_NeedNewAutoWeight)
+                                                    if (!l_MinScoreRequirementFailed)
                                                     {
-                                                        l_Difficulty.customData.AutoWeight = MapLeaderboardController.RecalculateAutoWeight(l_Score.leaderboard.id, l_Level.value.m_Level.customData.autoWeightDifficultyMultiplier, l_Difficulty.customData.maxScore);
-                                                        Console.WriteLine($"New AutoWeight set on {l_Difficulty.name} {l_DifficultyShown} - {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}");
-                                                        l_DiffGotNewAutoWeight = true;
-                                                    }
-
-                                                    if (l_Difficulty.customData.forceManualWeight)
-                                                    {
-                                                        if (!l_Config.OnlyAutoWeightForAccLeaderboard)
+                                                        if (l_Score.leaderboard.id == 236516)
                                                         {
-                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.manualWeight;
-                                                            l_AccWeightAlreadySet = true;
+                                                            Console.WriteLine("it is");
                                                         }
-
-                                                        if (!l_Config.OnlyAutoWeightForPassLeaderboard)
+                                                        MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key);
+                                                        ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
                                                         {
-                                                            l_TotalPassPoints += l_Config.PassPointMultiplier * l_Difficulty.customData.manualWeight;
-                                                            l_PassWeightAlreadySet = true;
-                                                        }
-                                                    }
+                                                            country = m_PlayerFull.country,
+                                                            id = m_PlayerFull.id,
+                                                            name = m_PlayerFull.name,
+                                                            profilePicture = m_PlayerFull.profilePicture,
+                                                            permissions = m_PlayerFull.permissions,
+                                                            role = m_PlayerFull.role
+                                                        };
+                                                        l_Score.score.leaderboardPlayerInfo = l_LeaderboardPlayerInfo; /// Needed for map leaderboard.
 
-                                                    if (l_Difficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
-                                                    {
-                                                        if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard)
+                                                        bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore()
                                                         {
-                                                            l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.AutoWeight;
-                                                            l_AccWeightAlreadySet = true;
-                                                        }
-
-                                                        if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard)
-                                                        {
-                                                            l_TotalPassPoints += l_Config.PassPointMultiplier * l_Difficulty.customData.AutoWeight;
-                                                            l_PassWeightAlreadySet = true;
-                                                        }
-                                                    }
-
-                                                    switch (l_Config.PerPlaylistWeighting)
-                                                    {
-                                                        case true:
-                                                        {
-                                                            if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
+                                                            customData = new LeaderboardCustomData()
                                                             {
-                                                                l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                                isBotRegistered = p_IsBotRegistered
+                                                            },
+                                                            score = l_Score.score
+                                                        }, l_Difficulty.customData.AutoWeight);
+
+                                                        if (l_NeedNewAutoWeight)
+                                                        {
+                                                            l_Difficulty.customData.AutoWeight = MapLeaderboardController.RecalculateAutoWeight(l_Score.leaderboard.id, l_Level.value.m_Level.customData.autoWeightDifficultyMultiplier, l_Difficulty.customData.maxScore);
+                                                            Console.WriteLine($"New AutoWeight set on {l_Difficulty.name} {l_DifficultyShown} - {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}");
+                                                            l_DiffGotNewAutoWeight = true;
+                                                        }
+
+                                                        if (l_Difficulty.customData.forceManualWeight)
+                                                        {
+                                                            if (l_Config.AllowForceManualWeightForAccLeaderboard)
+                                                            {
+                                                                l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.manualWeight;
+                                                                l_AccWeightAlreadySet = true;
                                                             }
 
-                                                            if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
+                                                            if (l_Config.AllowAutoWeightForPassLeaderboard)
                                                             {
-                                                                l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                                l_TotalPassPoints += l_Config.PassPointMultiplier * l_Difficulty.customData.manualWeight;
+                                                                l_PassWeightAlreadySet = true;
+                                                            }
+                                                        }
+
+                                                        if (l_Difficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
+                                                        {
+                                                            if (!l_AccWeightAlreadySet && l_Config.AllowAutoWeightForAccLeaderboard)
+                                                            {
+                                                                l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.AutoWeight;
+                                                                l_AccWeightAlreadySet = true;
                                                             }
 
-                                                            break;
+                                                            if (!l_PassWeightAlreadySet && l_Config.AllowAutoWeightForPassLeaderboard)
+                                                            {
+                                                                l_TotalPassPoints += l_Config.PassPointMultiplier * l_Difficulty.customData.AutoWeight;
+                                                                l_PassWeightAlreadySet = true;
+                                                            }
+                                                        }
+
+                                                        switch (l_Config.PerPlaylistWeighting)
+                                                        {
+                                                            case true:
+                                                            {
+                                                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
+                                                                {
+                                                                    l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                                }
+
+                                                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
+                                                                {
+                                                                    l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                                }
+
+                                                                break;
+                                                            }
                                                         }
                                                     }
                                                 }

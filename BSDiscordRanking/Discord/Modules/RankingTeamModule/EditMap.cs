@@ -41,7 +41,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                     {
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
                             component: new ComponentBuilder()
-                                .WithButton(new ButtonBuilder("Close Menu", "ExitEditMap", ButtonStyle.Danger))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
                                 .Build());
                     }
                     else if (p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
@@ -298,6 +298,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             bool l_IsCorrectUserID = l_SplicedCustomID.Any(p_SplicedPartCustomID => p_SplicedPartCustomID == l_UserID.ToString());
             if (l_IsCorrectUserID)
             {
+                bool l_InteractionResponded = false;
                 EmbedBuilder l_EmbedBuilder = p_MessageComponent.Message.Embeds.FirstOrDefault().ToEmbedBuilder();
                 ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
                 EditMapArgumentFormat l_EditMapArgumentFormat;
@@ -345,6 +346,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__Level-Edit__", "Please choose the level you want this difficulty to be in.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "CategoryChange":
@@ -356,6 +358,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__Category-Edit__", "Please type the category you want the map to be in. Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "CategoryChangeValidation":
@@ -384,6 +387,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                            l_InteractionResponded = true;
                         }
                         break;
 
@@ -404,6 +408,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ToggleManualWeight: true);
 
                                 await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.Build());
+                                l_InteractionResponded = true;
                             }
                         }
                         break;
@@ -417,6 +422,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__MinPercentageRequirement-Edit__", $"Please type the Minimum percentage requirement you want this map to have (not including the '%' and respecting the {0.00f:n2} format). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "MinPercentageRequirementChangeValidation":
@@ -468,6 +474,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                                     .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                                     .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                                                l_InteractionResponded = true;
                                             }
                                         }
                                     }
@@ -486,6 +493,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__InfoOnGGP-Edit__", "Please type the InfoOnGGP you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "InfoOnGGPChangeValidation":
@@ -514,6 +522,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                            l_InteractionResponded = true;
                         }
 
                         break;
@@ -527,6 +536,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__Manual Weight-Edit__", $"Please type the Manual Weight you want the map to have (respecting the {0.000f:n3} format). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "ManualWeightChangeValidation":
@@ -565,6 +575,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                                            l_InteractionResponded = true;
                                         }
                                     }
                                 }
@@ -582,6 +593,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__CustomPassText-Edit__", "Please type the CustomPassText you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "CustomPassTextChangeValidation":
@@ -610,6 +622,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                            l_InteractionResponded = true;
                         }
 
                         break;
@@ -623,6 +636,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .AddField("\u200B", "\u200B")
                             .AddField("__Name-Edit__", "Please type the name you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        l_InteractionResponded = true;
                         break;
 
                     case "NameChangeValidation":
@@ -643,6 +657,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                            l_InteractionResponded = true;
                         }
 
                         break;
@@ -652,6 +667,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         try
                         {
                             await p_MessageComponent.Message.DeleteAsync();
+                            l_InteractionResponded = true;
                         }
                         catch (Exception l_E)
                         {
@@ -665,6 +681,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         try
                         {
                             await p_MessageComponent.Message.DeleteAsync();
+                            l_InteractionResponded = true;
                         }
                         catch (Exception l_E)
                         {
@@ -673,12 +690,17 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         break;
                 }
-                await p_MessageComponent.RespondAsync();
+
+                if (!l_InteractionResponded)
+                {
+                    await p_MessageComponent.DeferAsync();
+                }
             }
         }
 
         public async Task EditMapInteraction(SocketInteraction p_Interaction)
         {
+            bool l_InteractionResponded = false;
             switch (p_Interaction.Type)
             {
                 case InteractionType.MessageComponent:
@@ -706,17 +728,19 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 await l_Interaction.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                     .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                     .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
-
                                 EditMapArgumentFormat l_EditMapArgumentFormat = GetEditMapArguments(l_Interaction);
 
                                 if (l_NewLevelID != null && int.TryParse(l_NewLevelID, out int l_IntNewLevelID)) await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, true, l_IntNewLevelID, p_UserID: l_UserID, p_ChannelID: l_ChannelID);
                             }
                         }
                     }
-
                     break;
             }
-            await p_Interaction.RespondAsync();
+
+            if (!l_InteractionResponded)
+            {
+                await p_Interaction.DeferAsync();
+            }
         }
 
         private static EditMapArgumentFormat GetEditMapArguments(SocketMessageComponent p_MessageComponent)

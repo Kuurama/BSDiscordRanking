@@ -32,7 +32,10 @@ namespace BSDiscordRanking.Formats.Controller
         public bool AllowAutoWeightForAccLeaderboard { get; set; } = true;
 
         public bool AllowAutoWeightForPassLeaderboard { get; set; } = false;
+        
+        public bool AllowForceManualWeightForAccLeaderboard { get; set; } = true;
 
+        public bool AllowForceManualWeightForPassLeaderboard { get; set; } = false;
         public bool OnlyAutoWeightForAccLeaderboard { get; set; } = true;
 
         public bool OnlyAutoWeightForPassLeaderboard { get; set; } = false;
