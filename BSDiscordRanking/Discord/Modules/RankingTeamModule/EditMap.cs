@@ -385,7 +385,6 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
                         }
-
                         break;
 
                     case "ToggleManualWeight":
@@ -407,7 +406,6 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.Build());
                             }
                         }
-
                         break;
 
                     case "MinPercentageRequirementChange":
@@ -675,6 +673,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         break;
                 }
+                await p_MessageComponent.RespondAsync();
             }
         }
 
@@ -717,6 +716,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                     break;
             }
+            await p_Interaction.RespondAsync();
         }
 
         private static EditMapArgumentFormat GetEditMapArguments(SocketMessageComponent p_MessageComponent)
