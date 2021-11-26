@@ -36,7 +36,7 @@ namespace BSDiscordRanking.Formats.API
         public int replaysWatched { get; set; }
     }
 
-    public class ApiScores
+    public class ApiScoreInfo
     {
         public ApiScore score { get; set; }
         public ApiLeaderboard leaderboard { get; set; }
