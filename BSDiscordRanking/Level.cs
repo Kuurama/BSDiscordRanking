@@ -29,7 +29,7 @@ namespace BSDiscordRanking
         public LevelFormat m_Level;
         public int m_LevelID;
         public bool m_MapAdded;
-        public bool m_MapDeleted;
+        public bool m_MapRemoved;
         private string m_SyncURL;
 
         public Level(int p_LevelID)
@@ -234,7 +234,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote,
+        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminPingOnPass,
             SocketCommandContext p_Context = null, string p_Name = null)
         {
             /// <summary>
@@ -297,7 +297,8 @@ namespace BSDiscordRanking
                                     infoOnGGP = p_InfoOnGGP,
                                     forceManualWeight = p_ForceManualWeight,
                                     noteCount = p_NumberOfNote,
-                                    maxScore = AdminModule.ScoreFromAcc(100f, p_NumberOfNote)
+                                    maxScore = AdminModule.ScoreFromAcc(100f, p_NumberOfNote),
+                                    adminPingOnPass = p_AdminPingOnPass
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulty> { l_Difficulty };
@@ -476,7 +477,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_BeatSaverMap.id}");
-                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_Context);
+                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminPingOnPass,p_Context);
                 }
             }
             else
@@ -559,7 +560,7 @@ namespace BSDiscordRanking
                                             m_Level.songs.RemoveAt(l_I);
                                         }
 
-                                        m_MapDeleted = true;
+                                        m_MapRemoved = true;
                                         p_SocketCommandContext?.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} as been deleted from Level {m_LevelID}");
                                         ReWritePlaylist(false);
                                     }

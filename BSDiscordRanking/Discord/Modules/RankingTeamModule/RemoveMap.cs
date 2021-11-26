@@ -49,7 +49,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             };
                         }
 
-                        LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f);
+                        LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f, false);
                         if (l_MapExistCheck.MapExist)
                         {
                             Level l_Level = new Level(l_MapExistCheck.Level);

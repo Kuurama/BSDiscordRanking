@@ -18,7 +18,7 @@ namespace BSDiscordRanking.Controllers
 {
     public class UserController
     {
-        static List<UserFormat> m_Users = new List<UserFormat>();
+        private static List<UserFormat> m_Users = new List<UserFormat>();
 
         public static bool AccountExist(string p_ScoreSaberID)
         {

@@ -162,6 +162,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             
                             l_EmbedBuilder.AddField("Manual Weight", $"{l_MapDifficulty.customData.forceManualWeight.ToString()} ({l_MapDifficulty.customData.manualWeight:n3})", true);
+                            
+                            l_EmbedBuilder.AddField("Admin Ping", l_MapDifficulty.customData.adminPingOnPass.ToString(), true);
                         }
                     }
 

@@ -142,7 +142,7 @@ namespace BSDiscordRanking.Controllers
             return FILENAME;
         }
 
-        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight)
+        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass)
         {
             LevelControllerFormat l_LevelControllerFormat = GetLevelControllerCache();
             MapExistFormat l_MapExistFormat = new MapExistFormat
@@ -155,6 +155,8 @@ namespace BSDiscordRanking.Controllers
                 DifferentCategory = false,
                 ForceManualWeight = p_ForceManualWeight,
                 DifferentForceManualWeight = false,
+                adminPingOnPass = p_AdmingPingOnPass,
+                DifferentAdminPingOnPass = false,
                 Weight = p_Weight,
                 DifferentWeight = false
             };
@@ -201,6 +203,12 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.ForceManualWeight = p_ForceManualWeight;
                                     l_MapExistFormat.DifferentForceManualWeight = true;
                                 }
+                                
+                                if (l_Difficulty.customData.adminPingOnPass != p_AdmingPingOnPass)
+                                {
+                                    l_MapExistFormat.adminPingOnPass = p_AdmingPingOnPass;
+                                    l_MapExistFormat.DifferentAdminPingOnPass = true;
+                                }
 
                                 if (Math.Abs(l_Difficulty.customData.manualWeight - p_Weight) > 0.001)
                                 {
@@ -230,6 +238,8 @@ namespace BSDiscordRanking.Controllers
             public string CustomPassText { get; set; }
             public bool ForceManualWeight { get; set; }
             public bool DifferentForceManualWeight { get; set; }
+            public bool adminPingOnPass { get; set; }
+            public bool DifferentAdminPingOnPass { get; set; }
             public float Weight { get; set; }
             public bool DifferentWeight { get; set; }
             public int Level { get; set; }

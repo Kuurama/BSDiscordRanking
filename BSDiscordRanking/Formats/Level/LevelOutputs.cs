@@ -36,7 +36,7 @@ namespace BSDiscordRanking.Formats.Level
         public string syncURL
         {
             get => m_SyncURL;
-            set => m_SyncURL = String.IsNullOrEmpty(value) ? null : value;
+            set => m_SyncURL = string.IsNullOrEmpty(value) ? null : value;
         }
 
         public int level { get; set; }
@@ -46,7 +46,7 @@ namespace BSDiscordRanking.Formats.Level
         public string customPassText
         {
             get => m_CustomPassText;
-            set => m_CustomPassText = String.IsNullOrEmpty(value) ? null : value;
+            set => m_CustomPassText = string.IsNullOrEmpty(value) ? null : value;
         }
     }
 
@@ -65,23 +65,24 @@ namespace BSDiscordRanking.Formats.Level
         public string category
         {
             get => m_Category;
-            set => m_Category = String.IsNullOrEmpty(value) ? null : value;
+            set => m_Category = string.IsNullOrEmpty(value) ? null : value;
         }
 
         public string customPassText
         {
             get => m_CustomPassText;
-            set => m_CustomPassText = String.IsNullOrEmpty(value) ? null : value;
+            set => m_CustomPassText = string.IsNullOrEmpty(value) ? null : value;
         }
 
         public string infoOnGGP
         {
             get => m_InfoOnGGP;
-            set => m_InfoOnGGP = String.IsNullOrEmpty(value) ? null : value;
+            set => m_InfoOnGGP = string.IsNullOrEmpty(value) ? null : value;
         }
 
         public int noteCount { get; set; }
         public int maxScore { get; set; }
         public bool forceManualWeight { get; set; }
+        public bool adminPingOnPass { get; set; }
     }
 }
