@@ -29,6 +29,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                 if (p_CustomPassText == "null")
                     p_CustomPassText = null;
+                
+                p_CustomPassText = p_CustomPassText?.Replace("_", " ");
+                p_InfoOnGGP = p_InfoOnGGP?.Replace("_", " ");
+                p_Category = p_Category?.Replace("_", " ");
 
                 if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree" or "NoArrows")
                 {

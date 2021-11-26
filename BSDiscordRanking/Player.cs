@@ -467,7 +467,7 @@ namespace BSDiscordRanking
             public List<string> newPass { get; set; }
             public List<string> removedPass { get; set; }
             public List<string> updatedPass { get; set; }
-            public List<string> admingConfirmationPass { get; set; }
+            public List<string> adminConfirmationPass { get; set; }
             public List<string> cheatedPass { get; set; }
         }
 
@@ -498,7 +498,7 @@ namespace BSDiscordRanking
                     newPass = new List<string>(new string[] { "" }),
                     removedPass = new List<string>(new string[] { "" }),
                     updatedPass = new List<string>(new string[] { "" }),
-                    admingConfirmationPass = new List<string>(new string[] { "" }),
+                    adminConfirmationPass = new List<string>(new string[] { "" }),
                     cheatedPass = new List<string>(new string[] { "" })
                 };
                 m_PlayerPass = new PlayerPassFormat
