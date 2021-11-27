@@ -155,8 +155,8 @@ namespace BSDiscordRanking.Controllers
                 DifferentCategory = false,
                 ForceManualWeight = p_ForceManualWeight,
                 DifferentForceManualWeight = false,
-                adminPingOnPass = p_AdmingPingOnPass,
-                DifferentAdminPingOnPass = false,
+                adminConfirmationOnPass = p_AdmingPingOnPass,
+                DifferentAdminConfirmationOnPass = false,
                 Weight = p_Weight,
                 DifferentWeight = false
             };
@@ -204,10 +204,10 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.DifferentForceManualWeight = true;
                                 }
                                 
-                                if (l_Difficulty.customData.adminPingOnPass != p_AdmingPingOnPass)
+                                if (l_Difficulty.customData.adminConfirmationOnPass != p_AdmingPingOnPass)
                                 {
-                                    l_MapExistFormat.adminPingOnPass = p_AdmingPingOnPass;
-                                    l_MapExistFormat.DifferentAdminPingOnPass = true;
+                                    l_MapExistFormat.adminConfirmationOnPass = p_AdmingPingOnPass;
+                                    l_MapExistFormat.DifferentAdminConfirmationOnPass = true;
                                 }
 
                                 if (Math.Abs(l_Difficulty.customData.manualWeight - p_Weight) > 0.001)
@@ -238,8 +238,8 @@ namespace BSDiscordRanking.Controllers
             public string CustomPassText { get; set; }
             public bool ForceManualWeight { get; set; }
             public bool DifferentForceManualWeight { get; set; }
-            public bool adminPingOnPass { get; set; }
-            public bool DifferentAdminPingOnPass { get; set; }
+            public bool adminConfirmationOnPass { get; set; }
+            public bool DifferentAdminConfirmationOnPass { get; set; }
             public float Weight { get; set; }
             public bool DifferentWeight { get; set; }
             public int Level { get; set; }

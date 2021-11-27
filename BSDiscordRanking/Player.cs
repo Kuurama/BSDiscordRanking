@@ -644,7 +644,7 @@ namespace BSDiscordRanking
                                                             });
                                                             if (!l_TempDiffExist && !l_MinScoreRequirementFailed)
                                                             {
-                                                                if (l_Difficulty.customData.adminPingOnPass)
+                                                                if (l_Difficulty.customData.adminConfirmationOnPass)
                                                                 {
                                                                     l_SelectedPassMessageList = l_FetchPassFormat.adminConfirmationPass;
                                                                 }
@@ -759,7 +759,7 @@ namespace BSDiscordRanking
                                                             }
                                                         }
                                                         
-                                                        if (l_Difficulty.customData.adminPingOnPass)
+                                                        if (l_Difficulty.customData.adminConfirmationOnPass)
                                                         {
                                                             l_SelectedPassMessageList = l_FetchPassFormat.adminConfirmationPass;
                                                         }
@@ -1134,7 +1134,7 @@ namespace BSDiscordRanking
                                 l_Builder.WithTitle($"{m_PlayerFull.name} - Those scores need Admin Confirmation:");
                                 l_Builder.WithUrl("https://scoresaber.com/u/" + m_PlayerFull.id);
                                 l_Embed = l_Builder.Build();
-                                await p_Context.Guild.GetTextChannel(l_Config.AdminPingOnPassChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
                         }
                     }
@@ -1156,7 +1156,7 @@ namespace BSDiscordRanking
                                 l_Builder.WithTitle($"{m_PlayerFull.name} - Those scores have been deleted (cheated scores/above 100% scores:");
                                 l_Builder.WithUrl("https://scoresaber.com/u/" + m_PlayerFull.id);
                                 l_Embed = l_Builder.Build();
-                                await p_Context.Guild.GetTextChannel(l_Config.AdminPingOnPassChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
                         }
                     }

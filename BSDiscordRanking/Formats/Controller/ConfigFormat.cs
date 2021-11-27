@@ -10,7 +10,7 @@ namespace BSDiscordRanking.Formats.Controller
 
         public ulong BotAdminRoleID { get; set; }
         public ulong RankingTeamRoleID { get; set; }
-        public bool FullEmbeddedGGP { get; set; } = true;
+        public bool FullEmbeddedGGP { get; set; } = false;
 
         public string RolePrefix { get; set; } = "";
 
@@ -18,7 +18,7 @@ namespace BSDiscordRanking.Formats.Controller
 
         public List<ulong> AuthorizedChannels { get; set; }
         public ulong LoggingChannel { get; set; }
-        public ulong AdminPingOnPassChannel { get; set; }
+        public ulong AdminConfirmationChannel { get; set; }
 
         public bool GiveOldRoles { get; set; } = false;
         public bool EnablePassBasedLeaderboard { get; set; } = true;

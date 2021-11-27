@@ -234,7 +234,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminPingOnPass,
+        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminConfirmationOnPass,
             SocketCommandContext p_Context = null, string p_Name = null)
         {
             /// <summary>
@@ -298,7 +298,7 @@ namespace BSDiscordRanking
                                     forceManualWeight = p_ForceManualWeight,
                                     noteCount = p_NumberOfNote,
                                     maxScore = AdminModule.ScoreFromAcc(100f, p_NumberOfNote),
-                                    adminPingOnPass = p_AdminPingOnPass
+                                    adminConfirmationOnPass = p_AdminConfirmationOnPass
                                 }
                             };
                             l_SongFormat.difficulties = new List<Difficulty> { l_Difficulty };
@@ -372,9 +372,9 @@ namespace BSDiscordRanking
                                                     l_ForceManualWeightPreferenceEdit = true;
                                                 }
                                                 
-                                                if (l_Difficulty.customData.adminPingOnPass != l_LevelDifficulty.customData.adminPingOnPass)
+                                                if (l_Difficulty.customData.adminConfirmationOnPass != l_LevelDifficulty.customData.adminConfirmationOnPass)
                                                 {
-                                                    l_LevelDifficulty.customData.adminPingOnPass = l_Difficulty.customData.adminPingOnPass;
+                                                    l_LevelDifficulty.customData.adminConfirmationOnPass = l_Difficulty.customData.adminConfirmationOnPass;
                                                 }
 
                                                 if (l_LevelDifficulty.name != l_NewMapName)
@@ -482,7 +482,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_BeatSaverMap.id}");
-                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminPingOnPass,p_Context);
+                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminConfirmationOnPass,p_Context);
                 }
             }
             else

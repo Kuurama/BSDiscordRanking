@@ -83,6 +83,6 @@ namespace BSDiscordRanking.Formats.Level
         public int noteCount { get; set; }
         public int maxScore { get; set; }
         public bool forceManualWeight { get; set; }
-        public bool adminPingOnPass { get; set; }
+        public bool adminConfirmationOnPass { get; set; }
     }
 }
