@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
     [PermissionHandler.RequirePermissionAttribute(Permission)]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
-        public const int Permission = 2;
+        private const int Permission = 2;
         public static int ScoreFromAcc(float p_Acc = 0f, int p_NoteCount = 0)
         {
             /// Made by MoreOwO :3
