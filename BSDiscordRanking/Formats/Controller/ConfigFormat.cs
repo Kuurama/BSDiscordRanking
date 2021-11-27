@@ -18,6 +18,7 @@ namespace BSDiscordRanking.Formats.Controller
 
         public List<ulong> AuthorizedChannels { get; set; }
         public ulong LoggingChannel { get; set; }
+        public ulong AdminPingOnPassChannel { get; set; }
 
         public bool GiveOldRoles { get; set; } = false;
         public bool EnablePassBasedLeaderboard { get; set; } = true;

@@ -371,6 +371,11 @@ namespace BSDiscordRanking
                                                     l_NewManualWeightPreference = l_Difficulty.customData.forceManualWeight == true ? "true" : "false";
                                                     l_ForceManualWeightPreferenceEdit = true;
                                                 }
+                                                
+                                                if (l_Difficulty.customData.adminPingOnPass != l_LevelDifficulty.customData.adminPingOnPass)
+                                                {
+                                                    l_LevelDifficulty.customData.adminPingOnPass = l_Difficulty.customData.adminPingOnPass;
+                                                }
 
                                                 if (l_LevelDifficulty.name != l_NewMapName)
                                                 {

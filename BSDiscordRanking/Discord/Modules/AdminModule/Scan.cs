@@ -68,11 +68,22 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
             bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
             var l_FetchPass = l_Player.FetchPass(Context);
-            if (l_FetchPass.Result >= 1)
+            if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
             {
                 if (l_IsDiscordLinked)
                 {
-                    await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result} new maps!\n");
+                    if (l_FetchPass.Result.newPass >= 1 && l_FetchPass.Result.updatedPass < 1)
+                    {
+                        await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result.newPass} new maps!\n");
+                    }
+                    else if (l_FetchPass.Result.newPass < 1 && l_FetchPass.Result.updatedPass >= 1)
+                    {
+                        await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} updated {l_FetchPass.Result.updatedPass} scores on maps!\n");
+                    }
+                    else
+                    {
+                        await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result.newPass} new maps, and updated their scores on {l_FetchPass.Result.updatedPass} maps!\n");
+                    }
                 }
             }
             else
@@ -80,7 +91,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (l_FirsScan)
                     await ReplyAsync($"> Oh, it seems like {l_ScoreSaberOrDiscordName} didn't pass any maps from the pools.");
                 else
-                    await ReplyAsync($"> :x: Sorry but {l_ScoreSaberOrDiscordName} didn't pass any new maps.");
+                    await ReplyAsync($"> :x: Sorry but {l_ScoreSaberOrDiscordName} didn't pass/updated you score on any new maps.");
             }
 
             int l_NewPlayerLevel = l_Player.GetPlayerLevel();

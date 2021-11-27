@@ -228,7 +228,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                         if (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminPingOnPass) /// || p_ChangeCustomPassText But i choosed to not display it.
                                         {
-                                            if (p_ChangeLevel || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
+                                            if (p_ChangeLevel || p_ToggleAdminPingOnPass || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                                             {
                                                 int l_OldLevel = default;
                                                 if (p_ChangeLevel)
@@ -295,10 +295,17 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 if (l_MapExistCheck.DifferentInfoOnGGP)
                                                     l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP, false);
 
-                                                if (l_MapExistCheck.DifferentPassText && l_Config.DisplayCustomPassTextInGetInfo)
-                                                    l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText, false);
-                                                else
-                                                    l_MapChangeEmbedBuilder.AddField("New secret CustomPassText added", "\u200B", false);
+                                                if (l_MapExistCheck.DifferentPassText)
+                                                {
+                                                    if ( l_Config.DisplayCustomPassTextInGetInfo)
+                                                    {
+                                                        l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText, false);
+                                                    }
+                                                    else
+                                                    {
+                                                        l_MapChangeEmbedBuilder.AddField("New secret CustomPassText added", "\u200B", false);
+                                                    }
+                                                }
 
                                                 if (l_MapExistCheck.DifferentForceManualWeight)
                                                     l_MapChangeEmbedBuilder.AddField("New Manual Weight Preference:", l_EditMapFormat.ForceManualWeight, false);
