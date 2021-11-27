@@ -27,27 +27,25 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 if (p_Context.User is SocketGuildUser l_User)
                 {
-                    ulong l_RoleID = 0;
                     switch (m_PermissionLevel)
                     {
                         case >= 2:
-                            l_RoleID = m_Config.BotAdminRoleID;
+                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.BotAdminRoleID))
+                                return Task.FromResult(PreconditionResult.FromSuccess());
                             break;
+                        
                         case >= 1:
-                            l_RoleID = m_Config.RankingTeamRoleID;
+                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.RankingTeamRoleID || p_Role.Id == m_Config.BotAdminRoleID)) /// Gives moderator the ability to use permission < 2.
+                            {
+                                return Task.FromResult(PreconditionResult.FromSuccess());
+                            }
                             break;
+                        
                         case 0:
-                            l_RoleID = 1;
+                            /// No need.
                             break;
-                    }
-                    
-                    
-                    if (l_User.Roles.Any(p_Role => p_Role.Id == l_RoleID || p_Role.Id == m_Config.BotAdminRoleID) && l_RoleID != 0 || l_RoleID == 1) /// Gives moderator the ability to use permission < 2.
-                    {
-                        return Task.FromResult(PreconditionResult.FromSuccess());
                     }
                 }
-
                 return Task.FromResult(PreconditionResult.FromError(ExecuteResult.FromError(new Exception(ErrorMessage = "Incorrect user's permissions"))));
             }
             
