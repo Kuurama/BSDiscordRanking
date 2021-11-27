@@ -1106,7 +1106,7 @@ namespace BSDiscordRanking
                             foreach (string l_Message in l_FetchPassFormat.removedPass)
                             {
                                 EmbedBuilder l_Builder = new EmbedBuilder();
-                                l_Builder.WithTitle("Those scores as been removed:");
+                                l_Builder.WithTitle("Those scores have been removed:");
                                 
                                 l_IsFirstMessage = false;
                                 l_Builder.WithDescription(l_Message);
