@@ -96,7 +96,10 @@ namespace BSDiscordRanking
                         {
                             foreach (var l_Songs in m_Level.songs)
                             {
-                                l_Songs.hash = l_Songs.hash.ToUpper();
+                                if (l_Songs.hash != null)
+                                {
+                                    l_Songs.hash = l_Songs.hash.ToUpper();
+                                }
                             }
                         }
                         else
@@ -534,7 +537,7 @@ namespace BSDiscordRanking
                                 {
                                     foreach (var l_BeatMapVersion in m_BeatSaver.versions)
                                     {
-                                        if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || String.Equals(m_Level.songs[l_I].key, l_BeatMapVersion.key, StringComparison.CurrentCultureIgnoreCase))
+                                        if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(m_Level.songs[l_I].key, l_BeatMapVersion.key, StringComparison.CurrentCultureIgnoreCase))
                                         {
                                             l_SongAlreadyExist = true;
                                             break;

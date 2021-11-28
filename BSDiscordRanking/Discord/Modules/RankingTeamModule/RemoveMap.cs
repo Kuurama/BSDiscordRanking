@@ -27,9 +27,11 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                 {
                     if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")
                     {
-                        BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code, Context);
+                        BeatSaverFormat l_Map = Level.FetchBeatMap(p_Code);
+                        bool l_MapDeleted = false;
                         if (l_Map is null)
                         {
+                            l_MapDeleted = true;
                             Diff l_Diff = new Diff()
                             {
                                 characteristic = p_Characteristic,
@@ -44,18 +46,15 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             l_Map = new BeatSaverFormat()
                             {
                                 id = p_Code,
-
                                 versions = new List<Version>() { l_Version }
                             };
                         }
 
-                        LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f, false);
+                        LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f, false, l_Map.id);
                         if (l_MapExistCheck.MapExist)
                         {
                             Level l_Level = new Level(l_MapExistCheck.Level);
                             l_Level.RemoveMap(l_Map, p_DifficultyName, p_Characteristic, Context);
-
-                            l_Map = Level.FetchBeatMap(p_Code, Context);
                             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                             if (l_Level.m_Level.songs.Count == 0)
                             {
@@ -66,15 +65,24 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             }
                             else
                             {
-                                l_EmbedBuilder.WithTitle("Map removed!");
-                                l_EmbedBuilder.AddField("Map name:", l_Map.name);
+                                if (!l_MapDeleted)
+                                {
+                                    l_EmbedBuilder.WithTitle("Map removed!");
+                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                    l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                }
+                                else
+                                {
+                                    l_EmbedBuilder.WithTitle("Map removed! (wasn't on BeatSaver anymore)");
+                                    l_EmbedBuilder.AddField("Old Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                }
+                                
+                                l_EmbedBuilder.AddField("Map name:", l_MapExistCheck.Name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
                                 l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
-                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
                             }
 
                             l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                            l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                             l_EmbedBuilder.WithColor(Color.Red);
                             await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                         }

@@ -142,7 +142,7 @@ namespace BSDiscordRanking.Controllers
             return FILENAME;
         }
 
-        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass)
+        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass, string p_Key = null)
         {
             LevelControllerFormat l_LevelControllerFormat = GetLevelControllerCache();
             MapExistFormat l_MapExistFormat = new MapExistFormat
@@ -158,7 +158,8 @@ namespace BSDiscordRanking.Controllers
                 adminConfirmationOnPass = p_AdmingPingOnPass,
                 DifferentAdminConfirmationOnPass = false,
                 Weight = p_Weight,
-                DifferentWeight = false
+                DifferentWeight = false,
+                Name = null
             };
             foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
             {
@@ -166,7 +167,7 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine(l_LevelID);
                 foreach (var l_Map in l_Level.m_Level.songs)
                 {
-                    if (String.Equals(p_Hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase))
+                    if (string.Equals(p_Hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(p_Key, l_Map.key, StringComparison.CurrentCultureIgnoreCase))
                     {
                         foreach (var l_Difficulty in l_Map.difficulties)
                         {
@@ -216,6 +217,8 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.DifferentWeight = true;
                                 }
 
+                                l_MapExistFormat.Name = l_Map.name;
+
                                 return l_MapExistFormat;
                             }
                         }
@@ -243,6 +246,7 @@ namespace BSDiscordRanking.Controllers
             public float Weight { get; set; }
             public bool DifferentWeight { get; set; }
             public int Level { get; set; }
+            public string Name { get; set; }
         }
     }
 }

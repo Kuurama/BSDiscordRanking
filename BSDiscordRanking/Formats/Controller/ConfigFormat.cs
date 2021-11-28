@@ -45,6 +45,8 @@ namespace BSDiscordRanking.Formats.Controller
         public int MaximumNumberOfMapInGetInfo { get; set; } = 8;
 
         public bool DisplayCustomPassTextInGetInfo { get; set; } = false;
+        public bool DisplayCategoryEdit { get; set; } = true;
+        public bool DisplayCustomPassTextEdit { get; set; } = true;
 
         public const string SCORE_SABER_API_VERSION = "3.0.0";
     }

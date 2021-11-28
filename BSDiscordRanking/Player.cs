@@ -123,7 +123,7 @@ namespace BSDiscordRanking
             return m_PlayerID;
         }
 
-        private void GetInfos(int p_TryLimit = 3, int p_TryTimeout = 200)
+        private void GetInfos(int p_TryLimit = 3)
         {
             /// This Method Get the Player's Info from the api, then Deserialize it to m_PlayerFull for later usage.
             /// It handle most of the exceptions possible
@@ -151,8 +151,17 @@ namespace BSDiscordRanking
                                 if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                                 {
                                     Console.WriteLine("RateLimited, Trying again in 50sec");
+                                    p_TryLimit--;
                                     Thread.Sleep(50000);
-                                    GetInfos();
+                                    GetInfos(p_TryLimit);
+                                }
+
+                                if (l_HttpWebResponse.StatusCode == HttpStatusCode.BadGateway)
+                                {
+                                    Console.WriteLine("BadGateway, Trying again in 5sec");
+                                    p_TryLimit--;
+                                    Thread.Sleep(5000);
+                                    GetInfos(p_TryLimit);
                                 }
 
                                 if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
@@ -168,7 +177,7 @@ namespace BSDiscordRanking
                                     p_TryLimit--;
                                     Console.WriteLine($"Retrying to get PLayer's Info in 30 sec : {p_TryLimit} try left");
                                     Thread.Sleep(30000);
-                                    GetInfos(p_TryLimit, p_TryTimeout);
+                                    GetInfos(p_TryLimit);
                                 }
                             }
                         }
@@ -250,16 +259,13 @@ namespace BSDiscordRanking
                 {
                     if (m_PlayerScore != null)
                     {
-                        List<ApiScoreInfo> l_Result; ///< Result From Request but Serialized.
-                        string l_URL;
                         int l_Page = 1;
                         int l_NumberOfAddedScore = 0;
                         bool l_Skip = false;
                         /// Avoid doing useless attempt, Check player's number of score (8 score per request).
                         while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
                         {
-                            l_URL = @$"https://scoresaber.com/api/player/{m_PlayerFull.id}/scores?sort=recent&page={l_Page.ToString()}";
-                            l_URL = m_PlayerStats.IsFirstScan
+                            string l_URL = m_PlayerStats.IsFirstScan
                                 ? @$"https://scoresaber.com/api/player/{m_PlayerID}/scores?limit=100&sort=recent&page={l_Page.ToString()}"
                                 : @$"https://scoresaber.com/api/player/{m_PlayerFull.id}/scores?sort=recent&page={l_Page.ToString()}";
 
@@ -268,7 +274,7 @@ namespace BSDiscordRanking
                                 try
                                 {
                                     Console.WriteLine(l_URL);
-                                    l_Result = JsonConvert.DeserializeObject<List<ApiScoreInfo>>(l_WebClient.DownloadString(l_URL));
+                                    List<ApiScoreInfo> l_Result = JsonConvert.DeserializeObject<List<ApiScoreInfo>>(l_WebClient.DownloadString(l_URL)); ///< Result From Request but Serialized.
                                     l_Page++;
 
                                     // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
@@ -794,7 +800,7 @@ namespace BSDiscordRanking
                                                                 {
                                                                     if (l_SelectedPassMessageList[^1].Length >
                                                                         1900 -
-                                                                        $"\n:white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_Score.score.rank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_OldRank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%):\n> {l_Difficulty.customData.customPassText}\n\n"
+                                                                        $"\n:white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_OldRank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_Score.score.rank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                             .Length)
                                                                     {
                                                                         l_SelectedPassMessageList.Add("");
@@ -803,10 +809,10 @@ namespace BSDiscordRanking
                                                                     /// Display new pass (new diff passed while there was already a passed diff) 2/2
                                                                     if (l_Difficulty.customData.customPassText != null)
                                                                         l_SelectedPassMessageList[^1] +=
-                                                                            $"\n:white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_Score.score.rank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_OldRank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
+                                                                            $"\n:white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_OldRank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_Score.score.rank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%):\n> {l_Difficulty.customData.customPassText.Replace("_", " ")}\n\n";
                                                                     else
                                                                         l_SelectedPassMessageList[^1] +=
-                                                                            $":white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_Score.score.rank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_OldRank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%)\n";
+                                                                            $":white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_OldRank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_Score.score.rank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%)\n";
                                                                     if (l_Level.value.m_LevelID >= 14)
                                                                         l_AboveLVLFourteenPass = true; /// Funny 2/2
 

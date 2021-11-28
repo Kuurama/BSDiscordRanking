@@ -8,6 +8,7 @@ using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Version = BSDiscordRanking.Formats.API.Version;
 
 namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 {
@@ -32,11 +33,34 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                     Program.m_TempGlobalGuildID = Context.Guild.Id;
                 }
 
+                bool l_MapDeleted = false;
                 BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode);
-                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                 if (l_Map is null)
                 {
-                    l_EmbedBuilder.WithTitle("Sorry this map's BSRCode doesn't exist on BeatSaver.");
+                    l_MapDeleted = true;
+                    Diff l_Diff = new Diff()
+                    {
+                        characteristic = p_Characteristic,
+                        difficulty = p_DifficultyName
+                    };
+                    Version l_Version = new Version()
+                    {
+                        hash = null,
+                        key = p_BSRCode,
+                        diffs = new List<Diff>() { l_Diff }
+                    };
+                    l_Map = new BeatSaverFormat()
+                    {
+                        id = p_BSRCode,
+                        versions = new List<Version>() { l_Version }
+                    };
+                }
+                LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight, false, l_Map.id);
+                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                if (l_MapDeleted && !l_MapExistCheck.MapExist)
+                {
+                    l_MapDeleted = true;
+                    l_EmbedBuilder.WithTitle("Sorry this map's BSRCode doesn't exist on BeatSaver (and isn't in any level).");
                     if (Context != null)
                     {
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
@@ -52,24 +76,21 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 .Build());
                     }
                 }
-
-
                 else
                 {
                     ConfigFormat l_Config = ConfigController.GetConfig();
-                    LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight, false);
                     if (l_MapExistCheck.MapExist)
                     {
                         Level l_Level = new Level(l_MapExistCheck.Level);
                         foreach (var l_LevelSong in l_Level.m_Level.songs)
                         {
-                            if (string.Equals(l_LevelSong.hash, l_Map.versions[^1].hash, StringComparison.CurrentCultureIgnoreCase))
+                            if (string.Equals(l_LevelSong.hash, l_Map.versions[^1].hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(l_LevelSong.key, l_Map.id, StringComparison.CurrentCultureIgnoreCase))
                             {
                                 foreach (var l_LevelDiff in l_LevelSong.difficulties)
                                 {
                                     if (l_LevelDiff.characteristic == p_Characteristic && l_LevelDiff.name == p_DifficultyName)
                                     {
-                                        l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass); /// So i can check for New Score Requirement, etc.
+                                        l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
                                         l_EmbedBuilder.AddField("BSRCode", p_BSRCode, true);
                                         l_EmbedBuilder.AddField(l_LevelDiff.name, l_LevelDiff.characteristic, true);
                                         l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
@@ -99,8 +120,16 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         l_EmbedBuilder.AddField("Admin Confirmation", l_LevelDiff.customData.adminConfirmationOnPass.ToString(), true);
 
                                         l_EmbedBuilder.WithTitle(p_NewName ?? l_LevelSong.name);
-                                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
-                                        l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_LevelSong.hash, Context).id}");
+                                        
+                                        if (!l_MapDeleted)
+                                        {
+                                            l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
+                                            l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_LevelSong.hash, Context).id}");
+                                        }
+                                        else
+                                        {
+                                            l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} :warning: Map has been deleted from beatsaver");
+                                        }
 
                                         EditMapFormat l_EditMapFormat = new EditMapFormat()
                                         {
@@ -121,10 +150,11 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         {
                                             if (Context != null)
                                             {
-                                                l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
-                                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                                                    component: new ComponentBuilder()
-                                                        .WithButton(new ButtonBuilder("Change Name", $"NameChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
+                                                    
+                                                if (!l_MapDeleted)
+                                                {
+                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Change Name", $"NameChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
@@ -134,15 +164,22 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                         .WithButton(new ButtonBuilder("Toggle Manual Weight Preference", $"ToggleManualWeight_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Toggle Admin Confirmation Preference", $"ToggleAdminConfirmation_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
-                                                        .Build());
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
+                                                }
+                                                else
+                                                {
+                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
+                                                }
+                                                l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
+                                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(), component: l_ComponentBuilder.Build());
                                             }
                                             else if (p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
                                             {
-                                                l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
-                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                                                    component: new ComponentBuilder()
-                                                        .WithButton(new ButtonBuilder("Change Name", $"NameChange_{p_UserID}", ButtonStyle.Secondary))
+                                                ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
+                                                if (!l_MapDeleted)
+                                                {
+                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Change Name", $"NameChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{p_UserID}", ButtonStyle.Secondary))
@@ -152,8 +189,16 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                         .WithButton(new ButtonBuilder("Toggle Manual Weight Preference", $"ToggleManualWeight_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Toggle Admin Confirmation Preference", $"ToggleAdminConfirmation_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
-                                                        .Build());
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));;
+                                                }
+                                                else
+                                                {
+                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
+                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));
+                                                }
+
+                                                l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
+                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), component: l_ComponentBuilder.Build());
                                             }
                                         }
 
@@ -163,7 +208,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             {
                                                 if (Context != null)
                                                 {
-                                                    await Context.Channel.SendMessageAsync(":warning:, An error occured while changing the map's level.");
+                                                    await Context.Channel.SendMessageAsync(":warning: An error occured while changing the map's level.");
                                                 }
                                                 else if (p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
                                                 {
@@ -178,7 +223,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             {
                                                 if (Context != null)
                                                 {
-                                                    await Context.Channel.SendMessageAsync(":warning:, An error occured while deleting the map.");
+                                                    await Context.Channel.SendMessageAsync(":warning: An error occured while deleting the map.");
                                                 }
                                                 else if (p_ChannelID != default && p_UserID != default && Program.m_TempGlobalGuildID != default)
                                                 {
@@ -197,15 +242,25 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 }
                                                 else
                                                 {
-                                                    l_EmbedBuilder.WithTitle("Map removed!");
-                                                    l_EmbedBuilder.AddField("Map name:", l_Map.name);
+                                                   
+                                                    l_EmbedBuilder.AddField("Map name:", l_MapExistCheck.Name);
                                                     l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
                                                     l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
-                                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                                   
                                                 }
 
+                                                if (!l_MapDeleted)
+                                                {
+                                                    l_EmbedBuilder.WithTitle("Map removed!");
+                                                    l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                                }
+                                                else
+                                                {
+                                                    l_EmbedBuilder.WithTitle("Map removed! (wasn't on BeatSaver anymore)");
+                                                    l_EmbedBuilder.AddField("Old Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                                }
                                                 
-                                                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                                 l_EmbedBuilder.WithColor(Color.Red);
                                                 if (Context != null)
                                                 {
@@ -226,7 +281,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             ChangeName(l_EditMapFormat, l_MapExistCheck.Level, p_NewName);
                                         }
 
-                                        if (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminConfirmationOnPass) /// || p_ChangeCustomPassText But i choosed to not display it.
+                                        if (!l_MapDeleted && (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminConfirmationOnPass)) /// || p_ChangeCustomPassText But i choosed to not display it.
                                         {
                                             if (p_ChangeLevel || p_ToggleAdminConfirmationOnPass || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                                             {
@@ -279,7 +334,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                                 EmbedBuilder l_MapChangeEmbedBuilder = new EmbedBuilder();
                                                 l_MapChangeEmbedBuilder.WithTitle("Maps infos changed on:");
-                                                l_MapChangeEmbedBuilder.WithDescription(l_Map.name);
+                                                l_MapChangeEmbedBuilder.WithDescription(l_MapExistCheck.Name);
                                                 l_MapChangeEmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                                 if (!p_ChangeLevel)
                                                     l_MapChangeEmbedBuilder.AddField("Level:", $"Lv.{l_MapExistCheck.Level}", true);
@@ -321,19 +376,18 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 l_MapChangeEmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                                 l_MapChangeEmbedBuilder.WithColor(Color.Blue);
 
-                                                foreach (var l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
+                                                if ((p_ChangeCategory && l_Config.DisplayCategoryEdit) || (p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit))
                                                 {
-                                                    if (l_TextChannel.Id == l_Config.LoggingChannel)
+                                                    foreach (var l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
                                                     {
-                                                        await l_TextChannel.SendMessageAsync("", false, l_MapChangeEmbedBuilder.Build());
+                                                        if (l_TextChannel.Id == l_Config.LoggingChannel)
+                                                        {
+                                                            await l_TextChannel.SendMessageAsync("", false, l_MapChangeEmbedBuilder.Build());
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
-                                    }
-                                    else
-                                    {
-                                        break;
                                     }
                                 }
                             }
@@ -822,7 +876,6 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
         public async Task EditMapInteraction(SocketInteraction p_Interaction)
         {
-            bool l_InteractionResponded = false;
             switch (p_Interaction.Type)
             {
                 case InteractionType.MessageComponent:
@@ -858,11 +911,6 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                     }
 
                     break;
-            }
-
-            if (!l_InteractionResponded)
-            {
-                await p_Interaction.DeferAsync();
             }
         }
 

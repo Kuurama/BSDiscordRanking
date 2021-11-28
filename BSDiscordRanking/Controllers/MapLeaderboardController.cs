@@ -52,7 +52,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        private static List<ApiScore> GetLeaderboardScores(int p_LeaderboardID, int p_TryLimit = 3, int p_TryTimeout = 200)
+        private static List<ApiScore> GetLeaderboardScores(int p_LeaderboardID, int p_TryLimit = 3)
         {
             /// This Method Get the Scores from a Leaderboard (with it's ID) from the Score Saber API.
             /// It handle most of the exceptions possible and return null if an error happen.
@@ -77,8 +77,17 @@ namespace BSDiscordRanking.Controllers
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                             {
                                 Console.WriteLine("RateLimited, Trying again in 50sec");
+                                p_TryLimit--;
                                 Thread.Sleep(50000);
-                                GetInfos(p_LeaderboardID);
+                                return GetLeaderboardScores(p_LeaderboardID, p_TryLimit);
+                            }
+                            
+                            if (l_HttpWebResponse.StatusCode == HttpStatusCode.BadGateway)
+                            {
+                                Console.WriteLine("BadGateway, Trying again in 5sec");
+                                p_TryLimit--;
+                                Thread.Sleep(5000);
+                                return GetLeaderboardScores(p_LeaderboardID, p_TryLimit);
                             }
 
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
@@ -94,7 +103,7 @@ namespace BSDiscordRanking.Controllers
                                 p_TryLimit--;
                                 Console.WriteLine($"Retrying to get Leaderboard's Info in 30 sec : {p_TryLimit} try left");
                                 Thread.Sleep(30000);
-                                GetInfos(p_TryLimit, p_TryTimeout);
+                                return GetLeaderboardScores(p_TryLimit);
                             }
                         }
                     }
@@ -102,15 +111,15 @@ namespace BSDiscordRanking.Controllers
             }
             else
             {
-                Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
+                Console.WriteLine("Too Many Errors => Method Locked (GetLeaderboardScores");
                 Console.WriteLine("Please Contact an Administrator.");
                 return null;
             }
-            
+            Console.WriteLine("Too many try on GetLeaderboardScores.");
             return null;
         }
 
-        private static ApiLeaderboard GetInfos(int p_LeaderboardID, int p_TryLimit = 3, int p_TryTimeout = 200)
+        private static ApiLeaderboard GetInfos(int p_LeaderboardID, int p_TryLimit = 3)
         {
             /// This Method Get the Leaderboard's Info from the Score Saber API.
             /// It handle most of the exceptions possible and return null if an error happen.
@@ -136,8 +145,17 @@ namespace BSDiscordRanking.Controllers
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                             {
                                 Console.WriteLine("RateLimited, Trying again in 50sec");
+                                p_TryLimit--;
                                 Thread.Sleep(50000);
-                                GetInfos(p_LeaderboardID);
+                                return GetInfos(p_LeaderboardID, p_TryLimit);
+                            }
+
+                            if (l_HttpWebResponse.StatusCode == HttpStatusCode.BadGateway)
+                            {
+                                Console.WriteLine("BadGateway, Trying again in 5sec");
+                                p_TryLimit--;
+                                Thread.Sleep(5000);
+                                return GetInfos(p_LeaderboardID, p_TryLimit);
                             }
 
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
@@ -153,7 +171,7 @@ namespace BSDiscordRanking.Controllers
                                 p_TryLimit--;
                                 Console.WriteLine($"Retrying to get Leaderboard's Info in 30 sec : {p_TryLimit} try left");
                                 Thread.Sleep(30000);
-                                GetInfos(p_TryLimit, p_TryTimeout);
+                                return GetInfos(p_LeaderboardID, p_TryLimit);
                             }
                         }
                     }
@@ -165,7 +183,7 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine("Please Contact an Administrator.");
                 return null;
             }
-            
+            Console.WriteLine("Too much try on LeaderboardGetInfo.");
             return null;
         }
 
