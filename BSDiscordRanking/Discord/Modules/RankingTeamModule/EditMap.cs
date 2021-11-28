@@ -909,7 +909,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             }
                         }
                     }
-
+                    await l_Interaction.DeferAsync();
                     break;
             }
         }
