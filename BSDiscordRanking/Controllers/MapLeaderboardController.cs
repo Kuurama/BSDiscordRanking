@@ -26,7 +26,10 @@ namespace BSDiscordRanking.Controllers
             m_Key = p_Key;
             LoadMapLeaderboard();
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
-            m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
+            if (p_MaxScore != default)
+            {
+                m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
+            }
 
             switch (m_MapLeaderboard.scores)
             {
