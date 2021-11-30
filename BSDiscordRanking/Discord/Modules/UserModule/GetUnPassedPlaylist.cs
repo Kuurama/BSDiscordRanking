@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.Level;
 using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
@@ -36,7 +37,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 l_Player.LoadPass();
                 string l_PlayerName = l_Player.m_PlayerFull.name;
-                string l_FileName = RemoveSpecialCharacters(l_PlayerName);
+                string l_FileName = "Unpassed_"+ RemoveSpecialCharacters(l_PlayerName);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
                 if (!Directory.Exists(l_Path))
                 {
@@ -56,15 +57,23 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     int l_LevelInt = int.Parse(p_Level);
                     if (LevelController.GetLevelControllerCache().LevelID.Contains(int.Parse(p_Level)))
                     {
-                        string l_PathFile = l_Path + $"{l_LevelInt:D3}{Level.SUFFIX_NAME}.bplist";
+                        string l_PlaylistName = $"{l_FileName}_{l_LevelInt:D3}{Level.SUFFIX_NAME}";
+                        string l_PathFile = l_Path + l_PlaylistName;
 
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
 
-
-                        CreateUnpassedPlaylist(l_Player.ReturnPass(), int.Parse(p_Level), l_Path);
-                        if (File.Exists(l_PathFile))
-                            await Context.Channel.SendFileAsync(l_PathFile, $"> :white_check_mark: Here's your personal playlist! <@{Context.User.Id.ToString()}>");
+                        Level l_Level = new Level(l_LevelInt);
+                        LevelFormat l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
+                        
+                        if (l_LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
+                        {
+                            JsonDataBaseController.CreateDirectory(l_Path);
+                            Level.ReWriteStaticPlaylist(l_LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
+                        }
+                        
+                        if (File.Exists($"{l_PathFile}{Level.EXTENSION}"))
+                            await Context.Channel.SendFileAsync($"{l_PathFile}{Level.EXTENSION}", $"> :white_check_mark: Here's your personal playlist! <@{Context.User.Id.ToString()}>");
                         else
                             await ReplyAsync("> :x: Sorry but you already passed all the maps in that playlist.");
 
@@ -79,7 +88,17 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
                     {
-                        CreateUnpassedPlaylist(l_Player.ReturnPass(), l_LevelID, l_Path);
+                        string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
+                        string l_PathFile = l_Path + l_PlaylistName;
+                        
+                        Level l_Level = new Level(l_LevelID);
+                        LevelFormat l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
+                        
+                        if (l_LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
+                        {
+                            JsonDataBaseController.CreateDirectory(l_Path);
+                            Level.ReWriteStaticPlaylist(l_LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
+                        }
                     }
 
                     try

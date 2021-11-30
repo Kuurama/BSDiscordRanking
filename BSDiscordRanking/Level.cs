@@ -19,7 +19,7 @@ namespace BSDiscordRanking
     public class Level
     {
         public const string SUFFIX_NAME = "_Level";
-
+        public const string EXTENSION = ".bplist";
         /// Keep the underscore at the beginning to avoid issue with the controller.
         private const string PATH = @"./Levels/";
 
@@ -204,6 +204,35 @@ namespace BSDiscordRanking
             }
         }
 
+        public static void ReWriteStaticPlaylist(LevelFormat p_LevelFormat, string p_Path, string p_FileName)
+        {
+            /// This Method Serialise the data from p_LevelFormat and create a playlist file depending on the path parameter
+            /// and it's PrefixName parameter (Prefix is usefull to sort playlist in the game).
+            /// Be Aware that it will replace the current Playlist file (if there is any), it shouldn't be an issue
+
+            try
+            {
+                if (p_LevelFormat != null)
+                {
+                    if (p_LevelFormat.songs.Count > 0)
+                    {
+                        File.WriteAllText($"{p_Path}{p_FileName}.bplist", JsonSerializer.Serialize(p_LevelFormat));
+                        Console.WriteLine($"{p_LevelFormat.customData.level}{SUFFIX_NAME} Updated ({p_LevelFormat.songs.Count} maps in Playlist)");
+                        LevelController.ReWriteController(LevelController.FetchAndGetLevel()); /// If a new level is created => Update the LevelController Cache.
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Seems like you are passing a null playlist format, why?, Returned.");
+                }
+            }
+            catch
+            {
+                Console.WriteLine("An error occured While attempting to Write the Playlist file. (missing directory? or missing permission?), Returned.");
+            }
+        }
+
+
         public void DeleteLevel()
         {
             /// This Method Delete the level cache file
@@ -374,7 +403,7 @@ namespace BSDiscordRanking
                                                     l_NewManualWeightPreference = l_Difficulty.customData.forceManualWeight == true ? "true" : "false";
                                                     l_ForceManualWeightPreferenceEdit = true;
                                                 }
-                                                
+
                                                 if (l_Difficulty.customData.adminConfirmationOnPass != l_LevelDifficulty.customData.adminConfirmationOnPass)
                                                 {
                                                     l_LevelDifficulty.customData.adminConfirmationOnPass = l_Difficulty.customData.adminConfirmationOnPass;
@@ -430,7 +459,7 @@ namespace BSDiscordRanking
                                                 p_Context?.Channel.SendMessageAsync(
                                                     $"> Weight: {l_OriginalManualWeight} => {l_Difficulty.customData.manualWeight}.");
                                             }
-                                            
+
                                             if (l_NameEdit)
                                             {
                                                 p_Context?.Channel.SendMessageAsync(
@@ -485,7 +514,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_BeatSaverMap.id}");
-                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminConfirmationOnPass,p_Context);
+                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminConfirmationOnPass, p_Context);
                 }
             }
             else

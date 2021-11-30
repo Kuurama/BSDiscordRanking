@@ -20,44 +20,43 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         public const int Permission = 0;
-        private void CreateUnpassedPlaylist(PlayerPassFormat p_PlayerPass, int p_Level, string p_Path)
+
+        private LevelFormat RemovePassFromPlaylist(PlayerPassFormat p_PlayerPass, LevelFormat p_LevelFormat)
         {
-            Level l_Level = new Level(p_Level);
-            LevelFormat l_LevelFormat = l_Level.GetLevelData();
-            if (l_LevelFormat.songs.Count > 0)
+            if (p_LevelFormat.songs.Count > 0)
             {
                 foreach (var l_PlayerPassSong in p_PlayerPass.SongList)
                 {
-                    for (int l_I = l_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
+                    for (int l_I = p_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
                     {
-                        if (l_LevelFormat.songs.Count > l_I)
+                        if (p_LevelFormat.songs.Count > l_I)
                         {
-                            if (String.Equals(l_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
+                            if (String.Equals(p_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
                                 StringComparison.CurrentCultureIgnoreCase))
                             {
                                 foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.DiffList)
                                 {
-                                    if (l_LevelFormat.songs.Count > l_I)
+                                    if (p_LevelFormat.songs.Count > l_I)
                                     {
-                                        for (int l_Y = l_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
+                                        for (int l_Y = p_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
                                         {
-                                            if (l_LevelFormat.songs[l_I].difficulties.Count > 0 &&
-                                                l_LevelFormat.songs.Count > 0)
+                                            if (p_LevelFormat.songs[l_I].difficulties.Count > 0 &&
+                                                p_LevelFormat.songs.Count > 0)
                                             {
-                                                if (l_LevelFormat.songs[l_I].difficulties[l_Y].characteristic ==
+                                                if (p_LevelFormat.songs[l_I].difficulties[l_Y].characteristic ==
                                                     l_PlayerPassSongDifficulty.Difficulty.characteristic &&
-                                                    l_LevelFormat.songs[l_I].difficulties[l_Y].name ==
+                                                    p_LevelFormat.songs[l_I].difficulties[l_Y].name ==
                                                     l_PlayerPassSongDifficulty.Difficulty.name)
                                                 {
                                                     /// Here remove diff or map if it's the only ranked diff
-                                                    if (l_LevelFormat.songs[l_I].difficulties.Count <= 1)
+                                                    if (p_LevelFormat.songs[l_I].difficulties.Count <= 1)
                                                     {
-                                                        l_LevelFormat.songs.Remove(l_LevelFormat.songs[l_I]);
+                                                        p_LevelFormat.songs.Remove(p_LevelFormat.songs[l_I]);
                                                     }
                                                     else
                                                     {
-                                                        l_LevelFormat.songs[l_I].difficulties
-                                                            .Remove(l_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                                        p_LevelFormat.songs[l_I].difficulties
+                                                            .Remove(p_LevelFormat.songs[l_I].difficulties[l_Y]);
                                                     }
                                                 }
                                             }
@@ -69,13 +68,65 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                 }
 
-                l_LevelFormat.customData.syncURL = null;
+                p_LevelFormat.customData.syncURL = null;
             }
 
-            if (l_LevelFormat.songs.Count <= 0)
-                return; /// Do not create the file if it's empty.
-            JsonDataBaseController.CreateDirectory(p_Path);
-            l_Level.ReWritePlaylist(true, p_Path, l_LevelFormat); /// Write the personal playlist file in the PATH folder.
+            return p_LevelFormat;
+        }
+
+        private RemoveCategoriesFormat RemoveOtherCategoriesFromPlaylist(LevelFormat p_LevelFormat, string p_Category)
+        {
+            RemoveCategoriesFormat l_RemoveCategoriesFormat = new RemoveCategoriesFormat(){Categories = new List<string>()};
+            if (p_LevelFormat.songs.Count > 0)
+            {
+                for (int l_I = p_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
+                {
+                    if (p_LevelFormat.songs.Count > l_I)
+                    {
+                        if (p_LevelFormat.songs.Count > l_I)
+                        {
+                            for (int l_Y = p_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
+                            {
+                                if (p_LevelFormat.songs[l_I].difficulties.Count > 0 && p_LevelFormat.songs.Count > 0)
+                                {
+                                    if (p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category !=
+                                        p_Category)
+                                    {
+                                        int l_FindIndex = l_RemoveCategoriesFormat.Categories.FindIndex(p_X => p_X == p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
+                                        if (l_FindIndex < 0)
+                                        {
+                                            l_RemoveCategoriesFormat.Categories.Add(p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
+                                        }
+
+                                        /// Here remove diffs or maps on which the category isn't correct.
+                                        if (p_LevelFormat.songs[l_I].difficulties.Count <= 1)
+                                        {
+                                            p_LevelFormat.songs.Remove(p_LevelFormat.songs[l_I]);
+                                        }
+                                        else
+                                        {
+                                            p_LevelFormat.songs[l_I].difficulties
+                                                .Remove(p_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                p_LevelFormat.customData.syncURL = null;
+            }
+
+            l_RemoveCategoriesFormat.LevelFormat = p_LevelFormat;
+
+            return l_RemoveCategoriesFormat;
+        }
+
+        private class RemoveCategoriesFormat
+        {
+            public LevelFormat LevelFormat;
+            public List<string> Categories;
         }
 
         private static string RemoveSpecialCharacters(string p_Str)
@@ -94,24 +145,31 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         private void DeleteUnpassedPlaylist(string p_OriginalPath, string p_FileName)
         {
-            ///// Delete all personal files before generating new ones /////////
-            string l_Path = p_OriginalPath + p_FileName + "/";
-            if (File.Exists(p_OriginalPath + p_FileName + ".zip"))
-                File.Delete(p_OriginalPath + p_FileName + ".zip");
-
-            DirectoryInfo l_Directory = new DirectoryInfo(l_Path);
-            foreach (FileInfo l_File in l_Directory.EnumerateFiles())
+            try
             {
-                l_File.Delete();
-            }
+                ///// Delete all personal files before generating new ones /////////
+                string l_Path = p_OriginalPath + p_FileName + "/";
+                if (File.Exists(p_OriginalPath + p_FileName + ".zip"))
+                    File.Delete(p_OriginalPath + p_FileName + ".zip");
 
-            foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories())
+                DirectoryInfo l_Directory = new DirectoryInfo(l_Path);
+                foreach (FileInfo l_File in l_Directory.EnumerateFiles())
+                {
+                    l_File.Delete();
+                }
+
+                foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories())
+                {
+                    l_Dir.Delete(true);
+                }
+
+                Directory.Delete(p_OriginalPath + p_FileName + "/");
+                ///////////////////////////////////////////////////////////////////////
+            }
+            catch (Exception l_Exception)
             {
-                l_Dir.Delete(true);
+                Console.WriteLine($"DeleteUnpassedPlaylist : {l_Exception}");
             }
-
-            Directory.Delete(p_OriginalPath + p_FileName + "/");
-            ///////////////////////////////////////////////////////////////////////
         }
 
 

@@ -45,6 +45,7 @@ namespace BSDiscordRanking.Controllers
                         Console.WriteLine($"Error with Level name. {l_Exception.Message}");
                     }
                 }
+
                 l_LevelController.LevelID.Sort();
                 return l_LevelController;
             }
