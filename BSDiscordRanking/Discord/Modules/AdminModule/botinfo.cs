@@ -2,15 +2,13 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
 
-namespace BSDiscordRanking.Discord.Modules.UserModule
+namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
-
-    [CheckChannel]
-    public partial class UserModule : ModuleBase<SocketCommandContext>
+    [PermissionHandler.RequirePermissionAttribute(Permission)]
+    public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("botinfo")]
         [Alias("botstats")]
