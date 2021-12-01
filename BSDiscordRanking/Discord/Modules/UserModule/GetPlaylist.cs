@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
@@ -12,7 +13,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         [Command("getplaylist")]
         [Alias("gpl")]
-        [Summary("Sends the desired Level's playlist file. Use `all` instead of the level id to get the whole level folder.")]
+        [Summary("Sends the desired Level's playlist file. Use `all` instead of the level id to get the whole level folder. It can also sort by Category if you type it.")]
         public async Task GetPlaylist(string p_Level = null, [Remainder] string p_Category = null)
         {
             if (p_Category == null)
@@ -61,14 +62,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                 }
 
-                string l_FileName = RemoveSpecialCharacters(Context.User.Username);
+                string l_FileName = RemoveSpecialCharacters(p_Category);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
 
                 if (int.TryParse(p_Level, out int l_LevelInt))
                 {
                     if (LevelController.GetLevelControllerCache().LevelID.Contains(int.Parse(p_Level)))
                     {
-                        string l_PlaylistName = $"{RemoveSpecialCharacters(p_Category)}_{l_LevelInt:D3}{Level.SUFFIX_NAME}";
+                        string l_PlaylistName = $"{l_FileName}_{l_LevelInt:D3}{Level.SUFFIX_NAME}";
                         string l_PathFile = l_Path + l_PlaylistName;
 
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
@@ -105,7 +106,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
                         {
-                            DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
+                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                         }
                     }
                     else
@@ -115,7 +116,92 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else if (p_Level == "all")
                 {
-                    await Context.Channel.SendMessageAsync("> :x: Sorry but this functionality isn't supported yet.");
+                    // await Context.Channel.SendMessageAsync("> :x: Sorry but this functionality isn't supported yet.");
+                    List<string> l_AvailableCategories = new List<string>();
+                    foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+                    {
+                        string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
+                        string l_PathFile = l_Path + l_PlaylistName;
+
+                        if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
+                            File.Delete(l_PathFile);
+
+                        Level l_Level = new Level(l_LevelID);
+                        RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
+
+                        foreach (string l_Category in l_LevelFormat.Categories)
+                        {
+                            int l_FindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_Category);
+                            if (l_FindIndex < 0)
+                            {
+                                l_AvailableCategories.Add(l_Category);
+                            }
+                        }
+
+                        if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
+                        {
+                            JsonDataBaseController.CreateDirectory(l_Path);
+                            Level.ReWriteStaticPlaylist(l_LevelFormat.LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
+                        }
+                    }
+                    
+                    try
+                    {
+                        if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Length > 0)
+                        {
+                            ZipFile.CreateFromDirectory(l_Path, $"{ORIGINAL_PATH}{l_FileName}.zip");
+                            await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's the {p_Category}'s playlist folder!");
+                        }
+                        else
+                        {
+                            string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                            foreach (string l_Category in l_AvailableCategories)
+                            {
+                                if (l_Category != null)
+                                {
+                                    l_Message += $"\n> {l_Category}";
+                                }
+                            }
+
+                            if (l_Message.Length <= 1980)
+                            {
+                                await ReplyAsync(l_Message);
+                            }
+                            else
+                            {
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                            }
+                        }
+
+                        DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                    }
+                    catch
+                    {
+                        if (l_AvailableCategories.Count > 0)
+                        {
+                            string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                            foreach (string l_Category in l_AvailableCategories)
+                            {
+                                if (l_Category != null)
+                                {
+                                    l_Message += $"\n> {l_Category}";
+                                }
+                            }
+
+                            if (l_Message.Length <= 1980)
+                            {
+                                await ReplyAsync(l_Message);
+                            }
+                            else
+                            {
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                            }
+                        }
+                        else
+                        {
+                            await Context.Channel.SendMessageAsync("> :x: Seems like you forgot to add Levels. Unless you want an empty zip file?");
+                        }
+                    }
                 }
                 else
                     await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\".");

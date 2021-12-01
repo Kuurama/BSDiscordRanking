@@ -143,7 +143,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return l_SB.ToString();
         }
 
-        private void DeleteUnpassedPlaylist(string p_OriginalPath, string p_FileName)
+        private void DeletePlaylistZip(string p_OriginalPath, string p_FileName)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             catch (Exception l_Exception)
             {
-                Console.WriteLine($"DeleteUnpassedPlaylist : {l_Exception}");
+                Console.WriteLine($"DeletePlaylistZip : {l_Exception}");
             }
         }
 

@@ -77,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         else
                             await ReplyAsync("> :x: Sorry but you already passed all the maps in that playlist.");
 
-                        DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
+                        DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                     }
                     else
                     {
@@ -113,7 +113,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             await ReplyAsync("Sorry but you already passed all the maps from all pools, good job!");
                         }
 
-                        DeleteUnpassedPlaylist(ORIGINAL_PATH, l_FileName);
+                        DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                     }
                     catch
                     {
