@@ -203,16 +203,18 @@ namespace BSDiscordRanking.Controllers
 
         public static bool GiveRemoveBSDRRole(ulong p_DiscordID, SocketCommandContext p_Context, bool p_Remove)
         {
-            var l_User = p_Context.Guild.GetUser(p_DiscordID);
+            SocketGuildUser l_User = p_Context.Guild.GetUser(p_DiscordID);
             if (l_User != null)
             {
-                foreach (var l_Role in RoleController.ReadRolesDB().Roles)
+                List<RoleFormat> l_RolesFormat = RoleController.ReadRolesDB().Roles;
+                
+                foreach (RoleFormat l_Role in l_RolesFormat)
                 {
-                    foreach (var l_GuildRole in p_Context.Guild.Roles)
+                    if (l_Role.LevelID == 0)
                     {
-                        if (string.Equals(l_Role.RoleName, $"{GetConfig().RolePrefix} Ranked", StringComparison.OrdinalIgnoreCase))
+                        foreach (var l_GuildRole in p_Context.Guild.Roles)
                         {
-                            if (string.Equals(l_Role.RoleName, l_GuildRole.Name, StringComparison.OrdinalIgnoreCase))
+                            if (l_Role.RoleID == l_GuildRole.Id)
                             {
                                 foreach (var l_UserRole in l_User.Roles)
                                 {
@@ -224,11 +226,11 @@ namespace BSDiscordRanking.Controllers
                                             return false;
                                     }
                                 }
-
                                 if (!p_Remove)
                                     l_User.AddRoleAsync(l_GuildRole);
 
                                 return true;
+
                             }
                         }
                     }

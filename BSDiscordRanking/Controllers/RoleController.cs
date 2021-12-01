@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
+using Discord.Rest;
 
 namespace BSDiscordRanking.Controllers
 {
@@ -35,11 +37,11 @@ namespace BSDiscordRanking.Controllers
         public async Task CreateAllRoles(SocketCommandContext p_Context, bool p_Overwrite)
         {
             ReadRolesDB();
-            foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+            foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID.Where(p_LevelID => p_LevelID > 0))
             {
                 if (!RoleExist($"Lv.{l_LevelID}") || p_Overwrite)
                 {
-                    var l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
+                    RestRole l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
                     m_RoleController.Roles.Add(new RoleFormat { RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID });
                 }
 

@@ -22,7 +22,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context, false))
             {
                 await ReplyAsync(
-                    $"'{ConfigController.GetConfig().RolePrefix} Ranked' Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the `{ConfigController.GetConfig().CommandPrefix[0]}getstarted` command to get started.");
+                    $"{ConfigController.GetConfig().RolePrefix} Ranked Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the `{ConfigController.GetConfig().CommandPrefix[0]}getstarted` command to get started.");
             }
             else
             {
