@@ -376,7 +376,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 l_MapChangeEmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                                 l_MapChangeEmbedBuilder.WithColor(Color.Blue);
 
-                                                if ((p_ChangeCategory && l_Config.DisplayCategoryEdit) || (p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit))
+                                                if ((p_ChangeCategory && l_Config.DisplayCategoryEdit) || (p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit) || p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ToggleAdminConfirmationOnPass)
                                                 {
                                                     foreach (var l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
                                                     {

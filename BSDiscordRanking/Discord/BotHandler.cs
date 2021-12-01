@@ -27,7 +27,7 @@ namespace BSDiscordRanking.Discord
             m_Prefix = p_Config.CommandPrefix[0];
             m_Client = new DiscordSocketClient(new DiscordSocketConfig { GatewayIntents = GatewayIntents.All });
             m_Commands = new CommandService();
-
+            
             ////////////// EditMap Interaction Implementation //////////////
             RankingTeamModule l_RankingTeamModule = new RankingTeamModule();
             m_Client.ButtonExecuted += l_RankingTeamModule.EditMapButtonHandler;
@@ -61,7 +61,6 @@ namespace BSDiscordRanking.Discord
             if (l_Message != null && l_Message.Author.IsBot) return;
 
             int l_ArgPos = 0;
-
             foreach (var l_Prefix in ConfigController.GetConfig().CommandPrefix)
             {
                 if (l_Message.HasStringPrefix(l_Prefix, ref l_ArgPos))
