@@ -97,8 +97,9 @@ namespace BSDiscordRanking.Controllers
             if (l_User != null)
             {
                 bool l_RolesChanged = false;
-                var l_RolesDB = RoleController.ReadRolesDB().Roles;
-                var l_Roles = p_Context.Guild.Roles;
+                List<RoleFormat> l_RolesDB = RoleController.ReadRolesDB().Roles;
+                IReadOnlyCollection<SocketRole> l_GuildRoles = p_Context.Guild.Roles;
+                List<SocketRole> l_GuildRolesList = l_GuildRoles.ToList();
                 List<ulong> l_MyUserRolesID = new List<ulong>();
                 foreach (var l_Role in l_User.Roles)
                 {
@@ -109,18 +110,18 @@ namespace BSDiscordRanking.Controllers
                 {
                     foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID > p_Level))
                     {
-                        if (l_MyUserRolesID.Contains(l_Role.RoleID))
+                        if (l_MyUserRolesID.Contains(l_Role.RoleID)) // Also mean the guild role exist as he haves it.
                         {
-                            await l_User.RemoveRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            await l_User.RemoveRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                             l_RolesChanged = true;
                         }
                     }
 
                     foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID <= p_Level))
                     {
-                        if (!l_MyUserRolesID.Contains(l_Role.RoleID))
+                        if (!l_MyUserRolesID.Contains(l_Role.RoleID) && l_GuildRolesList.FindIndex(p_X => p_X.Id == l_Role.RoleID) >= 0) // Only gives a roles the guild have ofc.
                         {
-                            await l_User.AddRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            await l_User.AddRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                             l_RolesChanged = true;
                         }
                     }
@@ -129,9 +130,9 @@ namespace BSDiscordRanking.Controllers
                 {
                     foreach (var l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID != p_Level))
                     {
-                        if (l_MyUserRolesID.Contains(l_Role.RoleID))
+                        if (l_MyUserRolesID.Contains(l_Role.RoleID)) // Also mean the guild role exist as he haves it.
                         {
-                            await l_User.RemoveRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                            await l_User.RemoveRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                             l_RolesChanged = true;
                         }
                     }
@@ -140,8 +141,11 @@ namespace BSDiscordRanking.Controllers
                     {
                         if (!l_MyUserRolesID.Contains(l_Role.RoleID))
                         {
-                            await l_User.AddRoleAsync(l_Roles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                            l_RolesChanged = true;
+                            if (!l_MyUserRolesID.Contains(l_Role.RoleID) && l_GuildRolesList.FindIndex(p_X => p_X.Id == l_Role.RoleID) >= 0) // Only gives a roles the guild have ofc.
+                            {
+                                await l_User.AddRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
+                                l_RolesChanged = true;
+                            }
                         }
                     }
                 }
@@ -207,7 +211,7 @@ namespace BSDiscordRanking.Controllers
             if (l_User != null)
             {
                 List<RoleFormat> l_RolesFormat = RoleController.ReadRolesDB().Roles;
-                
+
                 foreach (RoleFormat l_Role in l_RolesFormat)
                 {
                     if (l_Role.LevelID == 0)
@@ -226,11 +230,11 @@ namespace BSDiscordRanking.Controllers
                                             return false;
                                     }
                                 }
+
                                 if (!p_Remove)
                                     l_User.AddRoleAsync(l_GuildRole);
 
                                 return true;
-
                             }
                         }
                     }

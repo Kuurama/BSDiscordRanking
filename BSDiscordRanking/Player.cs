@@ -841,6 +841,7 @@ namespace BSDiscordRanking
 
                                                     if (!l_MinScoreRequirementFailed && !l_ScoreDeleted)
                                                     {
+                                                        
                                                         MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key, l_Difficulty.customData.maxScore);
                                                         ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
                                                         {

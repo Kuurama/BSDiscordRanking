@@ -23,17 +23,7 @@ namespace BSDiscordRanking.Formats.Player
 
     public class PassedLevel
     {
-        public PassedLevel()
-        {
-        }
-
-        public PassedLevel(int p_LevelID, bool p_Passed, Trophy p_Trophy)
-        {
-            LevelID = p_LevelID;
-            Passed = p_Passed;
-            Trophy = p_Trophy;
-        }
-
+        public string Category { get; set; }
         public int LevelID { get; set; }
         public bool Passed { get; set; }
         public Trophy Trophy { get; set; }
