@@ -5,7 +5,7 @@ namespace BSDiscordRanking
 {
     internal static class Program
     {
-        public static ulong m_TempGlobalGuildID = default;
+        public static ulong m_TempGlobalGuildID = default(ulong);
 
         private static void Main(string[] p_Args)
         {

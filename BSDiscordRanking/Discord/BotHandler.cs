@@ -33,7 +33,7 @@ namespace BSDiscordRanking.Discord
             m_Commands = new CommandService();
 
             ////////////// EditMap Interaction Implementation //////////////
-            RankingTeamModule l_RankingTeamModule = new();
+            RankingTeamModule l_RankingTeamModule = new RankingTeamModule();
             m_Client.ButtonExecuted += l_RankingTeamModule.EditMapButtonHandler;
             m_Client.InteractionCreated += l_RankingTeamModule.EditMapInteraction;
             ////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ namespace BSDiscordRanking.Discord
         private async Task HandleCommandAsync(SocketMessage p_Arg)
         {
             SocketUserMessage l_Message = p_Arg as SocketUserMessage;
-            SocketCommandContext l_Context = new(m_Client, l_Message);
+            SocketCommandContext l_Context = new SocketCommandContext(m_Client, l_Message);
             if (l_Message != null && l_Message.Author.IsBot) return;
 
             int l_ArgPos = 0;

@@ -18,7 +18,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
-                PassLeaderboardController l_PassLeaderboardController = new();
+                PassLeaderboardController l_PassLeaderboardController = new PassLeaderboardController();
                 int l_Index = l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()));
                 l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsPingAllowed = !l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsPingAllowed;
                 l_PassLeaderboardController.ReWriteLeaderboard();

@@ -12,11 +12,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ldacc")]
         [Alias("accld", "acclb", "lbacc", "accleaderboard", "accleaderboards")]
         [Summary("Shows the Acc based leaderboard.")]
-        public async Task AccLeaderboard(int p_Page = default)
+        public async Task AccLeaderboard(int p_Page = default(int))
         {
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            EmbedBuilder l_EmbedBuilder = new();
-            AccLeaderboardController l_AccLeaderboardController = new();
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            AccLeaderboardController l_AccLeaderboardController = new AccLeaderboardController();
 
             LeaderboardBuilderFormat l_AccLeaderboardBuilderFormat = BuildLeaderboard(l_AccLeaderboardController.m_Leaderboard, l_ConfigFormat.AccPointsName, l_EmbedBuilder, p_Page);
 
@@ -34,11 +34,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ldpass")]
         [Alias("passld", "passlb", "lbpass", "passleaderboard", "passleaderboards")]
         [Summary("Shows the Pass based leaderboard.")]
-        public async Task PassLeaderboard(int p_Page = default)
+        public async Task PassLeaderboard(int p_Page = default(int))
         {
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            EmbedBuilder l_EmbedBuilder = new();
-            PassLeaderboardController l_PassLeaderboardController = new();
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            PassLeaderboardController l_PassLeaderboardController = new PassLeaderboardController();
 
             LeaderboardBuilderFormat l_PassLeaderboardBuilderFormat = BuildLeaderboard(l_PassLeaderboardController.m_Leaderboard, l_ConfigFormat.PassPointsName, l_EmbedBuilder, p_Page);
 
@@ -55,7 +55,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         private LeaderboardBuilderFormat BuildLeaderboard(LeaderboardControllerFormat p_LeaderboardController, string p_PointsName, EmbedBuilder p_EmbedBuilder, int p_Page)
         {
-            if (p_Page == default)
+            if (p_Page == default(int))
                 try
                 {
                     p_Page = p_LeaderboardController.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString())) / 10 + 1;

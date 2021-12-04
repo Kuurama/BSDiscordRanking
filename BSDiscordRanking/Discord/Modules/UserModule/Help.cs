@@ -32,7 +32,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
 
 
-                    EmbedBuilder l_Builder = new();
+                    EmbedBuilder l_Builder = new EmbedBuilder();
                     l_Builder.WithTitle(l_Module.Name);
                     foreach (CommandInfo l_Command in l_Module.Commands)
                     {
@@ -80,7 +80,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     p_X.Name == p_Command || p_X.Aliases.ToList().Find(p_X => p_X == p_Command) == p_Command);
                 if (l_FoundCommand != null)
                 {
-                    EmbedBuilder l_Builder = new();
+                    EmbedBuilder l_Builder = new EmbedBuilder();
                     string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_FoundCommand.Name;
                     foreach (ParameterInfo l_Parameter in l_FoundCommand.Parameters)
                         if (l_Parameter.Summary != null)

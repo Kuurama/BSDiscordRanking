@@ -40,8 +40,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             int l_MessagesIndex = 0;
             bool l_HaveAPass = false;
-            List<string> l_Messages = new() { "" };
-            List<string> l_AvailableCategories = new();
+            List<string> l_Messages = new List<string> { "" };
+            List<string> l_AvailableCategories = new List<string>();
             if (l_PlayerPassPerLevel.Levels != null)
             {
                 Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_Player.GetPlayerLevel());
@@ -130,7 +130,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
-                Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 PlayerStatsFormat l_PlayerPassPerLevel = l_Player.GetStats();
                 if (l_PlayerPassPerLevel == null)
                 {
@@ -139,8 +139,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
 
                 int l_MessagesIndex = 0;
-                List<string> l_Messages = new() { "" };
-                List<string> l_AvailableCategories = new();
+                List<string> l_Messages = new List<string> { "" };
+                List<string> l_AvailableCategories = new List<string>();
                 if (l_PlayerPassPerLevel.Levels != null)
                 {
                     Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_Player.GetPlayerLevel());

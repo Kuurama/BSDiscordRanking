@@ -22,7 +22,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
             bool l_FullEmbeddedGGP = ConfigController.m_ConfigFormat.FullEmbeddedGGP;
 
-            Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
             {
                 if (int.TryParse(p_Level, out int l_Level))
@@ -80,11 +80,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_IDExist)
             {
-                Level l_Level = new(p_Level);
+                Level l_Level = new Level(p_Level);
                 try
                 {
                     bool l_LevelIsPassed = false;
-                    PlayerPassFormat l_PlayerPassFormat = new()
+                    PlayerPassFormat l_PlayerPassFormat = new PlayerPassFormat
                     {
                         SongList = new List<InPlayerSong>()
                     };
@@ -112,7 +112,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         });
                     }
 
-                    RemoveCategoriesFormat l_RemoveCategoriesFormat = new() { LevelFormat = l_Level.m_Level, Categories = null };
+                    RemoveCategoriesFormat l_RemoveCategoriesFormat = new RemoveCategoriesFormat { LevelFormat = l_Level.m_Level, Categories = null };
 
                     if (p_Category != null)
                     {
@@ -261,7 +261,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 l_PlayerTrophy = "<:big_diamond:916492304108355685>: ";
                                 break;
                             }
-                            
+
                             case 100:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Ruby = 1;
@@ -272,7 +272,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     if (l_NumberOfPass > 0)
                     {
-                        EmbedBuilder l_EmbedBuilder = new();
+                        EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
@@ -313,11 +313,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     p_Player.ReWriteStats();
 
-                    List<string> l_Messages = new() { "" }; /// Reset the Message between Passed and Unpassed maps
+                    List<string> l_Messages = new List<string> { "" }; /// Reset the Message between Passed and Unpassed maps
 
                     if (l_NumberOfDifficulties - l_NumberOfPass > 0)
                     {
-                        EmbedBuilder l_EmbedBuilder = new();
+                        EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
 
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
                         if (!l_AlreadyHaveThumbnail)
@@ -377,8 +377,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             int l_Y = 0;
             int l_NumbedOfEmbed = 1;
             string l_LastMessage = null;
-            List<Embed> l_EmbedBuiltList = new();
-            List<string> l_Messages = new() { "" };
+            List<Embed> l_EmbedBuiltList = new List<Embed>();
+            List<string> l_Messages = new List<string> { "" };
 
             List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples =
                 (from l_Map in p_PlayerPassFormat.SongList

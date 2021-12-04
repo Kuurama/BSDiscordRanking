@@ -36,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (ulong.TryParse(p_DiscordOrScoreSaberID, out ulong l_ScoreSaberID))
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder().WithColor(Color.Green);
-                    Player l_Player = new(p_DiscordOrScoreSaberID);
+                    Player l_Player = new Player(p_DiscordOrScoreSaberID);
                     l_Player.LoadPass();
 
                     List<ApiScore> l_ApiScores;

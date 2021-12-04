@@ -12,7 +12,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         [Command("addmap")]
         [Alias("rankmap")]
         [Summary("Adds a map or updates it from a desired level. Not used fields can be wrote null or 0 depending on their types. (or even ignored if you don't need any of the next ones)")]
-        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_AdminPingOnPass = false, bool p_ForceManualWeight = false, float p_Weight = default)
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_AdminPingOnPass = false, bool p_ForceManualWeight = false, float p_Weight = default(float))
         {
             if (string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -38,7 +38,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
-                        Level l_Level = new(p_Level);
+                        Level l_Level = new Level(p_Level);
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode, Context);
                         int l_NumberOfNote = 0;
                         bool l_DiffExist = false;
@@ -57,7 +57,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, p_AdminPingOnPass, Context);
                                 if (l_Level.m_MapAdded)
                                 {
-                                    EmbedBuilder l_EmbedBuilder = new();
+                                    EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                     l_EmbedBuilder.WithTitle("Map Added:");
                                     l_EmbedBuilder.WithDescription(l_Map.name);
                                     l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
@@ -73,7 +73,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                             {
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, p_AdminPingOnPass, Context);
-                                EmbedBuilder l_EmbedBuilder = new();
+                                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                 l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);

@@ -39,7 +39,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     return;
                 }
 
-                Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 PlayerStatsFormat l_PlayerStats = l_Player.GetStats();
                 if (l_PlayerStats == null)
                 {
@@ -83,7 +83,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 return;
                             }
 
-                            List<string> l_AvailableCategories = new();
+                            List<string> l_AvailableCategories = new List<string>();
                             foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory) l_AvailableCategories.Add(l_LevelCategory.Category);
 
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";

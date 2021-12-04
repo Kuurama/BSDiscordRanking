@@ -20,13 +20,13 @@ namespace BSDiscordRanking.Controllers
         private int m_ErrorNumber;
         public MapLeaderboardFormat m_MapLeaderboard;
 
-        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default)
+        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default(int))
         {
             m_LeaderboardID = p_LeaderboardID;
             m_Key = p_Key;
             LoadMapLeaderboard();
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
-            if (p_MaxScore != default) m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
+            if (p_MaxScore != default(int)) m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
 
             switch (m_MapLeaderboard.scores)
             {
@@ -59,7 +59,7 @@ namespace BSDiscordRanking.Controllers
             /// and it can mean the Leaderboard ID is wrong.
             if (p_TryLimit > 0)
             {
-                using (WebClient l_WebClient = new())
+                using (WebClient l_WebClient = new WebClient())
                 {
                     try
                     {
@@ -127,7 +127,7 @@ namespace BSDiscordRanking.Controllers
             /// and it can mean the Leaderboard ID is wrong.
             if (p_TryLimit > 0)
             {
-                using (WebClient l_WebClient = new())
+                using (WebClient l_WebClient = new WebClient())
                 {
                     try
                     {
@@ -247,7 +247,7 @@ namespace BSDiscordRanking.Controllers
 
                 try
                 {
-                    using (StreamReader l_SR = new($"{PATH}{m_LeaderboardID.ToString()}.json"))
+                    using (StreamReader l_SR = new StreamReader($"{PATH}{m_LeaderboardID.ToString()}.json"))
                     {
                         m_MapLeaderboard = JsonSerializer.Deserialize<MapLeaderboardFormat>(l_SR.ReadToEnd());
                         if (m_MapLeaderboard == null) /// json contain "null"
@@ -365,7 +365,7 @@ namespace BSDiscordRanking.Controllers
         {
             float l_SumOfPercentage = 0;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            MapLeaderboardController l_MapLeaderboard = new(p_LeaderboardID);
+            MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
             if (l_MapLeaderboard.m_MapLeaderboard.scores.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
             {
                 for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)

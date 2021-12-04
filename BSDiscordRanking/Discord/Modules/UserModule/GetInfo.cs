@@ -27,10 +27,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
             ConfigFormat l_Config = ConfigController.GetConfig();
-            List<Tuple<SongFormat, int, float>> l_Maps = new();
+            List<Tuple<SongFormat, int, float>> l_Maps = new List<Tuple<SongFormat, int, float>>();
             foreach (int l_LevelID in l_LevelControllerFormat.LevelID)
             {
-                Level l_Level = new(l_LevelID);
+                Level l_Level = new Level(l_LevelID);
                 foreach (SongFormat l_Map in l_Level.m_Level.songs)
                     if (l_Map.name.Replace(" ", "").Replace("_", "").Contains(p_SearchArg, StringComparison.OrdinalIgnoreCase))
                         l_Maps.Add(new Tuple<SongFormat, int, float>(l_Map, l_LevelID, l_Level.m_Level.customData.weighting));
@@ -50,7 +50,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 SongFormat l_Map = l_GroupedMaps.First().Item1;
                 if (l_NumberOfMapFound <= l_Config.MaximumNumberOfMapInGetInfo)
                 {
-                    EmbedBuilder l_EmbedBuilder = new();
+                    EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                     bool l_NewDiff = false;
                     bool l_TooManyFields = false;
                     foreach ((SongFormat l_SongFormat, int l_MapLevelID, float l_Weight) in l_GroupedMaps)
@@ -166,7 +166,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_NumberOfMapFound > l_Config.MaximumNumberOfMapInGetInfo)
             {
-                EmbedBuilder l_EmbedBuilder = new();
+                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                 l_EmbedBuilder.WithColor(new Color(255, 0, 0));
                 if (l_NotDisplayedMaps.Length > 3800)
                     l_EmbedBuilder.WithDescription($"{l_NumberOfNotDisplayedMaps} More maps containing those characters were found.\nTo find them: increase the number of characters in your research or increase the MaximumNumberOfMapInGetInfo setting in the config file.\n> Due to too many maps being researched, no map list will be send.");

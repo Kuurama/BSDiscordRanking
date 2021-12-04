@@ -57,7 +57,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 return;
             }
 
-            Player l_Player = new(p_DiscordOrScoreSaberID);
+            Player l_Player = new Player(p_DiscordOrScoreSaberID);
             if (!l_IsDiscordLinked) l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.name;
 
             l_Player.LoadPass();
@@ -104,7 +104,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 }
             }
 
-            Trophy l_TotalTrophy = new()
+            Trophy l_TotalTrophy = new Trophy
             {
                 Plastic = 0,
                 Silver = 0,

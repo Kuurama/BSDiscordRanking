@@ -198,7 +198,7 @@ namespace BSDiscordRanking
             {
                 if (p_TryLimit > 0)
                 {
-                    using (WebClient l_WebClient = new())
+                    using (WebClient l_WebClient = new WebClient())
                     {
                         try
                         {
@@ -270,7 +270,7 @@ namespace BSDiscordRanking
 
                 try
                 {
-                    using (StreamReader l_SR = new(m_Path + "score.json"))
+                    using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
                     {
                         m_PlayerScore = JsonSerializer.Deserialize<List<ApiScoreInfo>>(l_SR.ReadToEnd());
                         Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
@@ -325,7 +325,7 @@ namespace BSDiscordRanking
                                 ? @$"https://scoresaber.com/api/player/{m_PlayerID}/scores?limit=100&sort=recent&page={l_Page.ToString()}"
                                 : @$"https://scoresaber.com/api/player/{m_PlayerFull.id}/scores?sort=recent&page={l_Page.ToString()}";
 
-                            using (WebClient l_WebClient = new())
+                            using (WebClient l_WebClient = new WebClient())
                             {
                                 try
                                 {
@@ -498,7 +498,7 @@ namespace BSDiscordRanking
             /// 
             /// </summary>
 
-            using (WebClient l_WebClient = new())
+            using (WebClient l_WebClient = new WebClient())
             {
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
                 {
@@ -550,7 +550,7 @@ namespace BSDiscordRanking
                         {
                             Categories = new List<CategoryPassed>
                             {
-                                new()
+                                new CategoryPassed
                                 {
                                     Category = p_Category,
                                     NumberOfPass = p_DefaultOrPassIncrement, /// Set to 1 by default because it will be the first pass of that category. Others will adds to it. Able to change it so you can still set it to 0.
@@ -564,7 +564,7 @@ namespace BSDiscordRanking
                         {
                             Categories = new List<CategoryPassed>
                             {
-                                new()
+                                new CategoryPassed
                                 {
                                     Category = p_Category,
                                     NumberOfPass = 0, /// Set to 0 by default because negative default/increment.
@@ -609,7 +609,7 @@ namespace BSDiscordRanking
                             l_Diamond = 1;
                             break;
                         }
-                        
+
                         case <= 100:
                         {
                             l_Ruby = 1;
@@ -649,9 +649,9 @@ namespace BSDiscordRanking
                 int l_BiggerLevelID = int.MinValue;
                 bool l_AboveLVLFourteenPass = false; /// Funny
                 int l_OldPlayerLevel = GetPlayerLevel();
-                List<int> l_LeaderboardIdToRemove = new();
+                List<int> l_LeaderboardIdToRemove = new List<int>();
                 PlayerPassFormat l_TempPlayerPass = ReturnPass();
-                FetchPassFormat l_FetchPassFormat = new()
+                FetchPassFormat l_FetchPassFormat = new FetchPassFormat
                 {
                     newPass = new List<string>(new[] { "" }),
                     removedPass = new List<string>(new[] { "" }),
@@ -665,7 +665,7 @@ namespace BSDiscordRanking
                 };
                 ResetTrophy();
                 ResetLevels();
-                List<Level> l_Levels = new();
+                List<Level> l_Levels = new List<Level>();
                 foreach (int l_LevelID in m_LevelController.LevelID)
                 {
                     l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
@@ -679,7 +679,7 @@ namespace BSDiscordRanking
                     foreach (var l_Level in l_Levels.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
                     {
                         float l_Weighting = l_Level.value.m_Level.customData.weighting;
-                        List<string> l_CategoryPerLevelList = new();
+                        List<string> l_CategoryPerLevelList = new List<string>();
 
                         foreach (SongFormat l_Song in l_Level.value.m_Level.songs)
                         {
@@ -827,7 +827,7 @@ namespace BSDiscordRanking
 
                                                         if (!l_MinScoreRequirementFailed)
                                                         {
-                                                            InPlayerSong l_PlayerPassFormat = new()
+                                                            InPlayerSong l_PlayerPassFormat = new InPlayerSong
                                                             {
                                                                 DiffList = new List<InPlayerPassFormat>(),
                                                                 hash = l_Song.hash.ToUpper(),
@@ -845,8 +845,8 @@ namespace BSDiscordRanking
                                                             m_PlayerPass.SongList.Add(l_PlayerPassFormat);
                                                         }
 
-                                                        float l_OldScore = default;
-                                                        int l_OldRank = default;
+                                                        float l_OldScore = default(float);
+                                                        int l_OldRank = default(int);
                                                         if (l_TempPlayerPass.SongList != null)
                                                             foreach (InPlayerPassFormat l_OldDiff in l_TempPlayerPass.SongList
                                                                 .Where(p_OldPassedSong => string.Equals(p_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
@@ -943,8 +943,8 @@ namespace BSDiscordRanking
 
                                                     if (!l_MinScoreRequirementFailed && !l_ScoreDeleted)
                                                     {
-                                                        MapLeaderboardController l_MapLeaderboardController = new(l_Score.leaderboard.id, l_Song.key, l_Difficulty.customData.maxScore);
-                                                        ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new()
+                                                        MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key, l_Difficulty.customData.maxScore);
+                                                        ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo
                                                         {
                                                             country = m_PlayerFull.country,
                                                             id = m_PlayerFull.id,
@@ -1066,7 +1066,7 @@ namespace BSDiscordRanking
                                 l_Diamond = 1;
                                 break;
                             }
-                            
+
                             case 100:
                             {
                                 l_Ruby = 1;
@@ -1074,7 +1074,7 @@ namespace BSDiscordRanking
                             }
                         }
 
-                        Trophy l_Trophy = new()
+                        Trophy l_Trophy = new Trophy
                         {
                             Plastic = l_Plastic,
                             Silver = l_Silver,
@@ -1151,7 +1151,7 @@ namespace BSDiscordRanking
                         if (l_FetchPassFormat.newPass[0] != "")
                             foreach (string l_Message in l_FetchPassFormat.newPass)
                             {
-                                EmbedBuilder l_Builder = new();
+                                EmbedBuilder l_Builder = new EmbedBuilder();
                                 if (l_IsFirstMessage)
                                 {
                                     if (l_OldPlayerFirstScanStatus)
@@ -1172,7 +1172,7 @@ namespace BSDiscordRanking
                         if (l_FetchPassFormat.updatedPass[0] != "")
                             foreach (string l_Message in l_FetchPassFormat.updatedPass)
                             {
-                                EmbedBuilder l_Builder = new();
+                                EmbedBuilder l_Builder = new EmbedBuilder();
                                 if (l_IsFirstMessage) l_Builder.WithTitle("You updated your scores on the following maps:");
 
                                 l_IsFirstMessage = false;
@@ -1186,7 +1186,7 @@ namespace BSDiscordRanking
                         if (l_FetchPassFormat.removedPass[0] != "")
                             foreach (string l_Message in l_FetchPassFormat.removedPass)
                             {
-                                EmbedBuilder l_Builder = new();
+                                EmbedBuilder l_Builder = new EmbedBuilder();
                                 l_Builder.WithTitle("Those scores have been removed:");
 
                                 l_IsFirstMessage = false;
@@ -1200,7 +1200,7 @@ namespace BSDiscordRanking
                         if (l_FetchPassFormat.adminConfirmationPass[0] != "")
                             foreach (string l_Message in l_FetchPassFormat.adminConfirmationPass)
                             {
-                                EmbedBuilder l_Builder = new();
+                                EmbedBuilder l_Builder = new EmbedBuilder();
                                 l_Builder.WithTitle("Those scores have been submitted for Admin Confirmation:");
 
                                 l_IsFirstMessage = false;
@@ -1218,7 +1218,7 @@ namespace BSDiscordRanking
                         if (l_FetchPassFormat.cheatedPass[0] != "")
                             foreach (string l_Message in l_FetchPassFormat.cheatedPass)
                             {
-                                EmbedBuilder l_Builder = new();
+                                EmbedBuilder l_Builder = new EmbedBuilder();
                                 l_Builder.WithTitle("Those scores have been deleted and submitted to Admin because they are breaking the rules:");
 
                                 l_IsFirstMessage = false;
@@ -1254,7 +1254,7 @@ namespace BSDiscordRanking
         public static PlayerPassFormat ReturnStaticPass(string p_PlayerID)
         {
             /// This method return the Serialised version of the current saved Player's pass, ruturn an empty on if none.
-            PlayerPassFormat l_PlayerPass = new();
+            PlayerPassFormat l_PlayerPass = new PlayerPassFormat();
             if (p_PlayerID != null)
             {
                 if (!Directory.Exists($"{m_FolderPath}{p_PlayerID}/"))
@@ -1262,7 +1262,7 @@ namespace BSDiscordRanking
                 else
                     try
                     {
-                        using (StreamReader l_SR = new($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json"))
+                        using (StreamReader l_SR = new StreamReader($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json"))
                         {
                             l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                             if (l_PlayerPass == null) /// json contain "null"
@@ -1271,7 +1271,7 @@ namespace BSDiscordRanking
                                 {
                                     SongList = new List<InPlayerSong>
                                     {
-                                        new()
+                                        new InPlayerSong()
                                     }
                                 };
                                 Console.WriteLine("PlayerPass Created (Empty Format), file contained null");
@@ -1288,7 +1288,7 @@ namespace BSDiscordRanking
                         {
                             SongList = new List<InPlayerSong>
                             {
-                                new()
+                                new InPlayerSong()
                             }
                         };
                         Console.WriteLine($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json Created (Empty Format)");
@@ -1301,7 +1301,7 @@ namespace BSDiscordRanking
             {
                 SongList = new List<InPlayerSong>
                 {
-                    new()
+                    new InPlayerSong()
                 }
             };
         }
@@ -1326,7 +1326,7 @@ namespace BSDiscordRanking
 
         public static PlayerPassFormat GetStaticPass(string p_PlayerID)
         {
-            PlayerPassFormat l_PlayerPass = new()
+            PlayerPassFormat l_PlayerPass = new PlayerPassFormat
             {
                 SongList = new List<InPlayerSong>()
             };
@@ -1334,7 +1334,7 @@ namespace BSDiscordRanking
             if (p_PlayerID != null)
                 try
                 {
-                    using StreamReader l_SR = new($"{m_FolderPath}{p_PlayerID}/pass.json");
+                    using StreamReader l_SR = new StreamReader($"{m_FolderPath}{p_PlayerID}/pass.json");
                     l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                     return l_PlayerPass;
                 }
@@ -1415,12 +1415,12 @@ namespace BSDiscordRanking
             m_PlayerStats.Levels?.Clear();
             m_PlayerStats.Levels = new List<PassedLevel>
             {
-                new()
+                new PassedLevel
                 {
                     LevelID = 0,
                     Categories = new List<CategoryPassed>
                     {
-                        new()
+                        new CategoryPassed
                         {
                             Category = null,
                             NumberOfPass = 0,
@@ -1495,7 +1495,7 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    using StreamReader l_SR = new($@"{m_FolderPath}{p_PlayerID}/stats.json");
+                    using StreamReader l_SR = new StreamReader($@"{m_FolderPath}{p_PlayerID}/stats.json");
                     l_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
@@ -1504,12 +1504,12 @@ namespace BSDiscordRanking
                     {
                         Levels = new List<PassedLevel>
                         {
-                            new()
+                            new PassedLevel
                             {
                                 LevelID = 0,
                                 Categories = new List<CategoryPassed>
                                 {
-                                    new()
+                                    new CategoryPassed
                                     {
                                         Category = null,
                                         NumberOfPass = 0,
@@ -1530,12 +1530,12 @@ namespace BSDiscordRanking
                 if (l_PlayerStats is { Levels: null })
                     l_PlayerStats.Levels = new List<PassedLevel>
                     {
-                        new()
+                        new PassedLevel
                         {
                             LevelID = 0,
                             Categories = new List<CategoryPassed>
                             {
-                                new()
+                                new CategoryPassed
                                 {
                                     Category = null,
                                     NumberOfPass = 0,
@@ -1553,12 +1553,12 @@ namespace BSDiscordRanking
                 {
                     Levels = new List<PassedLevel>
                     {
-                        new()
+                        new PassedLevel
                         {
                             LevelID = 0,
                             Categories = new List<CategoryPassed>
                             {
-                                new()
+                                new CategoryPassed
                                 {
                                     Category = null,
                                     NumberOfPass = 0,
@@ -1585,7 +1585,7 @@ namespace BSDiscordRanking
 
         public PlayerPassPerLevelFormat GetPlayerPassPerLevel()
         {
-            PlayerPassPerLevelFormat l_PlayerPassPerLevelFormat = new()
+            PlayerPassPerLevelFormat l_PlayerPassPerLevelFormat = new PlayerPassPerLevelFormat
             {
                 Levels = new List<InPassPerLevelFormat>()
             };
@@ -1644,7 +1644,7 @@ namespace BSDiscordRanking
                             l_TrophyString = "<:gold:874215133147197460>";
                             break;
                         }
-                        
+
                         case <=99:
                         {
                             l_Diamond = 1;
@@ -1661,7 +1661,7 @@ namespace BSDiscordRanking
                     }
 
                 l_PlayerPassPerLevelFormat.Levels.Add(new InPassPerLevelFormat
-                    { LevelID = l_Level.value.m_LevelID, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy { Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond, Ruby = l_Ruby}, TrophyString = l_TrophyString });
+                    { LevelID = l_Level.value.m_LevelID, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy { Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond, Ruby = l_Ruby }, TrophyString = l_TrophyString });
             }
 
             return l_PlayerPassPerLevelFormat.Levels == null ? null : l_PlayerPassPerLevelFormat;

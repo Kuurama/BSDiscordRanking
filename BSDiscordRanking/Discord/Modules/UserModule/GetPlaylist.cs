@@ -77,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
 
-                        Level l_Level = new(l_LevelInt);
+                        Level l_Level = new Level(l_LevelInt);
                         RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
@@ -112,7 +112,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else if (p_Level == "all")
                 {
                     // await Context.Channel.SendMessageAsync("> :x: Sorry but this functionality isn't supported yet.");
-                    List<string> l_AvailableCategories = new();
+                    List<string> l_AvailableCategories = new List<string>();
                     foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID)
                     {
                         string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
@@ -121,7 +121,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
 
-                        Level l_Level = new(l_LevelID);
+                        Level l_Level = new Level(l_LevelID);
                         RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
 
                         foreach (string l_Category in l_LevelFormat.Categories)

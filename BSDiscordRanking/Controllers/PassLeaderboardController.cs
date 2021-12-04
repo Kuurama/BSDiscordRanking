@@ -32,7 +32,7 @@ namespace BSDiscordRanking.Controllers
             if (p_ScoreSaberID != null)
             {
                 bool l_NewPlayer = true;
-                SnipeFormat l_Snipe = new()
+                SnipeFormat l_Snipe = new SnipeFormat
                 {
                     Player = new Sniped(),
                     SnipedByPlayers = new List<Sniped>()
@@ -87,7 +87,7 @@ namespace BSDiscordRanking.Controllers
 
                 if (l_NewPlayer)
                 {
-                    RankedPlayer l_RankedPlayer = new()
+                    RankedPlayer l_RankedPlayer = new RankedPlayer
                     {
                         Name = p_Name,
                         ScoreSaberID = p_ScoreSaberID,
@@ -148,7 +148,7 @@ namespace BSDiscordRanking.Controllers
             if (p_Snipe.Player.OldRank == p_Snipe.Player.NewRank) /// Don't send message if player's rank didn't changed.
                 return;
 
-            Player l_Player = new(p_Snipe.Player.ScoreSaberID);
+            Player l_Player = new Player(p_Snipe.Player.ScoreSaberID);
             bool l_SnipeExist = false;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             EmbedBuilder l_Builder = new EmbedBuilder()
@@ -219,7 +219,7 @@ namespace BSDiscordRanking.Controllers
 
                 try
                 {
-                    using (StreamReader l_SR = new($"{PATH}{FILENAME}.json"))
+                    using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
                     {
                         m_Leaderboard = JsonSerializer.Deserialize<LeaderboardControllerFormat>(l_SR.ReadToEnd());
                         if (m_Leaderboard == null) /// json contain "null"
@@ -228,7 +228,7 @@ namespace BSDiscordRanking.Controllers
                             {
                                 Leaderboard = new List<RankedPlayer>
                                 {
-                                    new()
+                                    new RankedPlayer
                                     {
                                         Name = "PlayerSample",
                                         IsPingAllowed = false
@@ -256,7 +256,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         Leaderboard = new List<RankedPlayer>
                         {
-                            new()
+                            new RankedPlayer
                             {
                                 Name = "PlayerSample",
                                 IsPingAllowed = false

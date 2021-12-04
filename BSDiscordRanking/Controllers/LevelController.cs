@@ -25,7 +25,7 @@ namespace BSDiscordRanking.Controllers
             try
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
-                LevelControllerFormat l_LevelController = new() { LevelID = new List<int>() };
+                LevelControllerFormat l_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
 
                 foreach (string l_FileName in l_Files)
                 {
@@ -107,7 +107,7 @@ namespace BSDiscordRanking.Controllers
 
             try
             {
-                using (StreamReader l_SR = new($"{PATH}{FILENAME}.json"))
+                using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
                 {
                     LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
                     if (l_LevelController == null) /// json contain "null"
@@ -140,7 +140,7 @@ namespace BSDiscordRanking.Controllers
         public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass, string p_Key = null)
         {
             LevelControllerFormat l_LevelControllerFormat = GetLevelControllerCache();
-            MapExistFormat l_MapExistFormat = new()
+            MapExistFormat l_MapExistFormat = new MapExistFormat
             {
                 MapExist = false,
                 DifferentMinScore = false,
@@ -158,7 +158,7 @@ namespace BSDiscordRanking.Controllers
             };
             foreach (int l_LevelID in l_LevelControllerFormat.LevelID)
             {
-                Level l_Level = new(l_LevelID);
+                Level l_Level = new Level(l_LevelID);
                 Console.WriteLine(l_LevelID);
                 foreach (SongFormat l_Map in l_Level.m_Level.songs)
                     if (string.Equals(p_Hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(p_Key, l_Map.key, StringComparison.CurrentCultureIgnoreCase))

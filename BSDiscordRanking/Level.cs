@@ -73,7 +73,7 @@ namespace BSDiscordRanking
 
                 try
                 {
-                    using (StreamReader l_SR = new($"{PATH}{m_LevelID:D3}{SUFFIX_NAME}.bplist"))
+                    using (StreamReader l_SR = new StreamReader($"{PATH}{m_LevelID:D3}{SUFFIX_NAME}.bplist"))
                     {
                         m_Level = JsonSerializer.Deserialize<LevelFormat>(l_SR.ReadToEnd());
                         if (m_Level == null) /// json contain "null"
@@ -233,7 +233,7 @@ namespace BSDiscordRanking
         {
             if (m_Level.songs != null)
             {
-                List<string> l_AvailableCategories = new();
+                List<string> l_AvailableCategories = new List<string>();
                 foreach (Difficulty l_Difficulty in from l_Song in m_Level.songs from l_Difficulty in l_Song.difficulties where l_AvailableCategories.FindIndex(p_X => p_X == l_Difficulty.customData.category) < 0 select l_Difficulty) l_AvailableCategories.Add(l_Difficulty.customData.category);
 
                 return l_AvailableCategories;
@@ -310,7 +310,7 @@ namespace BSDiscordRanking
                         bool l_ForceManualWeightPreferenceEdit = false;
                         try
                         {
-                            StringBuilder l_SBMapName = new(p_Name ?? m_BeatSaver.name);
+                            StringBuilder l_SBMapName = new StringBuilder(p_Name ?? m_BeatSaver.name);
                             string l_NewMapName = p_Name ?? m_BeatSaver.name;
                             do /// Might want to implement Trim()
                             {
@@ -321,9 +321,9 @@ namespace BSDiscordRanking
                                 l_NewMapName = l_SBMapName.ToString();
                             } while (l_NewMapName[^1] == " "[0] || l_NewMapName[^1] == "*"[0] || l_NewMapName[^1] == "`"[0] || l_NewMapName[0] == " "[0] || l_NewMapName[0] == "*"[0] || l_NewMapName[0] == "`"[0]);
 
-                            SongFormat l_SongFormat = new() { hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = l_NewMapName };
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = l_NewMapName };
 
-                            Difficulty l_Difficulty = new()
+                            Difficulty l_Difficulty = new Difficulty
                             {
                                 name = p_SelectedDifficultyName,
                                 characteristic = p_SelectedCharacteristic,
@@ -532,9 +532,9 @@ namespace BSDiscordRanking
                         bool l_DifficultyAlreadyExist = false;
                         try
                         {
-                            SongFormat l_SongFormat = new() { hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = m_BeatSaver.name };
+                            SongFormat l_SongFormat = new SongFormat { hash = m_BeatSaver.versions[0].hash, key = m_BeatSaver.id, name = m_BeatSaver.name };
 
-                            Difficulty l_Difficulty = new()
+                            Difficulty l_Difficulty = new Difficulty
                             {
                                 name = p_SelectedDifficultyName,
                                 characteristic = p_SelectedCharacteristic,
@@ -643,7 +643,7 @@ namespace BSDiscordRanking
         public static BeatSaverFormat FetchBeatMap(string p_Code, SocketCommandContext p_SocketCommandContext = null)
         {
             string l_URL = @$"https://api.beatsaver.com/maps/id/{p_Code}";
-            using WebClient l_WebClient = new();
+            using WebClient l_WebClient = new WebClient();
             try
             {
                 Console.WriteLine(l_URL);
@@ -694,7 +694,7 @@ namespace BSDiscordRanking
         public static BeatSaverFormat FetchBeatMapByHash(string p_Hash, SocketCommandContext p_SocketCommandContext)
         {
             string l_URL = @$"https://api.beatsaver.com/maps/hash/{p_Hash}";
-            using WebClient l_WebClient = new();
+            using WebClient l_WebClient = new WebClient();
             try
             {
                 Console.WriteLine(l_URL);

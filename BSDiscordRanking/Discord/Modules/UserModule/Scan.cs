@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Scans all your scores & passes. Also update your rank.")]
         public async Task Scan_Scores()
         {
-            Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             int l_OldPlayerLevel = l_Player.GetPlayerLevel();
 
             if (!UserController.UserExist(Context.User.Id.ToString()))
@@ -73,7 +73,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     Task l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, Context.User.Id, l_NewPlayerLevel);
                 }
 
-                Trophy l_TotalTrophy = new()
+                Trophy l_TotalTrophy = new Trophy
                 {
                     Plastic = 0,
                     Silver = 0,

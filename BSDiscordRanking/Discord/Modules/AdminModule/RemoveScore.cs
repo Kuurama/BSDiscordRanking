@@ -34,7 +34,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (ulong.TryParse(p_DiscordOrScoreSaberID, out ulong l_ScoreSaberID))
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder().WithColor(new Color(255, 0, 0));
-                    Player l_Player = new(p_DiscordOrScoreSaberID);
+                    Player l_Player = new Player(p_DiscordOrScoreSaberID);
                     l_Player.LoadPass();
                     if (l_Player.m_PlayerPass.SongList != null)
                     {
@@ -71,7 +71,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                         }
                     }
 
-                    MapLeaderboardController l_MapLeaderboardController = new(l_LeaderboardID);
+                    MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_LeaderboardID);
                     if (l_MapLeaderboardController.m_MapLeaderboard?.scores != null)
                     {
                         int l_MapLeaderboardIndex = l_MapLeaderboardController.m_MapLeaderboard.scores.FindIndex(p_X => p_X.score.leaderboardPlayerInfo.id == l_ScoreSaberID.ToString());

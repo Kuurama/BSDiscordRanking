@@ -18,13 +18,13 @@ namespace BSDiscordRanking.Controllers
 {
     public class UserController
     {
-        public static List<UserFormat> m_Users = new();
+        public static List<UserFormat> m_Users = new List<UserFormat>();
 
         public static bool AccountExist(string p_ScoreSaberID)
         {
             try
             {
-                WebClient l_WebClient = new();
+                WebClient l_WebClient = new WebClient();
                 ApiPlayerFull l_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>
                     (l_WebClient.DownloadString(@$"https://scoresaber.com/api/player/{p_ScoreSaberID}/full"));
                 // ReSharper disable once PossibleNullReferenceException
@@ -90,7 +90,7 @@ namespace BSDiscordRanking.Controllers
                 List<RoleFormat> l_RolesDB = RoleController.ReadRolesDB().Roles;
                 IReadOnlyCollection<SocketRole> l_GuildRoles = p_Context.Guild.Roles;
                 List<SocketRole> l_GuildRolesList = l_GuildRoles.ToList();
-                List<ulong> l_MyUserRolesID = new();
+                List<ulong> l_MyUserRolesID = new List<ulong>();
                 foreach (SocketRole l_Role in l_User.Roles) l_MyUserRolesID.Add(l_Role.Id);
 
                 if (GetConfig().GiveOldRoles)
@@ -154,7 +154,7 @@ namespace BSDiscordRanking.Controllers
         {
             Task<UpdatePlayerRoleFormat> l_RoleUpdate = UpdatePlayerLevel(p_Context, p_UserID, p_NewPlayerLevel);
 
-            EmbedBuilder l_EmbedBuilder = new();
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
             Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, p_NewPlayerLevel);
             l_EmbedBuilder.WithColor(l_Color);
             if (l_RoleUpdate.Result.Completed && l_RoleUpdate.Result.RoleWasAlreadyGiven)

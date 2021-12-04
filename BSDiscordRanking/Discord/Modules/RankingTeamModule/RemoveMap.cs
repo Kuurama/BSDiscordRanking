@@ -32,12 +32,12 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         if (l_Map is null)
                         {
                             l_MapDeleted = true;
-                            Diff l_Diff = new()
+                            Diff l_Diff = new Diff
                             {
                                 characteristic = p_Characteristic,
                                 difficulty = p_DifficultyName
                             };
-                            Version l_Version = new()
+                            Version l_Version = new Version
                             {
                                 hash = null,
                                 key = p_Code,
@@ -53,9 +53,9 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f, false, l_Map.id);
                         if (l_MapExistCheck.MapExist)
                         {
-                            Level l_Level = new(l_MapExistCheck.Level);
+                            Level l_Level = new Level(l_MapExistCheck.Level);
                             l_Level.RemoveMap(l_Map, p_DifficultyName, p_Characteristic, Context);
-                            EmbedBuilder l_EmbedBuilder = new();
+                            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                             if (l_Level.m_Level.songs.Count == 0)
                             {
                                 l_Level.DeleteLevel();

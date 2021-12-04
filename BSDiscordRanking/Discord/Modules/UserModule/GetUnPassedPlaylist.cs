@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -36,7 +35,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         return;
                     }
 
-                Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
+                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
                 l_Player.LoadPass();
                 string l_PlayerName = l_Player.m_PlayerFull.name;
                 string l_FileName = "Unpassed_" + RemoveSpecialCharacters(l_PlayerName);
@@ -63,7 +62,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
 
-                        Level l_Level = new(l_LevelInt);
+                        Level l_Level = new Level(l_LevelInt);
                         LevelFormat l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
                         if (l_LevelFormat.songs.SelectMany(p_X => p_X.difficulties).Count() == l_Level.m_Level.songs.SelectMany(p_X => p_X.difficulties).Count())
                         {
@@ -97,7 +96,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
                         string l_PathFile = l_Path + l_PlaylistName;
 
-                        Level l_Level = new(l_LevelID);
+                        Level l_Level = new Level(l_LevelID);
                         LevelFormat l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
 
                         if (l_LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.

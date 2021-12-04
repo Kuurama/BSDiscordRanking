@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
             /// Else => is a correct score saber ID
 
-            Player l_Player = new(p_DiscordOrScoreSaberID);
+            Player l_Player = new Player(p_DiscordOrScoreSaberID);
             l_Player.LoadStats();
             if (l_Player.m_PlayerStats.IsFirstScan)
             {
