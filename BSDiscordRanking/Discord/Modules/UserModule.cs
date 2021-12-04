@@ -299,6 +299,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_GlobalPlayerLevel == l_LevelCategory) l_GlobalLevelIsUseless = true;
                 }
 
+                if (l_Index != 0 && (l_Index % 2 != 0))
+                {
+                    l_EmbedBuilder.AddField("\u200B", "\u200B");
+                }
+
                 if (!l_GlobalLevelIsUseless) l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
 
                 double l_LevelEquilibriumPercentage;

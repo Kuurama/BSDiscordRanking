@@ -72,9 +72,9 @@ namespace BSDiscordRanking
                 {
                     m_PlayerStats.Levels = m_PlayerStats.Levels.OrderBy(p_X => p_X.LevelID).ToList();
 
-                    int l_LevelIndex = 0;
+                    int l_LevelIndex = 1;
                     foreach (PassedLevel l_Level in m_PlayerStats.Levels.Where(p_Level => p_Level.LevelID >= 0))
-                        if (l_Level.LevelID >= 0)
+                        if (l_Level.LevelID > 0)
                         {
                             if (!p_GetGlobalLevel)
                             {
@@ -85,7 +85,7 @@ namespace BSDiscordRanking
                                     {
                                         if (!p_GetMaxLevel)
                                         {
-                                            if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                            if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 1)
                                             {
                                                 l_PlayerLevel = l_Level.LevelID;
                                                 l_LevelIndex++;
@@ -97,7 +97,7 @@ namespace BSDiscordRanking
                                         }
                                         else
                                         {
-                                            if (l_LevelIndex == l_Level.LevelID && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                            if (l_LevelIndex == l_Level.LevelID && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 1)
                                             {
                                                 l_PlayerLevel = l_Level.LevelID;
                                                 l_LevelIndex++;
