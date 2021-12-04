@@ -89,6 +89,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                         else
                         {
+                            p_Category = FirstCharacterToUpper(p_Category);
                             foreach (CategoryPassed l_Category in l_PlayerStats.Categories)
                             {
                                 if (l_AvailableCategories.FindIndex(p_Y => p_Y == l_Category.Category) < 0) l_AvailableCategories.Add(l_Category.Category);
@@ -137,7 +138,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                     else if (l_Builder.Fields.Count <= 0 && p_Category != null)
                     {
-                        string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                        string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                         l_Message = l_AvailableCategories.Where(p_X => p_X != null).Aggregate(l_Message, (p_Current, p_Y) => p_Current + $"\n> {p_Y}");
 
                         if (l_Message.Length <= 1980)
@@ -146,7 +147,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                         else
                         {
-                            await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                            await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                         }
                     }
                 }
@@ -212,6 +213,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
+                                p_Category = FirstCharacterToUpper(p_Category);
                                 foreach (CategoryPassed l_Category in l_PlayerStats.Categories)
                                 {
                                     if (l_AvailableCategories.FindIndex(p_Y => p_Y == l_Category.Category) < 0) l_AvailableCategories.Add(l_Category.Category);
@@ -243,7 +245,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                         if (l_Builder.Fields.Count <= 0 && p_Category != null)
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             l_Message = l_AvailableCategories.Where(p_X => p_X != null).Aggregate(l_Message, (p_Current, p_Y) => p_Current + $"\n> {p_Y}");
 
                             if (l_Message.Length <= 1980)
@@ -252,7 +254,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                             }
                         }
                         else if (l_Builder.Fields.Count > 0)

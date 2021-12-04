@@ -48,6 +48,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
+                p_Category = FirstCharacterToUpper(p_Category);
+                
                 const string ORIGINAL_PATH = "./PersonalLevels/";
                 if (!Directory.Exists(ORIGINAL_PATH))
                 {
@@ -88,7 +90,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             await Context.Channel.SendFileAsync($"{l_PathFile}{Level.EXTENSION}", $"> :white_check_mark: Here's the {p_Category}'s playlist! <@{Context.User.Id.ToString()}>");
                         else
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_LevelFormat.Categories)
                             {
                                 l_Message += $"\n> {l_Category}";
@@ -100,7 +102,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                             }
                         }
 
@@ -154,7 +156,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                         else
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_AvailableCategories)
                             {
                                 if (l_Category != null)
@@ -169,7 +171,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                             }
                         }
 
@@ -179,7 +181,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         if (l_AvailableCategories.Count > 0)
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_AvailableCategories)
                             {
                                 if (l_Category != null)
@@ -194,7 +196,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                             }
                         }
                         else

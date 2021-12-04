@@ -55,7 +55,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        private static List<ApiScore> GetLeaderboardScores(int p_LeaderboardID, int p_TryLimit = 3)
+        public static List<ApiScore> GetLeaderboardScores(int p_LeaderboardID, int p_Page = 1, int p_TryLimit = 3)
         {
             /// This Method Get the Scores from a Leaderboard (with it's ID) from the Score Saber API.
             /// It handle most of the exceptions possible and return null if an error happen.
@@ -69,7 +69,7 @@ namespace BSDiscordRanking.Controllers
                     try
                     {
                         List<ApiScore> l_LeaderboardScores = JsonConvert.DeserializeObject<List<ApiScore>>(
-                            l_WebClient.DownloadString(@$"https://scoresaber.com/api/leaderboard/by-id/{p_LeaderboardID}/scores"));
+                            l_WebClient.DownloadString(@$"https://scoresaber.com/api/leaderboard/by-id/{p_LeaderboardID}/scores?page={p_Page}"));
                         return l_LeaderboardScores;
                     }
                     catch (WebException l_Exception)
@@ -122,7 +122,7 @@ namespace BSDiscordRanking.Controllers
             return null;
         }
 
-        private static ApiLeaderboard GetInfos(int p_LeaderboardID, int p_TryLimit = 3)
+        public static ApiLeaderboard GetInfos(int p_LeaderboardID, int p_TryLimit = 3)
         {
             /// This Method Get the Leaderboard's Info from the Score Saber API.
             /// It handle most of the exceptions possible and return null if an error happen.

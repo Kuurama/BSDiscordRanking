@@ -480,7 +480,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
                             .AddField("\u200B", "\u200B")
-                            .AddField("__Category-Edit__", "Please type the category you want the map to be in. Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
+                            .AddField("__Category-Edit__", "Please type the category you want the map to be in (this will force the first letter to be UpperCase). Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
@@ -490,6 +490,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
+                            l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
+                                
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_CategoryEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("Category-Edit"));
                             l_EmbedBuilder.Fields.RemoveAt(l_CategoryEditTitleFieldIndex); /// Removing the "Category-Edit" Field

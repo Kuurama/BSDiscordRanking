@@ -67,6 +67,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
+                                p_Category = FirstCharacterToUpper(p_Category);
                                 int l_CategoryIndex = l_PerLevelFormat.Categories.FindIndex(p_X => p_X.Category == p_Category);
                                 if (l_CategoryIndex >= 0)
                                 {
@@ -91,7 +92,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                         l_AvailableCategories.Add(l_LevelCategory.Category);
                                     }
                                     
-                                    string l_Message = $":x: Sorry but there isn't any categories called {p_Category}, here is a list of all the available categories:";
+                                    string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                                     l_Message = l_AvailableCategories.Where(p_X => p_X != null).Aggregate(l_Message, (p_Current, p_Y) => p_Current + $"\n> {p_Y}");
 
                                     if (l_Message.Length <= 1980)
@@ -100,7 +101,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     }
                                     else
                                     {
-                                        await ReplyAsync($"> :x: Sorry but there isn't any categories called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                        await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                                     }
                                     
                                     return;

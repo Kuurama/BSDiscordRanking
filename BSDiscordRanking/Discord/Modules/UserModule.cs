@@ -207,6 +207,19 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             return l_TrophyString;
         }
+        
+        private static double StandardDeviation(IReadOnlyCollection<double> p_Sequence)
+        {
+            double l_Result = 0;
+
+            if (p_Sequence.Any())
+            {
+                double l_Average = p_Sequence.Average();
+                double l_Sum = p_Sequence.Sum(p_X => Math.Pow(p_X - l_Average, 2));
+                l_Result = Math.Sqrt((l_Sum) / (p_Sequence.Count - 1));
+            }
+            return l_Result;
+        }
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
@@ -320,7 +333,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             
             if (l_Config.EnableLevelByCategory)
             {
-                List<float> l_LevelEquilibriumList = new List<float>();
+                List<double> l_LevelEquilibriumList = new List<double>();
                 bool l_GlobalLevelIsUseless = false;
                 List<Tuple<string, int>> l_CategoryTuples = new List<Tuple<string, int>>();
                 foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex =  l_CategoryTuples.FindIndex(p_X => p_X.Item1 == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory)
@@ -356,10 +369,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
                 }
 
-                float l_LevelEquilibriumPercentage;
-                if (l_LevelEquilibriumList.Count > 0)
+                double l_LevelEquilibriumPercentage;
+                if (l_LevelEquilibriumList.Any())
                 {
-                    l_LevelEquilibriumPercentage = (l_LevelEquilibriumList.Sum()/l_LevelEquilibriumList.Count)*100f/l_LevelEquilibriumList.Max();
+                    l_LevelEquilibriumPercentage = 100f-((StandardDeviation(l_LevelEquilibriumList)*100f)/l_LevelEquilibriumList.Average());
                 }
                 else
                 {
@@ -386,6 +399,17 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             // UserController.UpdatePlayerLevel(Context); /// Seems too heavy for !profile
         }
 
+        public static string FirstCharacterToUpper(string p_Text)
+        {
+            if (p_Text.Length == 0)
+                p_Text = null;
+            else if (p_Text.Length == 1)
+                p_Text = char.ToUpper(p_Text[0]).ToString();
+            else
+                // ReSharper disable once ReplaceSubstringWithRangeIndexer
+                p_Text = char.ToUpper(p_Text[0]) + p_Text.Substring(1);
+            return p_Text;
+        }
 
         private string GenerateProgressBar(int p_Value, int p_MaxValue, int p_Size)
         {

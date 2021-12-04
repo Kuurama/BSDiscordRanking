@@ -8,6 +8,7 @@ using BSDiscordRanking.Formats.Level;
 using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
@@ -16,27 +17,17 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         [Command("ggp")]
         [Alias("getgrindpool")]
-        [Summary("Shows the Level's maps while displaying your passes, not giving a specific level will display the next available level you might want to grind.")]
-        public async Task GetGrindPool(int p_Level = Int32.MinValue, string p_Embed1Or0 = null)
+        [Summary("Shows the Level's maps while displaying your passes, also work with categories, not giving a specific level or category will display the next available level you might want to grind.")]
+        public async Task GetGrindPool(int p_Level = int.MinValue, string p_Category = null)
         {
             bool l_CheckForLastGGP = false;
-            bool l_FullEmbeddedGGP = false;
-            float l_EarnedPoints = 0f;
-            ConfigFormat l_Config = ConfigController.GetConfig();
-            float l_MaxPassPoints = 0f;
-            float l_MaxAccPoints = 0f;
             LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
-            if (Int32.TryParse(p_Embed1Or0, out int l_EmbedIntValue))
-            {
-                l_FullEmbeddedGGP = l_EmbedIntValue > 0;
-            }
-            else
-                l_FullEmbeddedGGP = ConfigController.m_ConfigFormat.FullEmbeddedGGP;
+            bool l_FullEmbeddedGGP = ConfigController.m_ConfigFormat.FullEmbeddedGGP;
 
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
             {
-                if (p_Level == Int32.MinValue)
+                if (p_Level == int.MinValue)
                 {
                     int l_PlayerLevel = l_Player.GetPlayerLevel();
                     int l_LevelTemp = int.MaxValue;
@@ -49,13 +40,21 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     p_Level = l_LevelTemp;
                     l_CheckForLastGGP = true;
                 }
+                SendGGP(l_LevelControllerFormat, p_Level, l_Player, l_FullEmbeddedGGP, l_CheckForLastGGP, Context);
             }
             catch
             {
                 // ignored
             }
+        }
 
-            bool l_IDExist = l_LevelControllerFormat.LevelID.Any(p_X => p_X == p_Level);
+        private async void SendGGP(LevelControllerFormat p_LevelControllerFormat, int p_Level, Player p_Player, bool p_FullEmbeddedGGP, bool p_CheckForLastGGP, SocketCommandContext p_Context)
+        {
+            float l_EarnedPoints = 0f;
+            ConfigFormat l_Config = ConfigController.GetConfig();
+            float l_MaxPassPoints = 0f;
+            float l_MaxAccPoints = 0f;
+            bool l_IDExist = p_LevelControllerFormat.LevelID.Any(p_X => p_X == p_Level);
 
             if (l_IDExist)
             {
@@ -68,15 +67,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         SongList = new List<InPlayerSong>()
                     };
                     int l_NumberOfPass = 0;
-                    bool l_AlreadyHaveThumbnail = UserController.GetPlayer(Context.User.Id.ToString()) == null;
+                    bool l_AlreadyHaveThumbnail = UserController.GetPlayer(p_Context.User.Id.ToString()) == null;
 
-                    l_Player.LoadPass();
-                    l_Player.GetStats();
-                    int l_LevelIndex = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_Level);
+                    p_Player.LoadPass();
+                    p_Player.GetStats();
+                    int l_LevelIndex = p_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == p_Level);
                     if (l_LevelIndex < 0)
                     {
-                        l_LevelIndex = l_Player.m_PlayerStats.Levels.Count;
-                        l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
+                        l_LevelIndex = p_Player.m_PlayerStats.Levels.Count;
+                        p_Player.m_PlayerStats.Levels.Add(new PassedLevel()
                         {
                             LevelID = p_Level,
                             Passed = false,
@@ -162,8 +161,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 }
                             }
 
-                            if (l_Player.m_PlayerPass != null)
-                                foreach (InPlayerSong l_PlayerPass in l_Player.m_PlayerPass.SongList)
+                            if (p_Player.m_PlayerPass != null)
+                                foreach (InPlayerSong l_PlayerPass in p_Player.m_PlayerPass.SongList)
                                 {
                                     if (l_Song.value.hash == l_PlayerPass.hash)
                                     {
@@ -210,26 +209,26 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             case <= 39:
                             {
-                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Plastic = 1;
+                                p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Plastic = 1;
                                 l_PlayerTrophy = "<:plastic:874215132874571787>";
                                 break;
                             }
                             case <= 69:
                             {
-                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Silver = 1;
+                                p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Silver = 1;
                                 l_PlayerTrophy = "<:silver:874215133197500446>";
                                 break;
                             }
                             case <= 99:
                             {
-                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Gold = 1;
+                                p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Gold = 1;
                                 l_PlayerTrophy = "<:gold:874215133147197460>";
                                 break;
                             }
 
                             case 100:
                             {
-                                l_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Diamond = 1;
+                                p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Diamond = 1;
                                 l_PlayerTrophy = "<:diamond:874215133289795584>";
                                 break;
                             }
@@ -242,12 +241,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_EmbedBuilder.WithColor(new Color(0, 255, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
-                            l_EmbedBuilder.WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
+                            l_EmbedBuilder.WithThumbnailUrl(p_Player.m_PlayerFull.profilePicture);
                             l_AlreadyHaveThumbnail = true;
                         }
                         l_EmbedBuilder.WithTitle($"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, true, false);
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false);
                         int l_EmbedIndex = 0;
                         if (l_GGP.Embed != null)
                         {
@@ -255,28 +254,28 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (l_EmbedIndex == 0 && l_GGP.Embed.Count != 1)
                                 {
-                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                    await p_Context.Channel.SendMessageAsync("", false, l_Embed);
                                     
                                 }
                                 else if (l_EmbedIndex  + 1 >= l_GGP.Embed.Count && (l_NumberOfDifficulties - l_NumberOfPass <= 0))
                                 {
                                     
                                     Embed l_LastEmbed = l_Embed.ToEmbedBuilder().WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level} (or {BotHandler.m_Prefix}getplaylist all) to get all of them.").Build();
-                                    await Context.Channel.SendMessageAsync("", false, l_LastEmbed);
+                                    await p_Context.Channel.SendMessageAsync("", false, l_LastEmbed);
                                 }
                                 else
                                 {
-                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                    await p_Context.Channel.SendMessageAsync("", false, l_Embed);
                                 }
                                 l_EmbedIndex++;
                             }
                             
                         }
 
-                        l_Player.m_PlayerStats.Levels[l_LevelIndex].Passed = l_LevelIsPassed;
+                        p_Player.m_PlayerStats.Levels[l_LevelIndex].Passed = l_LevelIsPassed;
                     }
 
-                    l_Player.ReWriteStats();
+                    p_Player.ReWriteStats();
 
                     List<string> l_Messages = new List<string> { $"" }; /// Reset the Message between Passed and Unpassed maps
 
@@ -287,12 +286,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_EmbedBuilder.WithColor(new Color(255, 0, 0));
                         if (!l_AlreadyHaveThumbnail)
                         {
-                            l_EmbedBuilder.WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
+                            l_EmbedBuilder.WithThumbnailUrl(p_Player.m_PlayerFull.profilePicture);
                             l_AlreadyHaveThumbnail = true;
                         }
                         l_EmbedBuilder.WithTitle($"Unpassed maps in level {p_Level}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, l_FullEmbeddedGGP, false, true);
+                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true);
 
                         int l_EmbedIndex = 0;
                         if (l_GGP.Embed != null)
@@ -301,18 +300,18 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             {
                                 if (l_EmbedIndex == 0 && l_GGP.Embed.Count != 1)
                                 {
-                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                    await p_Context.Channel.SendMessageAsync("", false, l_Embed);
                                     
                                 }
                                 else if (l_EmbedIndex + 1 >= l_GGP.Embed.Count && (l_NumberOfPass >= 0))
                                 {
                                     
                                     Embed l_LastEmbed = l_Embed.ToEmbedBuilder().WithFooter($"To get the playlist file: use {BotHandler.m_Prefix}getplaylist {p_Level} (or {BotHandler.m_Prefix}getplaylist all) to get all of them.").Build();
-                                    await Context.Channel.SendMessageAsync("", false, l_LastEmbed);
+                                    await p_Context.Channel.SendMessageAsync("", false, l_LastEmbed);
                                 }
                                 else
                                 {
-                                    await Context.Channel.SendMessageAsync("", false, l_Embed);
+                                    await p_Context.Channel.SendMessageAsync("", false, l_Embed);
                                 }
                                 l_EmbedIndex++;
                             }
@@ -324,7 +323,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     await ReplyAsync($"> :x: Error occured : {l_Exception.Message}");
                 }
             }
-            else if (l_CheckForLastGGP)
+            else if (p_CheckForLastGGP)
             {
                 await ReplyAsync(
                     "> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");

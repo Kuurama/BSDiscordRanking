@@ -42,7 +42,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_Maps.Count == 0)
             {
-                await ReplyAsync("> :x: Sorry, no maps was found.");
+                await ReplyAsync("> :x: Sorry, no maps were found.");
                 return;
             }
 
