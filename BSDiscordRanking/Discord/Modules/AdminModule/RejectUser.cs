@@ -12,13 +12,9 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         public async Task RemoveUser(ulong p_DiscordID)
         {
             if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context, true))
-            {
                 await ReplyAsync($"'{ConfigController.GetConfig().RolePrefix} Ranked' Role removed from user <@{p_DiscordID}>.");
-            }
             else
-            {
                 await ReplyAsync($"This player can't be found/do not have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role.");
-            }
         }
     }
 }

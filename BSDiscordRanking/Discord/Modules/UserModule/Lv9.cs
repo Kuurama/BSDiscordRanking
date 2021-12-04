@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Discord.Commands;
-
-namespace BSDiscordRanking.Discord.Modules.UserModule
+﻿namespace BSDiscordRanking.Discord.Modules.UserModule
 {
     /*[CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>

@@ -20,20 +20,24 @@ namespace BSDiscordRanking.Discord
 #pragma warning restore CA2211
         // ReSharper disable once MemberCanBePrivate.Global
         public static DiscordSocketClient m_Client;
-        public static void StartBot(ConfigFormat p_Config) => new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
+
+        public static void StartBot(ConfigFormat p_Config)
+        {
+            new BotHandler().RunBotAsync(p_Config).GetAwaiter().GetResult();
+        }
 
         private async Task RunBotAsync(ConfigFormat p_Config)
         {
             m_Prefix = p_Config.CommandPrefix[0];
             m_Client = new DiscordSocketClient(new DiscordSocketConfig { GatewayIntents = GatewayIntents.All });
             m_Commands = new CommandService();
-            
+
             ////////////// EditMap Interaction Implementation //////////////
-            RankingTeamModule l_RankingTeamModule = new RankingTeamModule();
+            RankingTeamModule l_RankingTeamModule = new();
             m_Client.ButtonExecuted += l_RankingTeamModule.EditMapButtonHandler;
             m_Client.InteractionCreated += l_RankingTeamModule.EditMapInteraction;
             ////////////////////////////////////////////////////////////////
-            
+
             await m_Client.SetGameAsync(p_Config.DiscordStatus);
             m_Client.Log += _client_Log;
             await RegisterCommandsAsync();
@@ -56,22 +60,20 @@ namespace BSDiscordRanking.Discord
 
         private async Task HandleCommandAsync(SocketMessage p_Arg)
         {
-            var l_Message = p_Arg as SocketUserMessage;
-            var l_Context = new SocketCommandContext(m_Client, l_Message);
+            SocketUserMessage l_Message = p_Arg as SocketUserMessage;
+            SocketCommandContext l_Context = new(m_Client, l_Message);
             if (l_Message != null && l_Message.Author.IsBot) return;
 
             int l_ArgPos = 0;
-            foreach (var l_Prefix in ConfigController.GetConfig().CommandPrefix)
-            {
+            foreach (string l_Prefix in ConfigController.GetConfig().CommandPrefix)
                 if (l_Message.HasStringPrefix(l_Prefix, ref l_ArgPos))
                 {
-                    var l_Result = m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
+                    Task<IResult> l_Result = m_Commands.ExecuteAsync(l_Context, l_ArgPos, null);
                     if (!l_Result.Result.IsSuccess) Console.WriteLine(l_Result.Result.ErrorReason);
                     if (l_Result.Result.Error.Equals(CommandError.UnmetPrecondition))
                         if (l_Message != null)
                             await l_Message.Channel.SendMessageAsync(l_Result.Result.ErrorReason);
                 }
-            }
         }
     }
 }

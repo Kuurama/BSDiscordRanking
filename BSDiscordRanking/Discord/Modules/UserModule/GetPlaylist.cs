@@ -44,15 +44,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                 }
                 else
+                {
                     await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\".");
+                }
             }
             else
             {
                 p_Category = FirstCharacterToUpper(p_Category);
-                
+
                 const string ORIGINAL_PATH = "./PersonalLevels/";
                 if (!Directory.Exists(ORIGINAL_PATH))
-                {
                     try
                     {
                         Directory.CreateDirectory(ORIGINAL_PATH);
@@ -62,7 +63,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         Console.WriteLine($"Exception Occured creating directory : {ORIGINAL_PATH}");
                         return;
                     }
-                }
 
                 string l_FileName = RemoveSpecialCharacters(p_Category);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
@@ -77,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
 
-                        Level l_Level = new Level(l_LevelInt);
+                        Level l_Level = new(l_LevelInt);
                         RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
@@ -87,29 +87,22 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
 
                         if (File.Exists($"{l_PathFile}{Level.EXTENSION}"))
+                        {
                             await Context.Channel.SendFileAsync($"{l_PathFile}{Level.EXTENSION}", $"> :white_check_mark: Here's the {p_Category}'s playlist! <@{Context.User.Id.ToString()}>");
+                        }
                         else
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
-                            foreach (string l_Category in l_LevelFormat.Categories)
-                            {
-                                l_Message += $"\n> {l_Category}";
-                            }
+                            foreach (string l_Category in l_LevelFormat.Categories) l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
-                            {
                                 await ReplyAsync(l_Message);
-                            }
                             else
-                            {
                                 await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
-                            }
                         }
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
-                        {
                             DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
-                        }
                     }
                     else
                     {
@@ -119,8 +112,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else if (p_Level == "all")
                 {
                     // await Context.Channel.SendMessageAsync("> :x: Sorry but this functionality isn't supported yet.");
-                    List<string> l_AvailableCategories = new List<string>();
-                    foreach (var l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+                    List<string> l_AvailableCategories = new();
+                    foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID)
                     {
                         string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
                         string l_PathFile = l_Path + l_PlaylistName;
@@ -128,16 +121,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
                             File.Delete(l_PathFile);
 
-                        Level l_Level = new Level(l_LevelID);
+                        Level l_Level = new(l_LevelID);
                         RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
 
                         foreach (string l_Category in l_LevelFormat.Categories)
                         {
                             int l_FindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_Category);
-                            if (l_FindIndex < 0)
-                            {
-                                l_AvailableCategories.Add(l_Category);
-                            }
+                            if (l_FindIndex < 0) l_AvailableCategories.Add(l_Category);
                         }
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
@@ -146,7 +136,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             Level.ReWriteStaticPlaylist(l_LevelFormat.LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
                         }
                     }
-                    
+
                     try
                     {
                         if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Length > 0)
@@ -158,21 +148,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_AvailableCategories)
-                            {
                                 if (l_Category != null)
-                                {
                                     l_Message += $"\n> {l_Category}";
-                                }
-                            }
 
                             if (l_Message.Length <= 1980)
-                            {
                                 await ReplyAsync(l_Message);
-                            }
                             else
-                            {
                                 await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
-                            }
                         }
 
                         DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
@@ -183,21 +165,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_AvailableCategories)
-                            {
                                 if (l_Category != null)
-                                {
                                     l_Message += $"\n> {l_Category}";
-                                }
-                            }
 
                             if (l_Message.Length <= 1980)
-                            {
                                 await ReplyAsync(l_Message);
-                            }
                             else
-                            {
                                 await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
-                            }
                         }
                         else
                         {
@@ -206,7 +180,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
                 }
                 else
+                {
                     await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\".");
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using BSDiscordRanking.Formats.Controller;
+using BSDiscordRanking.Formats.Level;
 
 namespace BSDiscordRanking.Controllers
 {
@@ -24,17 +25,14 @@ namespace BSDiscordRanking.Controllers
             try
             {
                 string[] l_Files = Directory.GetFiles(Level.GetPath());
-                LevelControllerFormat l_LevelController = new LevelControllerFormat { LevelID = new List<int>() };
+                LevelControllerFormat l_LevelController = new() { LevelID = new List<int>() };
 
                 foreach (string l_FileName in l_Files)
                 {
-                    var l_StringLevelID = "";
-                    for (int l_I = 0; l_I < Path.GetFileName(l_FileName).IndexOf("_", StringComparison.Ordinal); l_I++)
-                    {
-                        l_StringLevelID += Path.GetFileName(l_FileName)[l_I];
-                    }
+                    string l_StringLevelID = "";
+                    for (int l_I = 0; l_I < Path.GetFileName(l_FileName).IndexOf("_", StringComparison.Ordinal); l_I++) l_StringLevelID += Path.GetFileName(l_FileName)[l_I];
 
-                    var l_MyInt = int.Parse(l_StringLevelID);
+                    int l_MyInt = int.Parse(l_StringLevelID);
 
                     try
                     {
@@ -51,8 +49,8 @@ namespace BSDiscordRanking.Controllers
             }
             catch (Exception)
             {
-                Console.WriteLine($"Don't forget to add Levels before Fetching, creating an Empty LevelController's config file..");
-                return new LevelControllerFormat()
+                Console.WriteLine("Don't forget to add Levels before Fetching, creating an Empty LevelController's config file..");
+                return new LevelControllerFormat
                 {
                     LevelID = new List<int>()
                 };
@@ -106,30 +104,26 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine("Seems like you forgot Fetch Levels (LevelController), please Fetch Them before using this command : LevelController's Cache is missing, Returning.");
                 return null;
             }
-            else
+
+            try
             {
-                try
+                using (StreamReader l_SR = new($"{PATH}{FILENAME}.json"))
                 {
-                    using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
+                    LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
+                    if (l_LevelController == null) /// json contain "null"
                     {
-                        LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
-                        if (l_LevelController == null) /// json contain "null"
-                        {
-                            Console.WriteLine("Error LevelControllerCache contain null");
-                            return null;
-                        }
-                        else
-                        {
-                            l_LevelController.LevelID.Sort();
-                            return l_LevelController;
-                        }
+                        Console.WriteLine("Error LevelControllerCache contain null");
+                        return null;
                     }
+
+                    l_LevelController.LevelID.Sort();
+                    return l_LevelController;
                 }
-                catch (Exception) /// file format is wrong / there isn't any file.
-                {
-                    Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
-                    return null;
-                }
+            }
+            catch (Exception) /// file format is wrong / there isn't any file.
+            {
+                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
+                return null;
             }
         }
 
@@ -146,7 +140,7 @@ namespace BSDiscordRanking.Controllers
         public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass, string p_Key = null)
         {
             LevelControllerFormat l_LevelControllerFormat = GetLevelControllerCache();
-            MapExistFormat l_MapExistFormat = new MapExistFormat
+            MapExistFormat l_MapExistFormat = new()
             {
                 MapExist = false,
                 DifferentMinScore = false,
@@ -162,16 +156,13 @@ namespace BSDiscordRanking.Controllers
                 DifferentWeight = false,
                 Name = null
             };
-            foreach (var l_LevelID in l_LevelControllerFormat.LevelID)
+            foreach (int l_LevelID in l_LevelControllerFormat.LevelID)
             {
-                Level l_Level = new Level(l_LevelID);
+                Level l_Level = new(l_LevelID);
                 Console.WriteLine(l_LevelID);
-                foreach (var l_Map in l_Level.m_Level.songs)
-                {
+                foreach (SongFormat l_Map in l_Level.m_Level.songs)
                     if (string.Equals(p_Hash, l_Map.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(p_Key, l_Map.key, StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        foreach (var l_Difficulty in l_Map.difficulties)
-                        {
+                        foreach (Difficulty l_Difficulty in l_Map.difficulties)
                             if (l_Difficulty.name == p_Difficulty && l_Difficulty.characteristic == p_Characteristic)
                             {
                                 Console.WriteLine($"Map already exist in level {l_Level}");
@@ -205,7 +196,7 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.ForceManualWeight = p_ForceManualWeight;
                                     l_MapExistFormat.DifferentForceManualWeight = true;
                                 }
-                                
+
                                 if (l_Difficulty.customData.adminConfirmationOnPass != p_AdmingPingOnPass)
                                 {
                                     l_MapExistFormat.adminConfirmationOnPass = p_AdmingPingOnPass;
@@ -222,9 +213,6 @@ namespace BSDiscordRanking.Controllers
 
                                 return l_MapExistFormat;
                             }
-                        }
-                    }
-                }
             }
 
             return l_MapExistFormat;

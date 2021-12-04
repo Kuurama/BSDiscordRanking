@@ -14,10 +14,10 @@ namespace BSDiscordRanking.Controllers
     public class MapLeaderboardController
     {
         private const string PATH = @"./Leaderboard/Maps/";
-        private string m_Key = null;
-        private int m_LeaderboardID;
         private const int ERROR_LIMIT = 3;
-        private int m_ErrorNumber = 0;
+        private readonly string m_Key;
+        private readonly int m_LeaderboardID;
+        private int m_ErrorNumber;
         public MapLeaderboardFormat m_MapLeaderboard;
 
         public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default)
@@ -26,10 +26,7 @@ namespace BSDiscordRanking.Controllers
             m_Key = p_Key;
             LoadMapLeaderboard();
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
-            if (p_MaxScore != default)
-            {
-                m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
-            }
+            if (p_MaxScore != default) m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
 
             switch (m_MapLeaderboard.scores)
             {
@@ -41,13 +38,11 @@ namespace BSDiscordRanking.Controllers
                     {
                         l_ApiScores.RemoveAll(p_X => p_X.baseScore > m_MapLeaderboard.info.maxScore);
                         foreach (ApiScore l_Score in l_ApiScores)
-                        {
-                            m_MapLeaderboard.scores.Add(new MapPlayerScore()
+                            m_MapLeaderboard.scores.Add(new MapPlayerScore
                             {
-                                customData = new LeaderboardCustomData() { isBotRegistered = false },
+                                customData = new LeaderboardCustomData { isBotRegistered = false },
                                 score = l_Score
                             });
-                        }
                     }
 
                     break;
@@ -64,7 +59,7 @@ namespace BSDiscordRanking.Controllers
             /// and it can mean the Leaderboard ID is wrong.
             if (p_TryLimit > 0)
             {
-                using (WebClient l_WebClient = new WebClient())
+                using (WebClient l_WebClient = new())
                 {
                     try
                     {
@@ -75,7 +70,7 @@ namespace BSDiscordRanking.Controllers
                     catch (WebException l_Exception)
                     {
                         if (l_Exception.Response is HttpWebResponse
-                                l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
+                            l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
                         {
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                             {
@@ -84,7 +79,7 @@ namespace BSDiscordRanking.Controllers
                                 Thread.Sleep(50000);
                                 return GetLeaderboardScores(p_LeaderboardID, p_TryLimit);
                             }
-                            
+
                             if (l_HttpWebResponse.StatusCode == HttpStatusCode.BadGateway)
                             {
                                 Console.WriteLine("BadGateway, Trying again in 5sec");
@@ -118,6 +113,7 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine("Please Contact an Administrator.");
                 return null;
             }
+
             Console.WriteLine("Too many try on GetLeaderboardScores.");
             return null;
         }
@@ -131,7 +127,7 @@ namespace BSDiscordRanking.Controllers
             /// and it can mean the Leaderboard ID is wrong.
             if (p_TryLimit > 0)
             {
-                using (WebClient l_WebClient = new WebClient())
+                using (WebClient l_WebClient = new())
                 {
                     try
                     {
@@ -186,6 +182,7 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine("Please Contact an Administrator.");
                 return null;
             }
+
             Console.WriteLine("Too much try on LeaderboardGetInfo.");
             return null;
         }
@@ -250,19 +247,19 @@ namespace BSDiscordRanking.Controllers
 
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($"{PATH}{m_LeaderboardID.ToString()}.json"))
+                    using (StreamReader l_SR = new($"{PATH}{m_LeaderboardID.ToString()}.json"))
                     {
                         m_MapLeaderboard = JsonSerializer.Deserialize<MapLeaderboardFormat>(l_SR.ReadToEnd());
                         if (m_MapLeaderboard == null) /// json contain "null"
                         {
-                            m_MapLeaderboard = new MapLeaderboardFormat()
+                            m_MapLeaderboard = new MapLeaderboardFormat
                             {
                                 key = m_Key,
                                 forceAutoWeightRecalculation = false,
                                 info = null,
                                 scores = null
                             };
-                            Console.WriteLine($"Map Leaderboard Created (Empty Format), contained null");
+                            Console.WriteLine("Map Leaderboard Created (Empty Format), contained null");
                         }
                         else
                         {
@@ -279,14 +276,14 @@ namespace BSDiscordRanking.Controllers
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {
-                    m_MapLeaderboard = new MapLeaderboardFormat()
+                    m_MapLeaderboard = new MapLeaderboardFormat
                     {
                         key = m_Key,
                         forceAutoWeightRecalculation = false,
                         info = null,
                         scores = null
                     };
-                    Console.WriteLine($"Map Leaderboard Created (Empty Format)");
+                    Console.WriteLine("Map Leaderboard Created (Empty Format)");
                 }
             }
             else
@@ -307,112 +304,88 @@ namespace BSDiscordRanking.Controllers
                     ReWriteMapLeaderboard();
                     return true;
                 }
-                
-                
+
+
                 if (p_PlayerScore.score.baseScore > m_MapLeaderboard.info.maxScore)
                 {
                     Console.WriteLine("Score Above 100%, Cheated scores aren't allowed.");
                     return false;
                 }
+
                 bool l_NewPlayer = true;
                 bool l_AutoWeightCheck = false;
                 int l_SumOfFirstScores = 0;
                 int l_NewSumOfFirstScores = 0;
 
                 int l_MinimumNumberOfScore = ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight;
-                if ((m_MapLeaderboard.scores.Count == l_MinimumNumberOfScore - 1) || ((m_MapLeaderboard.scores.Count == l_MinimumNumberOfScore - 1) && (p_CustomDataAutoWeight == 0)))
+                if (m_MapLeaderboard.scores.Count == l_MinimumNumberOfScore - 1 || m_MapLeaderboard.scores.Count == l_MinimumNumberOfScore - 1 && p_CustomDataAutoWeight == 0)
                 {
-                    for (int l_Index = 0; l_Index < l_MinimumNumberOfScore - 1; l_Index++)
-                    {
-                        l_SumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
-                    }
+                    for (int l_Index = 0; l_Index < l_MinimumNumberOfScore - 1; l_Index++) l_SumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
 
                     l_AutoWeightCheck = true;
                 }
-                else if ((m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore) || ((m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore) && (p_CustomDataAutoWeight == 0)))
+                else if (m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore || m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore && p_CustomDataAutoWeight == 0)
                 {
-                    for (int l_Index = 0; l_Index < l_MinimumNumberOfScore; l_Index++)
-                    {
-                        l_SumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
-                    }
+                    for (int l_Index = 0; l_Index < l_MinimumNumberOfScore; l_Index++) l_SumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
 
                     l_AutoWeightCheck = true;
                 }
 
                 for (int l_I = 0; l_I < m_MapLeaderboard.scores.Count; l_I++)
-                {
                     if (m_MapLeaderboard.scores[l_I].score is { leaderboardPlayerInfo: { } } && p_PlayerScore.score.leaderboardPlayerInfo.id == m_MapLeaderboard.scores[l_I].score.leaderboardPlayerInfo.id)
                     {
                         l_NewPlayer = false;
                         m_MapLeaderboard.scores[l_I] = p_PlayerScore;
                         break;
                     }
-                }
 
 
-                if (l_NewPlayer)
-                {
-                    m_MapLeaderboard.scores.Add(p_PlayerScore);
-                }
+                if (l_NewPlayer) m_MapLeaderboard.scores.Add(p_PlayerScore);
 
                 m_MapLeaderboard.scores.RemoveAll(p_X => p_X.score.baseScore > m_MapLeaderboard.info.maxScore); /// Removing potentially > 100% scores, cheating isn't allowed.
-                
+
                 ReWriteMapLeaderboard();
 
                 if (l_AutoWeightCheck)
-                {
                     if (m_MapLeaderboard.scores.Count >= l_MinimumNumberOfScore)
                     {
-                        for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++)
-                        {
-                            l_NewSumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
-                        }
+                        for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++) l_NewSumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
 
-                        if (l_SumOfFirstScores < l_NewSumOfFirstScores && l_SumOfFirstScores != 0 || p_CustomDataAutoWeight == 0)
-                        {
-                            return true;
-                        }
+                        if (l_SumOfFirstScores < l_NewSumOfFirstScores && l_SumOfFirstScores != 0 || p_CustomDataAutoWeight == 0) return true;
                     }
-                }
 
                 return false;
             }
-            else
-            {
-                Console.WriteLine("This MapPlayerScore is null. Returning");
-                return false;
-            }
+
+            Console.WriteLine("This MapPlayerScore is null. Returning");
+            return false;
         }
+
         public static float RecalculateAutoWeight(int p_LeaderboardID, int p_DifficultlyMultiplier)
         {
             float l_SumOfPercentage = 0;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
+            MapLeaderboardController l_MapLeaderboard = new(p_LeaderboardID);
             if (l_MapLeaderboard.m_MapLeaderboard.scores.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
             {
                 for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
-                {
                     if (l_MapLeaderboard.m_MapLeaderboard.info.maxScore > 0)
                     {
-                        l_SumOfPercentage += ((float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].score.baseScore / l_MapLeaderboard.m_MapLeaderboard.info.maxScore) * 100;
+                        l_SumOfPercentage += (float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].score.baseScore / l_MapLeaderboard.m_MapLeaderboard.info.maxScore * 100;
                     }
                     else
                     {
                         Console.WriteLine("Map MaxScore is negative/zero, can't recalculate weight.");
                         return 0;
                     }
-                }
 
-                float l_AveragePercentage = (l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight);
+                float l_AveragePercentage = l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight;
                 float l_AverageNeededPercentage = 100f - l_AveragePercentage;
-                float l_NewWeight = (l_AverageNeededPercentage * 0.66f * p_DifficultlyMultiplier) / 32;
+                float l_NewWeight = l_AverageNeededPercentage * 0.66f * p_DifficultlyMultiplier / 32;
                 return l_NewWeight;
             }
-            else
-            {
-                return 0;
-            }
+
+            return 0;
         }
     }
-    
 }

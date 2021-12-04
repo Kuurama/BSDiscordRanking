@@ -19,6 +19,7 @@ namespace BSDiscordRanking.Formats.Player
         public int Silver { get; set; }
         public int Gold { get; set; }
         public int Diamond { get; set; }
+        public int Ruby { get; set; }
     }
 
     public class PassedLevel
@@ -29,7 +30,6 @@ namespace BSDiscordRanking.Formats.Player
         public int TotalNumberOfMaps { get; set; }
         public Trophy Trophy { get; set; }
         public List<CategoryPassed> Categories { get; set; }
-        
     }
 
     public class CategoryPassed

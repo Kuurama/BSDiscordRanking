@@ -6,6 +6,7 @@ namespace BSDiscordRanking
     internal static class Program
     {
         public static ulong m_TempGlobalGuildID = default;
+
         private static void Main(string[] p_Args)
         {
             LevelController.GetLevelControllerCache();

@@ -8,15 +8,15 @@ namespace BSDiscordRanking.Controllers
 {
     public class ConfigController
     {
-        public static ConfigFormat m_ConfigFormat = new ConfigFormat() { AuthorizedChannels = new List<ulong>() };
-        private static readonly ConfigFormat DefaultConfig = new ConfigFormat() { AuthorizedChannels = new List<ulong>() };
+        public static ConfigFormat m_ConfigFormat = new() { AuthorizedChannels = new List<ulong>() };
+        private static readonly ConfigFormat DefaultConfig = new() { AuthorizedChannels = new List<ulong>() };
 
         public static void CreateConfig()
         {
-            string l_Config = JsonConvert.SerializeObject(new ConfigFormat()
+            string l_Config = JsonConvert.SerializeObject(new ConfigFormat
             {
                 AuthorizedChannels = new List<ulong>(),
-                CommandPrefix = new List<string>()
+                CommandPrefix = new List<string>
                 {
                     "!"
                 },
@@ -33,7 +33,7 @@ namespace BSDiscordRanking.Controllers
             {
                 try
                 {
-                    using (StreamReader l_StreamReader = new StreamReader("./config.json"))
+                    using (StreamReader l_StreamReader = new("./config.json"))
                     {
                         m_ConfigFormat = JsonConvert.DeserializeObject<ConfigFormat>(l_StreamReader.ReadToEnd());
                         return m_ConfigFormat;

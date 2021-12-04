@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
             /// Else => is a correct score saber ID
 
-            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            Player l_Player = new(p_DiscordOrScoreSaberID);
             l_Player.LoadStats();
             if (l_Player.m_PlayerStats.IsFirstScan)
             {
@@ -38,44 +38,36 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 return;
             }
 
-            if (l_Player.GetPlayerLevel() == p_Level)
-            {
-                await ReplyAsync($"> This player is already Level {p_Level} but we will still perform a role check/update.\n");
-            }
+            if (l_Player.GetPlayerLevel() == p_Level) await ReplyAsync($"> This player is already Level {p_Level} but we will still perform a role check/update.\n");
 
             l_Player.ResetLevels();
             for (int l_I = 0; l_I <= p_Level; l_I++)
             {
                 int l_Index = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_I);
                 if (l_Index < 0)
-                {
-                    l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
+                    l_Player.m_PlayerStats.Levels.Add(new PassedLevel
                     {
                         LevelID = l_I,
                         Passed = true,
-                        Trophy = new Trophy()
+                        Trophy = new Trophy
                         {
                             Plastic = 0,
                             Silver = 0,
                             Gold = 0,
-                            Diamond = 0
+                            Diamond = 0,
+                            Ruby = 0
                         }
                     });
-                }
                 else
-                {
                     l_Player.m_PlayerStats.Levels[l_Index].Passed = true;
-                }
             }
 
             for (int l_I = 0; l_I <= p_Level; l_I++)
-            {
-                l_Player.m_PlayerStats.Levels.Add(new PassedLevel()
+                l_Player.m_PlayerStats.Levels.Add(new PassedLevel
                 {
                     LevelID = l_I,
                     Passed = true
                 });
-            }
 
             l_Player.ReWriteStats();
             new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, p_DiscordOrScoreSaberID, -1, p_Level, null, false);
@@ -85,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (l_MyUser != null)
                 {
                     await ReplyAsync($"> :clock1: The bot will now update {l_MyUser.Username}'s roles. This step can take a while. `(The bot should now be responsive again)`");
-                    var l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, l_MyUser.Id, p_Level);
+                    Task l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, l_MyUser.Id, p_Level);
                 }
 
                 else

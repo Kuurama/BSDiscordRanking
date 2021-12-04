@@ -22,9 +22,9 @@ namespace BSDiscordRanking
 {
     public class Player
     {
-        private bool m_HavePlayerInfo = false;
-        private LevelControllerFormat m_LevelController;
         private static string m_FolderPath = @"./Players/";
+        private bool m_HavePlayerInfo;
+        private LevelControllerFormat m_LevelController;
         private string m_Path;
         public ApiPlayerFull m_PlayerFull;
         private string m_PlayerID;
@@ -74,7 +74,6 @@ namespace BSDiscordRanking
 
                     int l_LevelIndex = 0;
                     foreach (PassedLevel l_Level in m_PlayerStats.Levels.Where(p_Level => p_Level.LevelID >= 0))
-                    {
                         if (l_Level.LevelID >= 0)
                         {
                             if (!p_GetGlobalLevel)
@@ -86,23 +85,27 @@ namespace BSDiscordRanking
                                     {
                                         if (!p_GetMaxLevel)
                                         {
-                                            if ((l_LevelIndex == l_Level.LevelID) && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                            if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
                                             {
                                                 l_PlayerLevel = l_Level.LevelID;
                                                 l_LevelIndex++;
                                             }
                                             else
+                                            {
                                                 break;
+                                            }
                                         }
                                         else
                                         {
-                                            if ((l_LevelIndex == l_Level.LevelID) && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                            if (l_LevelIndex == l_Level.LevelID && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
                                             {
                                                 l_PlayerLevel = l_Level.LevelID;
                                                 l_LevelIndex++;
                                             }
                                             else
+                                            {
                                                 break;
+                                            }
                                         }
                                     }
                                 }
@@ -125,7 +128,6 @@ namespace BSDiscordRanking
                                 }
                             }
                         }
-                    }
 
                     return l_PlayerLevel;
                 }
@@ -146,7 +148,6 @@ namespace BSDiscordRanking
 
                     int l_LevelIndex = 0;
                     foreach (PassedLevel l_Level in l_PlayerStats.Levels.Where(p_Level => p_Level.LevelID >= 0))
-                    {
                         if (!p_GetGlobalLevel)
                         {
                             if (l_Level.Categories != null)
@@ -154,13 +155,15 @@ namespace BSDiscordRanking
                                 int l_CategoryIndex = l_Level.Categories.FindIndex(p_X => p_X.Category == p_Category);
                                 if (l_CategoryIndex >= 0)
                                 {
-                                    if ((l_LevelIndex == l_Level.LevelID) && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                    if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
                                     {
                                         l_PlayerLevel = l_Level.LevelID;
                                         l_LevelIndex++;
                                     }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
                             }
                         }
@@ -171,7 +174,6 @@ namespace BSDiscordRanking
                             else
                                 break;
                         }
-                    }
 
                     return l_PlayerLevel;
                 }
@@ -196,7 +198,7 @@ namespace BSDiscordRanking
             {
                 if (p_TryLimit > 0)
                 {
-                    using (WebClient l_WebClient = new WebClient())
+                    using (WebClient l_WebClient = new())
                     {
                         try
                         {
@@ -226,11 +228,7 @@ namespace BSDiscordRanking
                                     GetInfos(p_TryLimit);
                                 }
 
-                                if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound)
-                                {
-                                    Console.WriteLine("Wrong Profile ID, Please contact an administrator");
-                                    return;
-                                }
+                                if (l_HttpWebResponse.StatusCode == HttpStatusCode.NotFound) Console.WriteLine("Wrong Profile ID, Please contact an administrator");
                             }
                             else ///< Request Error => Internet or ScoreSaber API Down.
                             {
@@ -272,7 +270,7 @@ namespace BSDiscordRanking
 
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
+                    using (StreamReader l_SR = new(m_Path + "score.json"))
                     {
                         m_PlayerScore = JsonSerializer.Deserialize<List<ApiScoreInfo>>(l_SR.ReadToEnd());
                         Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
@@ -308,14 +306,10 @@ namespace BSDiscordRanking
             if (p_TryLimit > 0)
             {
                 if (m_PlayerStats.IsFirstScan)
-                {
                     p_Context?.Channel.SendMessageAsync("> <:clock1:868188979411959808> First Time Fetching player scores (downloading all of your passes once), this step will take a while! The bot will be unresponsive during the process.");
-                }
 
                 else
-                {
                     p_Context?.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot will be unresponsive during the process.");
-                }
 
                 if (m_HavePlayerInfo) /// Check if Player have Player's Info
                 {
@@ -325,13 +319,13 @@ namespace BSDiscordRanking
                         int l_NumberOfAddedScore = 0;
                         bool l_Skip = false;
                         /// Avoid doing useless attempt, Check player's number of score (8 score per request).
-                        while ((m_PlayerFull.scoreStats.totalPlayCount / 8) + 2 >= l_Page && !l_Skip)
+                        while (m_PlayerFull.scoreStats.totalPlayCount / 8 + 2 >= l_Page && !l_Skip)
                         {
                             string l_URL = m_PlayerStats.IsFirstScan
                                 ? @$"https://scoresaber.com/api/player/{m_PlayerID}/scores?limit=100&sort=recent&page={l_Page.ToString()}"
                                 : @$"https://scoresaber.com/api/player/{m_PlayerFull.id}/scores?sort=recent&page={l_Page.ToString()}";
 
-                            using (WebClient l_WebClient = new WebClient())
+                            using (WebClient l_WebClient = new())
                             {
                                 try
                                 {
@@ -340,22 +334,19 @@ namespace BSDiscordRanking
                                     l_Page++;
 
                                     // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-                                    foreach (var l_PlayerScore in m_PlayerScore)
+                                    foreach (ApiScoreInfo l_PlayerScore in m_PlayerScore)
                                     {
                                         if (l_Skip)
                                             break; ///< break the for and l_Skip will cause the end of the While Loop.
                                         if (l_Result == null) continue;
 
-                                        if (l_Result.Any(p_ResultScore => p_ResultScore.score.timeSet == l_PlayerScore.score.timeSet))
-                                        {
-                                            l_Skip = true; ///< One score already exist (will end the While Loop)
-                                        }
+                                        if (l_Result.Any(p_ResultScore => p_ResultScore.score.timeSet == l_PlayerScore.score.timeSet)) l_Skip = true; ///< One score already exist (will end the While Loop)
                                     }
 
                                     if (l_Result != null)
                                         foreach (ApiScoreInfo l_NewScore in l_Result.Where(p_NewScore =>
                                             m_PlayerScore.RemoveAll(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id && p_X.score != p_NewScore.score) > 0
-                                            || !(m_PlayerScore.Any(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id))))
+                                            || !m_PlayerScore.Any(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id)))
                                         {
                                             m_PlayerScore.Add(l_NewScore);
                                             l_NumberOfAddedScore++;
@@ -484,7 +475,6 @@ namespace BSDiscordRanking
             /// </summary>
 
             if (m_PlayerID != null)
-            {
                 try
                 {
                     File.Delete(m_Path + "score.json");
@@ -493,7 +483,6 @@ namespace BSDiscordRanking
                 {
                     Console.WriteLine($"Failed to delete File : {l_Exception.Message}");
                 }
-            }
         }
 
         public static bool CheckScoreSaberAPI_Response(string p_ApiRequestType) /// Return True if ScoreSaber API is Up.
@@ -509,15 +498,12 @@ namespace BSDiscordRanking
             /// 
             /// </summary>
 
-            using (WebClient l_WebClient = new WebClient())
+            using (WebClient l_WebClient = new())
             {
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
                 {
                     ApiCheck l_ApiCheck = JsonSerializer.Deserialize<ApiCheck>(l_WebClient.DownloadString("https://scoresaber.com/api/"));
-                    if (ConfigFormat.SCORE_SABER_API_VERSION != l_ApiCheck.version)
-                    {
-                        Console.WriteLine($"Api version changed from {ConfigFormat.SCORE_SABER_API_VERSION} to {l_ApiCheck.version}, error occured.");
-                    }
+                    if (ConfigFormat.SCORE_SABER_API_VERSION != l_ApiCheck.version) Console.WriteLine($"Api version changed from {ConfigFormat.SCORE_SABER_API_VERSION} to {l_ApiCheck.version}, error occured.");
 
                     return true;
                 }
@@ -528,21 +514,6 @@ namespace BSDiscordRanking
                     return false;
                 }
             }
-        }
-
-        public class FetchPassFormat
-        {
-            public List<string> newPass { get; set; }
-            public List<string> removedPass { get; set; }
-            public List<string> updatedPass { get; set; }
-            public List<string> adminConfirmationPass { get; set; }
-            public List<string> cheatedPass { get; set; }
-        }
-
-        public class NumberOfPassTypeFormat
-        {
-            public int newPass { get; set; }
-            public int updatedPass { get; set; }
         }
 
         public void SetLevelCategoryPass(int p_LevelID, string p_Category, int p_DefaultOrPassIncrement = 1, int p_TotalNumberOfMaps = int.MinValue, bool p_ForcePass = false, bool p_Passed = true)
@@ -558,7 +529,7 @@ namespace BSDiscordRanking
                     if (l_CategoryIndex < 0)
                     {
                         m_PlayerStats.Levels[l_PlayerLevelIndex].Categories.Add(
-                            new CategoryPassed()
+                            new CategoryPassed
                             {
                                 Category = p_Category,
                                 Passed = l_IsPassed
@@ -566,29 +537,20 @@ namespace BSDiscordRanking
                         l_CategoryIndex = m_PlayerStats.Levels[l_PlayerLevelIndex].Categories.Count - 1;
                     }
 
-                    if (p_ForcePass)
-                    {
-                        m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].Passed = p_Passed;
-                    }
+                    if (p_ForcePass) m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].Passed = p_Passed;
 
                     if (p_DefaultOrPassIncrement == 0)
-                    {
                         m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].NumberOfPass = 0;
-                    }
-                    else if (p_DefaultOrPassIncrement > 0)
-                    {
-                        m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].NumberOfPass += p_DefaultOrPassIncrement;
-                    }
+                    else if (p_DefaultOrPassIncrement > 0) m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].NumberOfPass += p_DefaultOrPassIncrement;
                 }
                 else
                 {
                     if (p_DefaultOrPassIncrement >= 0)
-                    {
-                        m_PlayerStats.Levels.Add(new PassedLevel()
+                        m_PlayerStats.Levels.Add(new PassedLevel
                         {
-                            Categories = new List<CategoryPassed>()
+                            Categories = new List<CategoryPassed>
                             {
-                                new CategoryPassed()
+                                new()
                                 {
                                     Category = p_Category,
                                     NumberOfPass = p_DefaultOrPassIncrement, /// Set to 1 by default because it will be the first pass of that category. Others will adds to it. Able to change it so you can still set it to 0.
@@ -597,14 +559,12 @@ namespace BSDiscordRanking
                             },
                             LevelID = p_LevelID
                         });
-                    }
                     else
-                    {
-                        m_PlayerStats.Levels.Add(new PassedLevel()
+                        m_PlayerStats.Levels.Add(new PassedLevel
                         {
-                            Categories = new List<CategoryPassed>()
+                            Categories = new List<CategoryPassed>
                             {
-                                new CategoryPassed()
+                                new()
                                 {
                                     Category = p_Category,
                                     NumberOfPass = 0, /// Set to 0 by default because negative default/increment.
@@ -613,7 +573,6 @@ namespace BSDiscordRanking
                             },
                             LevelID = p_LevelID
                         });
-                    }
 
                     l_PlayerLevelIndex = m_PlayerStats.Levels.Count - 1;
                     l_CategoryIndex = m_PlayerStats.Levels[l_PlayerLevelIndex].Categories.Count - 1;
@@ -622,42 +581,49 @@ namespace BSDiscordRanking
                 if (p_TotalNumberOfMaps != int.MinValue)
                 {
                     m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].TotalNumberOfMaps = p_TotalNumberOfMaps;
-                    int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
+                    int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0, l_Ruby = 0;
                     switch (m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].NumberOfPass * 100 / m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].TotalNumberOfMaps)
                     {
                         case 0:
                         {
                             break;
                         }
-                        case <= 39:
+                        case <= 25:
                         {
                             l_Plastic = 1;
                             break;
                         }
-                        case <= 69:
+                        case <= 50:
                         {
                             l_Silver = 1;
                             break;
                         }
-                        case <= 99:
+                        case <= 75:
                         {
                             l_Gold = 1;
                             break;
                         }
 
-                        case 100:
+                        case <= 99:
                         {
                             l_Diamond = 1;
                             break;
                         }
+                        
+                        case <= 100:
+                        {
+                            l_Ruby = 1;
+                            break;
+                        }
                     }
 
-                    m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].Trophy = new Trophy()
+                    m_PlayerStats.Levels[l_PlayerLevelIndex].Categories[l_CategoryIndex].Trophy = new Trophy
                     {
                         Plastic = l_Plastic,
                         Silver = l_Silver,
                         Gold = l_Gold,
                         Diamond = l_Diamond,
+                        Ruby = l_Ruby
                     };
                 }
             }
@@ -683,15 +649,15 @@ namespace BSDiscordRanking
                 int l_BiggerLevelID = int.MinValue;
                 bool l_AboveLVLFourteenPass = false; /// Funny
                 int l_OldPlayerLevel = GetPlayerLevel();
-                List<int> l_LeaderboardIdToRemove = new List<int>();
+                List<int> l_LeaderboardIdToRemove = new();
                 PlayerPassFormat l_TempPlayerPass = ReturnPass();
-                FetchPassFormat l_FetchPassFormat = new FetchPassFormat()
+                FetchPassFormat l_FetchPassFormat = new()
                 {
-                    newPass = new List<string>(new string[] { "" }),
-                    removedPass = new List<string>(new string[] { "" }),
-                    updatedPass = new List<string>(new string[] { "" }),
-                    adminConfirmationPass = new List<string>(new string[] { "" }),
-                    cheatedPass = new List<string>(new string[] { "" })
+                    newPass = new List<string>(new[] { "" }),
+                    removedPass = new List<string>(new[] { "" }),
+                    updatedPass = new List<string>(new[] { "" }),
+                    adminConfirmationPass = new List<string>(new[] { "" }),
+                    cheatedPass = new List<string>(new[] { "" })
                 };
                 m_PlayerPass = new PlayerPassFormat
                 {
@@ -699,7 +665,7 @@ namespace BSDiscordRanking
                 };
                 ResetTrophy();
                 ResetLevels();
-                List<Level> l_Levels = new List<Level>();
+                List<Level> l_Levels = new();
                 foreach (int l_LevelID in m_LevelController.LevelID)
                 {
                     l_Levels.Add(new Level(l_LevelID)); /// List of the current existing levels
@@ -713,12 +679,11 @@ namespace BSDiscordRanking
                     foreach (var l_Level in l_Levels.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
                     {
                         float l_Weighting = l_Level.value.m_Level.customData.weighting;
-                        List<string> l_CategoryPerLevelList = new List<string>();
+                        List<string> l_CategoryPerLevelList = new();
 
                         foreach (SongFormat l_Song in l_Level.value.m_Level.songs)
                         {
                             foreach (ApiScoreInfo l_Score in m_PlayerScore)
-                            {
                                 if (!l_Score.score.modifiers.Contains("NF") && !l_Score.score.modifiers.Contains("NA") && !l_Score.score.modifiers.Contains("SS") && !l_Score.score.modifiers.Contains("NB"))
                                 {
                                     bool l_ScoreDeleted = false;
@@ -726,9 +691,7 @@ namespace BSDiscordRanking
                                     {
                                         bool l_MapStored = false;
                                         if (l_Song.difficulties is not null)
-                                        {
                                             foreach (Difficulty l_Difficulty in l_Song.difficulties)
-                                            {
                                                 if (l_Score.leaderboard.difficulty.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                 {
                                                     bool l_DiffExist = false;
@@ -739,10 +702,7 @@ namespace BSDiscordRanking
 
                                                     List<string> l_SelectedPassMessageList = null;
 
-                                                    if (l_Score.score.baseScore < l_Difficulty.customData.minScoreRequirement)
-                                                    {
-                                                        l_MinScoreRequirementFailed = true;
-                                                    }
+                                                    if (l_Score.score.baseScore < l_Difficulty.customData.minScoreRequirement) l_MinScoreRequirementFailed = true;
 
                                                     if (l_Score.score.baseScore > l_Difficulty.customData.maxScore)
                                                     {
@@ -750,9 +710,7 @@ namespace BSDiscordRanking
                                                         if (l_SelectedPassMessageList[^1].Length + $":x: key-{l_Song.key} Removed for potential cheat ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**  - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%\n"
                                                                 .Length
                                                             > 1900)
-                                                        {
                                                             l_SelectedPassMessageList.Add("");
-                                                        }
 
                                                         l_SelectedPassMessageList[^1] += $":x: key-{l_Song.key} Removed for potential cheat ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%\n";
 
@@ -767,19 +725,14 @@ namespace BSDiscordRanking
                                                         foreach (InPlayerPassFormat l_CachedDifficulty in l_CachedPassedSong.DiffList)
                                                         {
                                                             if (l_TempPlayerPass.SongList != null)
-                                                            {
                                                                 foreach (InPlayerPassFormat l_OldDiff in l_TempPlayerPass.SongList
                                                                     .Where(p_OldPassedSong => p_OldPassedSong.hash == l_CachedPassedSong.hash)
                                                                     .SelectMany(p_OldPassedSong => p_OldPassedSong.DiffList
                                                                         .Where(p_OldDiff => p_OldDiff.Difficulty.characteristic == l_Difficulty.characteristic && p_OldDiff.Difficulty.name == l_Difficulty.name)))
-                                                                {
                                                                     if (!l_MinScoreRequirementFailed)
                                                                     {
                                                                         l_TempDiffExist = true;
-                                                                        if (l_Score.score.baseScore > l_OldDiff.Score)
-                                                                        {
-                                                                            l_SelectedPassMessageList = l_FetchPassFormat.updatedPass;
-                                                                        }
+                                                                        if (l_Score.score.baseScore > l_OldDiff.Score) l_SelectedPassMessageList = l_FetchPassFormat.updatedPass;
                                                                     }
                                                                     else
                                                                     {
@@ -787,16 +740,12 @@ namespace BSDiscordRanking
                                                                         if (l_SelectedPassMessageList[^1].Length + $":x: key-{l_Song.key} Removed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%\n"
                                                                                 .Length
                                                                             > 1900)
-                                                                        {
                                                                             l_SelectedPassMessageList.Add("");
-                                                                        }
 
                                                                         l_SelectedPassMessageList[^1] += $":x: key-{l_Song.key} Removed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%\n";
 
                                                                         break;
                                                                     }
-                                                                }
-                                                            }
 
 
                                                             if (l_CachedDifficulty.Difficulty.characteristic == l_Difficulty.characteristic && l_CachedDifficulty.Difficulty.name == l_Difficulty.name)
@@ -804,10 +753,7 @@ namespace BSDiscordRanking
                                                                 if (!l_MinScoreRequirementFailed)
                                                                 {
                                                                     l_DiffExist = true;
-                                                                    if (l_Score.score.baseScore > l_CachedDifficulty.Score)
-                                                                    {
-                                                                        l_SelectedPassMessageList = l_FetchPassFormat.updatedPass;
-                                                                    }
+                                                                    if (l_Score.score.baseScore > l_CachedDifficulty.Score) l_SelectedPassMessageList = l_FetchPassFormat.updatedPass;
                                                                 }
 
                                                                 break;
@@ -819,7 +765,7 @@ namespace BSDiscordRanking
                                                         if (!l_DiffExist && !l_MinScoreRequirementFailed && !l_ScoreDeleted)
                                                         {
                                                             l_Difficulty.customData.leaderboardID = l_Score.leaderboard.id;
-                                                            l_CachedPassedSong.DiffList.Add(new InPlayerPassFormat()
+                                                            l_CachedPassedSong.DiffList.Add(new InPlayerPassFormat
                                                             {
                                                                 Difficulty = l_Difficulty,
                                                                 Score = l_Score.score.baseScore,
@@ -827,10 +773,7 @@ namespace BSDiscordRanking
                                                             });
                                                             if (!l_TempDiffExist && !l_MinScoreRequirementFailed)
                                                             {
-                                                                if (l_Difficulty.customData.adminConfirmationOnPass)
-                                                                {
-                                                                    l_SelectedPassMessageList = l_FetchPassFormat.adminConfirmationPass;
-                                                                }
+                                                                if (l_Difficulty.customData.adminConfirmationOnPass) l_SelectedPassMessageList = l_FetchPassFormat.adminConfirmationPass;
 
                                                                 l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
                                                                 if (!m_PlayerStats.IsFirstScan || l_SelectedPassMessageList == l_FetchPassFormat.adminConfirmationPass || l_SelectedPassMessageList == l_FetchPassFormat.cheatedPass)
@@ -838,9 +781,7 @@ namespace BSDiscordRanking
                                                                     if (l_SelectedPassMessageList[^1].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                             .Length
                                                                         > 1900)
-                                                                    {
                                                                         l_SelectedPassMessageList.Add("");
-                                                                    }
 
                                                                     /// Display new pass (new diff passed while there was already a passed diff) 1/2
 
@@ -858,7 +799,7 @@ namespace BSDiscordRanking
                                                             SetLevelCategoryPass(l_Level.value.m_LevelID, l_Difficulty.customData.category);
                                                             l_PassesPerLevel++;
                                                         }
-                                                        else if ((l_DiffExist && l_MinScoreRequirementFailed) || (l_DiffExist && l_ScoreDeleted))
+                                                        else if (l_DiffExist && l_MinScoreRequirementFailed || l_DiffExist && l_ScoreDeleted)
                                                         {
                                                             if (l_CachedPassedSong.DiffList.Count > 1)
                                                             {
@@ -886,7 +827,7 @@ namespace BSDiscordRanking
 
                                                         if (!l_MinScoreRequirementFailed)
                                                         {
-                                                            InPlayerSong l_PlayerPassFormat = new InPlayerSong()
+                                                            InPlayerSong l_PlayerPassFormat = new()
                                                             {
                                                                 DiffList = new List<InPlayerPassFormat>(),
                                                                 hash = l_Song.hash.ToUpper(),
@@ -894,7 +835,7 @@ namespace BSDiscordRanking
                                                                 name = l_Song.name
                                                             };
                                                             l_Difficulty.customData.leaderboardID = l_Score.leaderboard.id;
-                                                            l_PlayerPassFormat.DiffList.Add(new InPlayerPassFormat()
+                                                            l_PlayerPassFormat.DiffList.Add(new InPlayerPassFormat
                                                             {
                                                                 Difficulty = l_Difficulty,
                                                                 Score = l_Score.score.baseScore,
@@ -907,13 +848,11 @@ namespace BSDiscordRanking
                                                         float l_OldScore = default;
                                                         int l_OldRank = default;
                                                         if (l_TempPlayerPass.SongList != null)
-                                                        {
                                                             foreach (InPlayerPassFormat l_OldDiff in l_TempPlayerPass.SongList
                                                                 .Where(p_OldPassedSong => string.Equals(p_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
                                                                 .SelectMany(p_OldPassedSong => p_OldPassedSong.DiffList
                                                                     .Where(p_OldDiff => p_OldDiff.Difficulty.characteristic == l_Difficulty.characteristic && p_OldDiff.Difficulty.name == l_Difficulty.name)
                                                                 ))
-                                                            {
                                                                 if (!l_MinScoreRequirementFailed)
                                                                 {
                                                                     l_WasStored = true;
@@ -930,23 +869,16 @@ namespace BSDiscordRanking
                                                                     if (l_SelectedPassMessageList[^1].Length + $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                             .Length
                                                                         > 1900)
-                                                                    {
                                                                         l_SelectedPassMessageList.Add("");
-                                                                    }
 
                                                                     l_ScoreDeleted = true;
                                                                     l_SelectedPassMessageList[^1] += $":x: Removed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (-{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName})\n";
                                                                     break;
                                                                 }
-                                                            }
-                                                        }
 
-                                                        if (l_Difficulty.customData.adminConfirmationOnPass)
-                                                        {
-                                                            l_SelectedPassMessageList = l_FetchPassFormat.adminConfirmationPass;
-                                                        }
+                                                        if (l_Difficulty.customData.adminConfirmationOnPass) l_SelectedPassMessageList = l_FetchPassFormat.adminConfirmationPass;
 
-                                                        if ((!l_WasStored || (l_SelectedPassMessageList == l_FetchPassFormat.updatedPass)) && !l_ScoreDeleted && !l_MinScoreRequirementFailed)
+                                                        if ((!l_WasStored || l_SelectedPassMessageList == l_FetchPassFormat.updatedPass) && !l_ScoreDeleted && !l_MinScoreRequirementFailed)
                                                         {
                                                             l_DifficultyShown = l_Difficulty.characteristic != "Standard" ? $"{l_Difficulty.characteristic} " : "";
                                                             if (!m_PlayerStats.IsFirstScan || l_SelectedPassMessageList == l_FetchPassFormat.adminConfirmationPass || l_SelectedPassMessageList == l_FetchPassFormat.cheatedPass)
@@ -957,9 +889,7 @@ namespace BSDiscordRanking
                                                                         1900 -
                                                                         $":white_check_mark: Passed ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier} {l_Config.PassPointsName}):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                             .Length)
-                                                                    {
                                                                         l_SelectedPassMessageList.Add("");
-                                                                    }
 
                                                                     /// Display new pass (new diff passed while there was already a passed diff) 2/2
                                                                     if (l_Difficulty.customData.customPassText != null)
@@ -977,9 +907,7 @@ namespace BSDiscordRanking
                                                                         1900 -
                                                                         $"\n:white_check_mark: New score on ***`{l_Difficulty.name} {l_DifficultyShown}- {l_Score.leaderboard.songName.Replace("`", @"\`").Replace("*", @"\*")}`*** in Level **{l_Level.value.m_LevelID}**\n (#{l_OldRank} - {Math.Round(l_OldScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%) => (#{l_Score.score.rank} - {Math.Round((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * 100f) / 100f}%):\n> {l_Difficulty.customData.customPassText}\n\n"
                                                                             .Length)
-                                                                    {
                                                                         l_SelectedPassMessageList.Add("");
-                                                                    }
 
                                                                     /// Display new pass (new diff passed while there was already a passed diff) 2/2
                                                                     if (l_Difficulty.customData.customPassText != null)
@@ -995,10 +923,7 @@ namespace BSDiscordRanking
                                                                 }
                                                             }
 
-                                                            if (l_SelectedPassMessageList != l_FetchPassFormat.updatedPass)
-                                                            {
-                                                                l_NewPasses++;
-                                                            }
+                                                            if (l_SelectedPassMessageList != l_FetchPassFormat.updatedPass) l_NewPasses++;
 
                                                             SetLevelCategoryPass(l_Level.value.m_LevelID, l_Difficulty.customData.category);
                                                             l_PassesPerLevel++;
@@ -1018,8 +943,8 @@ namespace BSDiscordRanking
 
                                                     if (!l_MinScoreRequirementFailed && !l_ScoreDeleted)
                                                     {
-                                                        MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_Score.leaderboard.id, l_Song.key, l_Difficulty.customData.maxScore);
-                                                        ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new ApiLeaderboardPlayerInfo()
+                                                        MapLeaderboardController l_MapLeaderboardController = new(l_Score.leaderboard.id, l_Song.key, l_Difficulty.customData.maxScore);
+                                                        ApiLeaderboardPlayerInfo l_LeaderboardPlayerInfo = new()
                                                         {
                                                             country = m_PlayerFull.country,
                                                             id = m_PlayerFull.id,
@@ -1029,10 +954,10 @@ namespace BSDiscordRanking
                                                             role = m_PlayerFull.role
                                                         };
                                                         l_Score.score.leaderboardPlayerInfo = l_LeaderboardPlayerInfo; /// Needed for map leaderboard.
-                                                        
-                                                        bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore()
+
+                                                        bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore
                                                         {
-                                                            customData = new LeaderboardCustomData()
+                                                            customData = new LeaderboardCustomData
                                                             {
                                                                 isBotRegistered = p_IsBotRegistered
                                                             },
@@ -1050,7 +975,7 @@ namespace BSDiscordRanking
                                                         {
                                                             if (l_Config.AllowForceManualWeightForAccLeaderboard)
                                                             {
-                                                                l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.manualWeight;
+                                                                l_TotalAccPoints += (float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.manualWeight;
                                                                 l_AccWeightAlreadySet = true;
                                                             }
 
@@ -1065,7 +990,7 @@ namespace BSDiscordRanking
                                                         {
                                                             if (!l_AccWeightAlreadySet && l_Config.AllowAutoWeightForAccLeaderboard)
                                                             {
-                                                                l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.AutoWeight;
+                                                                l_TotalAccPoints += (float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * l_Config.AccPointMultiplier * l_Difficulty.customData.AutoWeight;
                                                                 l_AccWeightAlreadySet = true;
                                                             }
 
@@ -1080,100 +1005,82 @@ namespace BSDiscordRanking
                                                         {
                                                             case true:
                                                             {
-                                                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet)
-                                                                {
-                                                                    l_TotalAccPoints += ((float)l_Score.score.baseScore / l_Difficulty.customData.maxScore) * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
-                                                                }
+                                                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet) l_TotalAccPoints += (float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
 
-                                                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet)
-                                                                {
-                                                                    l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
-                                                                }
+                                                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet) l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
 
                                                                 break;
                                                             }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        }
                                     }
                                 }
-                            }
 
-                            foreach (var l_Difficulty in l_Song.difficulties)
-                            {
+                            foreach (Difficulty l_Difficulty in l_Song.difficulties)
                                 if (l_CategoryPerLevelList.FindIndex(p_X => p_X == l_Difficulty.customData.category) < 0)
-                                {
                                     l_CategoryPerLevelList.Add(l_Difficulty.customData.category);
-                                }
-                            }
                         }
 
-                        foreach (int l_LeaderboardID in l_LeaderboardIdToRemove)
-                        {
-                            m_PlayerScore.RemoveAll(p_X => p_X.leaderboard.id == l_LeaderboardID); /// Removing potential cheated scores
-                        }
+                        foreach (int l_LeaderboardID in l_LeaderboardIdToRemove) m_PlayerScore.RemoveAll(p_X => p_X.leaderboard.id == l_LeaderboardID); /// Removing potential cheated scores
 
                         List<Difficulty> l_LevelDifficultyList = l_Level.value.m_Level.songs.SelectMany(p_Song => p_Song.difficulties).ToList();
                         l_NumberOfDifficulties += l_LevelDifficultyList.Count;
-                        foreach (string l_CategoryPerLevel in l_CategoryPerLevelList)
-                        {
-                            SetLevelCategoryPass(l_Level.value.m_LevelID, l_CategoryPerLevel, -1, l_LevelDifficultyList.Count(p_Difficulty => p_Difficulty.customData.category == l_CategoryPerLevel));
-                        }
+                        foreach (string l_CategoryPerLevel in l_CategoryPerLevelList) SetLevelCategoryPass(l_Level.value.m_LevelID, l_CategoryPerLevel, -1, l_LevelDifficultyList.Count(p_Difficulty => p_Difficulty.customData.category == l_CategoryPerLevel));
 
-                        if (l_PassesPerLevel > 0 && (m_PlayerStats.IsFirstScan))
+                        if (l_PassesPerLevel > 0 && m_PlayerStats.IsFirstScan)
                         {
-                            if (l_FetchPassFormat.newPass[^1].Length > 1900 - $"".Length)
-                            {
-                                l_FetchPassFormat.newPass.Add("");
-                            }
+                            if (l_FetchPassFormat.newPass[^1].Length > 1900 - "".Length) l_FetchPassFormat.newPass.Add("");
 
 
                             /// Display new pass on first scan message.
-                            if (l_Config.PerPlaylistWeighting)
-                            {
-                                l_FetchPassFormat.newPass[^1] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier * l_PassesPerLevel} {l_Config.PassPointsName})\n";
-                            }
+                            if (l_Config.PerPlaylistWeighting) l_FetchPassFormat.newPass[^1] += $":white_check_mark: You passed `{l_PassesPerLevel}/{l_NumberOfDifficulties}` maps in Level **{l_Level.value.m_LevelID}** (+{l_Weighting * l_Config.PassPointMultiplier * l_PassesPerLevel} {l_Config.PassPointsName})\n";
                         }
 
                         // Here set the global level
-                        int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0;
+                        int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0, l_Ruby = 0;
                         switch (l_PassesPerLevel * 100 / l_NumberOfDifficulties)
                         {
                             case 0:
                             {
                                 break;
                             }
-                            case <= 39:
+                            case <= 25:
                             {
                                 l_Plastic = 1;
                                 break;
                             }
-                            case <= 69:
+                            case <= 50:
                             {
                                 l_Silver = 1;
                                 break;
                             }
-                            case <= 99:
+                            case <= 75:
                             {
                                 l_Gold = 1;
                                 break;
                             }
 
-                            case 100:
+                            case <= 99:
                             {
                                 l_Diamond = 1;
                                 break;
                             }
+                            
+                            case 100:
+                            {
+                                l_Ruby = 1;
+                                break;
+                            }
                         }
 
-                        Trophy l_Trophy = new Trophy()
+                        Trophy l_Trophy = new()
                         {
                             Plastic = l_Plastic,
                             Silver = l_Silver,
                             Gold = l_Gold,
-                            Diamond = l_Diamond
+                            Diamond = l_Diamond,
+                            Ruby = l_Ruby
                         };
 
                         if (m_PlayerStats.Levels is not null) /// If it is maybe you forgot to GetStats()?
@@ -1192,8 +1099,7 @@ namespace BSDiscordRanking
                             else
                             {
                                 if (l_PassesPerLevel > 0)
-                                {
-                                    m_PlayerStats.Levels.Add(new PassedLevel()
+                                    m_PlayerStats.Levels.Add(new PassedLevel
                                     {
                                         LevelID = l_Level.value.m_LevelID,
                                         Passed = true,
@@ -1201,10 +1107,8 @@ namespace BSDiscordRanking
                                         TotalNumberOfMaps = l_NumberOfDifficulties,
                                         Trophy = l_Trophy
                                     });
-                                }
                                 else
-                                {
-                                    m_PlayerStats.Levels.Add(new PassedLevel()
+                                    m_PlayerStats.Levels.Add(new PassedLevel
                                     {
                                         LevelID = l_Level.value.m_LevelID,
                                         Passed = false,
@@ -1212,7 +1116,6 @@ namespace BSDiscordRanking
                                         TotalNumberOfMaps = l_NumberOfDifficulties,
                                         Trophy = l_Trophy
                                     });
-                                }
                             }
                         }
 
@@ -1245,22 +1148,16 @@ namespace BSDiscordRanking
 
                     bool l_IsFirstMessage = true;
                     if (l_FetchPassFormat.newPass.Count > 0)
-                    {
                         if (l_FetchPassFormat.newPass[0] != "")
-                        {
                             foreach (string l_Message in l_FetchPassFormat.newPass)
                             {
-                                EmbedBuilder l_Builder = new EmbedBuilder();
+                                EmbedBuilder l_Builder = new();
                                 if (l_IsFirstMessage)
                                 {
                                     if (l_OldPlayerFirstScanStatus)
-                                    {
                                         l_Builder.WithTitle("You passed maps in the following levels:");
-                                    }
                                     else
-                                    {
                                         l_Builder.WithTitle("You passed the following maps:");
-                                    }
                                 }
 
                                 l_IsFirstMessage = false;
@@ -1269,21 +1166,14 @@ namespace BSDiscordRanking
                                 Embed l_Embed = l_Builder.Build();
                                 await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
-                        }
-                    }
 
 
                     if (l_FetchPassFormat.updatedPass.Count > 0 && !l_OldPlayerFirstScanStatus)
-                    {
                         if (l_FetchPassFormat.updatedPass[0] != "")
-                        {
                             foreach (string l_Message in l_FetchPassFormat.updatedPass)
                             {
-                                EmbedBuilder l_Builder = new EmbedBuilder();
-                                if (l_IsFirstMessage)
-                                {
-                                    l_Builder.WithTitle("You updated your scores on the following maps:");
-                                }
+                                EmbedBuilder l_Builder = new();
+                                if (l_IsFirstMessage) l_Builder.WithTitle("You updated your scores on the following maps:");
 
                                 l_IsFirstMessage = false;
                                 l_Builder.WithDescription(l_Message);
@@ -1291,16 +1181,12 @@ namespace BSDiscordRanking
                                 Embed l_Embed = l_Builder.Build();
                                 await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
-                        }
-                    }
 
                     if (l_FetchPassFormat.removedPass.Count > 0 && !l_OldPlayerFirstScanStatus)
-                    {
                         if (l_FetchPassFormat.removedPass[0] != "")
-                        {
                             foreach (string l_Message in l_FetchPassFormat.removedPass)
                             {
-                                EmbedBuilder l_Builder = new EmbedBuilder();
+                                EmbedBuilder l_Builder = new();
                                 l_Builder.WithTitle("Those scores have been removed:");
 
                                 l_IsFirstMessage = false;
@@ -1309,17 +1195,13 @@ namespace BSDiscordRanking
                                 Embed l_Embed = l_Builder.Build();
                                 await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
-                        }
-                    }
 
                     if (l_FetchPassFormat.adminConfirmationPass.Count > 0)
-                    {
                         if (l_FetchPassFormat.adminConfirmationPass[0] != "")
-                        {
                             foreach (string l_Message in l_FetchPassFormat.adminConfirmationPass)
                             {
-                                EmbedBuilder l_Builder = new EmbedBuilder();
-                                l_Builder.WithTitle($"Those scores have been submitted for Admin Confirmation:");
+                                EmbedBuilder l_Builder = new();
+                                l_Builder.WithTitle("Those scores have been submitted for Admin Confirmation:");
 
                                 l_IsFirstMessage = false;
                                 l_Builder.WithDescription(l_Message);
@@ -1331,17 +1213,13 @@ namespace BSDiscordRanking
                                 l_Embed = l_Builder.Build();
                                 await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
-                        }
-                    }
 
                     if (l_FetchPassFormat.cheatedPass.Count > 0)
-                    {
                         if (l_FetchPassFormat.cheatedPass[0] != "")
-                        {
                             foreach (string l_Message in l_FetchPassFormat.cheatedPass)
                             {
-                                EmbedBuilder l_Builder = new EmbedBuilder();
-                                l_Builder.WithTitle($"Those scores have been deleted and submitted to Admin because they are breaking the rules:");
+                                EmbedBuilder l_Builder = new();
+                                l_Builder.WithTitle("Those scores have been deleted and submitted to Admin because they are breaking the rules:");
 
                                 l_IsFirstMessage = false;
                                 l_Builder.WithDescription(l_Message);
@@ -1353,15 +1231,10 @@ namespace BSDiscordRanking
                                 l_Embed = l_Builder.Build();
                                 await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                             }
-                        }
-                    }
 
-                    if (GetPlayerLevel() == 8 && l_AboveLVLFourteenPass)
-                    {
-                        await p_Context.Channel.SendMessageAsync($"Ohh that's quite pog, but `{ConfigController.GetConfig().CommandPrefix[0]}lvl9` when <a:KekBoom:905995426786856971>");
-                    }
+                    if (GetPlayerLevel() == 8 && l_AboveLVLFourteenPass) await p_Context.Channel.SendMessageAsync($"Ohh that's quite pog, but `{ConfigController.GetConfig().CommandPrefix[0]}lvl9` when <a:KekBoom:905995426786856971>");
 
-                    return new NumberOfPassTypeFormat()
+                    return new NumberOfPassTypeFormat
                     {
                         newPass = l_NewPasses,
                         updatedPass = l_UpdatedPasses
@@ -1371,42 +1244,37 @@ namespace BSDiscordRanking
                 {
                     Console.WriteLine($"error : {l_Exception.Data}");
                     await p_Context.Channel.SendMessageAsync($"Error : {l_Exception.Message}");
-                    return new NumberOfPassTypeFormat() { newPass = 0, updatedPass = 0 };
+                    return new NumberOfPassTypeFormat { newPass = 0, updatedPass = 0 };
                 }
             }
-            else
-            {
-                return new NumberOfPassTypeFormat() { newPass = 0, updatedPass = 0 };
-            }
+
+            return new NumberOfPassTypeFormat { newPass = 0, updatedPass = 0 };
         }
 
         public static PlayerPassFormat ReturnStaticPass(string p_PlayerID)
         {
             /// This method return the Serialised version of the current saved Player's pass, ruturn an empty on if none.
-            PlayerPassFormat l_PlayerPass = new PlayerPassFormat();
+            PlayerPassFormat l_PlayerPass = new();
             if (p_PlayerID != null)
             {
                 if (!Directory.Exists($"{m_FolderPath}{p_PlayerID}/"))
-                {
                     Console.WriteLine("Seems like you forgot to Create the Player Directory, Returning empty pass.");
-                }
                 else
-                {
                     try
                     {
-                        using (StreamReader l_SR = new StreamReader($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json"))
+                        using (StreamReader l_SR = new($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json"))
                         {
                             l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                             if (l_PlayerPass == null) /// json contain "null"
                             {
-                                l_PlayerPass = new PlayerPassFormat()
+                                l_PlayerPass = new PlayerPassFormat
                                 {
-                                    SongList = new List<InPlayerSong>()
+                                    SongList = new List<InPlayerSong>
                                     {
-                                        new InPlayerSong()
+                                        new()
                                     }
                                 };
-                                Console.WriteLine($"PlayerPass Created (Empty Format), file contained null");
+                                Console.WriteLine("PlayerPass Created (Empty Format), file contained null");
                             }
                             else
                             {
@@ -1416,44 +1284,36 @@ namespace BSDiscordRanking
                     }
                     catch (Exception) /// file format is wrong / there isn't any file.
                     {
-                        l_PlayerPass = new PlayerPassFormat()
+                        l_PlayerPass = new PlayerPassFormat
                         {
-                            SongList = new List<InPlayerSong>()
+                            SongList = new List<InPlayerSong>
                             {
-                                new InPlayerSong()
+                                new()
                             }
                         };
                         Console.WriteLine($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json Created (Empty Format)");
                     }
-                }
 
                 return l_PlayerPass;
             }
 
-            else
+            return l_PlayerPass = new PlayerPassFormat
             {
-                return l_PlayerPass = new PlayerPassFormat()
+                SongList = new List<InPlayerSong>
                 {
-                    SongList = new List<InPlayerSong>()
-                    {
-                        new InPlayerSong()
-                    }
-                };
-            }
+                    new()
+                }
+            };
         }
 
         public PlayerPassFormat ReturnPass()
         {
             // ReSharper disable once InvertIf
             if (m_PlayerID != null)
-            {
                 if (m_PlayerPass is not null)
-                {
                     return m_PlayerPass;
-                }
-            }
 
-            return new PlayerPassFormat()
+            return new PlayerPassFormat
             {
                 SongList = new List<InPlayerSong>()
             };
@@ -1466,16 +1326,15 @@ namespace BSDiscordRanking
 
         public static PlayerPassFormat GetStaticPass(string p_PlayerID)
         {
-            PlayerPassFormat l_PlayerPass = new PlayerPassFormat
+            PlayerPassFormat l_PlayerPass = new()
             {
                 SongList = new List<InPlayerSong>()
             };
 
             if (p_PlayerID != null)
-            {
                 try
                 {
-                    using StreamReader l_SR = new StreamReader($"{m_FolderPath}{p_PlayerID}/pass.json");
+                    using StreamReader l_SR = new($"{m_FolderPath}{p_PlayerID}/pass.json");
                     l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
                     return l_PlayerPass;
                 }
@@ -1488,7 +1347,6 @@ namespace BSDiscordRanking
                     Console.WriteLine("This player don't have any pass yet");
                     return l_PlayerPass;
                 }
-            }
 
             return l_PlayerPass;
         }
@@ -1496,9 +1354,7 @@ namespace BSDiscordRanking
         public void ReWritePass(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             if (m_PlayerID != null)
-            {
                 if (p_TryLimit > 0)
-                {
                     try
                     {
                         if (m_PlayerPass != null)
@@ -1529,18 +1385,14 @@ namespace BSDiscordRanking
                         Thread.Sleep(p_TryTimeout);
                         ReWritePass(p_TryLimit, p_TryTimeout);
                     }
-                }
-            }
         }
 
         private void ResetTrophy()
         {
             if (m_PlayerStats.Levels != null)
-            {
                 foreach (PassedLevel l_PlayerStatsLevel in m_PlayerStats.Levels)
                 {
                     if (l_PlayerStatsLevel.Categories != null)
-                    {
                         foreach (CategoryPassed l_Category in l_PlayerStatsLevel.Categories)
                         {
                             l_Category.Trophy ??= new Trophy();
@@ -1549,7 +1401,6 @@ namespace BSDiscordRanking
                             l_Category.Trophy.Gold = 0;
                             l_Category.Trophy.Diamond = 0;
                         }
-                    }
 
                     l_PlayerStatsLevel.Trophy ??= new Trophy();
                     l_PlayerStatsLevel.Trophy.Plastic = 0;
@@ -1557,31 +1408,30 @@ namespace BSDiscordRanking
                     l_PlayerStatsLevel.Trophy.Gold = 0;
                     l_PlayerStatsLevel.Trophy.Diamond = 0;
                 }
-            }
         }
 
         public void ResetLevels()
         {
             m_PlayerStats.Levels?.Clear();
-            m_PlayerStats.Levels = new List<PassedLevel>()
+            m_PlayerStats.Levels = new List<PassedLevel>
             {
-                new PassedLevel()
+                new()
                 {
                     LevelID = 0,
-                    Categories = new List<CategoryPassed>()
+                    Categories = new List<CategoryPassed>
                     {
-                        new CategoryPassed()
+                        new()
                         {
                             Category = null,
                             NumberOfPass = 0,
                             TotalNumberOfMaps = 0,
                             Passed = false,
-                            Trophy = new Trophy() { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
+                            Trophy = new Trophy { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
                         }
                     },
                     Passed = false,
                     NumberOfPass = 0,
-                    Trophy = new Trophy() { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
+                    Trophy = new Trophy { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
                 }
             };
         }
@@ -1625,14 +1475,10 @@ namespace BSDiscordRanking
         public PlayerStatsFormat GetStats()
         {
             if (m_PlayerID != null)
-            {
                 if (m_PlayerStats is not null)
-                {
                     return m_PlayerStats;
-                }
-            }
 
-            return new PlayerStatsFormat()
+            return new PlayerStatsFormat
             {
                 Levels = new List<PassedLevel>(),
                 AccPoints = 0,
@@ -1649,27 +1495,27 @@ namespace BSDiscordRanking
             {
                 try
                 {
-                    using StreamReader l_SR = new StreamReader($@"{m_FolderPath}{p_PlayerID}/stats.json");
+                    using StreamReader l_SR = new($@"{m_FolderPath}{p_PlayerID}/stats.json");
                     l_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {
                     l_PlayerStats = new PlayerStatsFormat
                     {
-                        Levels = new List<PassedLevel>()
+                        Levels = new List<PassedLevel>
                         {
-                            new PassedLevel()
+                            new()
                             {
                                 LevelID = 0,
-                                Categories = new List<CategoryPassed>()
+                                Categories = new List<CategoryPassed>
                                 {
-                                    new CategoryPassed()
+                                    new()
                                     {
                                         Category = null,
                                         NumberOfPass = 0,
                                         TotalNumberOfMaps = 0,
                                         Passed = false,
-                                        Trophy = new Trophy() { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
+                                        Trophy = new Trophy { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
                                     }
                                 }
                             }
@@ -1678,49 +1524,47 @@ namespace BSDiscordRanking
                         PassPoints = new int(),
                         IsFirstScan = true
                     };
-                    Console.WriteLine($"This player don't have any stats yet");
+                    Console.WriteLine("This player don't have any stats yet");
                 }
 
                 if (l_PlayerStats is { Levels: null })
-                {
-                    l_PlayerStats.Levels = new List<PassedLevel>()
+                    l_PlayerStats.Levels = new List<PassedLevel>
                     {
-                        new PassedLevel()
+                        new()
                         {
                             LevelID = 0,
-                            Categories = new List<CategoryPassed>()
+                            Categories = new List<CategoryPassed>
                             {
-                                new CategoryPassed()
+                                new()
                                 {
                                     Category = null,
                                     NumberOfPass = 0,
                                     TotalNumberOfMaps = 0,
                                     Passed = false,
-                                    Trophy = new Trophy() { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
+                                    Trophy = new Trophy { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
                                 }
                             }
                         }
                     };
-                }
             }
             else
             {
                 l_PlayerStats = new PlayerStatsFormat
                 {
-                    Levels = new List<PassedLevel>()
+                    Levels = new List<PassedLevel>
                     {
-                        new PassedLevel()
+                        new()
                         {
                             LevelID = 0,
-                            Categories = new List<CategoryPassed>()
+                            Categories = new List<CategoryPassed>
                             {
-                                new CategoryPassed()
+                                new()
                                 {
                                     Category = null,
                                     NumberOfPass = 0,
                                     TotalNumberOfMaps = 0,
                                     Passed = false,
-                                    Trophy = new Trophy() { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
+                                    Trophy = new Trophy { Plastic = 0, Silver = 0, Gold = 0, Diamond = 0 }
                                 }
                             }
                         }
@@ -1741,7 +1585,7 @@ namespace BSDiscordRanking
 
         public PlayerPassPerLevelFormat GetPlayerPassPerLevel()
         {
-            PlayerPassPerLevelFormat l_PlayerPassPerLevelFormat = new PlayerPassPerLevelFormat()
+            PlayerPassPerLevelFormat l_PlayerPassPerLevelFormat = new()
             {
                 Levels = new List<InPassPerLevelFormat>()
             };
@@ -1758,28 +1602,23 @@ namespace BSDiscordRanking
                 int l_Silver = 0;
                 int l_Gold = 0;
                 int l_Diamond = 0;
+                int l_Ruby = 0;
                 string l_TrophyString = "";
-                foreach (var l_Song in l_Level.value.m_Level.songs)
+                foreach (SongFormat l_Song in l_Level.value.m_Level.songs)
                 {
-                    if (l_Song.difficulties != null)
-                    {
-                        l_NumberOfMapDiffInLevel += l_Song.difficulties.Count;
-                    }
+                    if (l_Song.difficulties != null) l_NumberOfMapDiffInLevel += l_Song.difficulties.Count;
 
                     if (m_PlayerPass?.SongList != null)
-                    {
                         l_NumberOfPass += (from l_PlayerPassedSong in m_PlayerPass.SongList
                             where string.Equals(l_Song.hash, l_PlayerPassedSong.hash, StringComparison.CurrentCultureIgnoreCase)
                             where l_Song.difficulties != null && l_PlayerPassedSong.DiffList != null
                             from l_SongDifficulty in l_Song.difficulties
                             where l_PlayerPassedSong.DiffList.Any(p_PlayerPassedDiff => l_SongDifficulty.characteristic == p_PlayerPassedDiff.Difficulty.characteristic && l_SongDifficulty.name == p_PlayerPassedDiff.Difficulty.name)
                             select l_PlayerPassedSong).Count();
-                    }
                 }
 
                 // ReSharper disable once IntDivisionByZero
                 if (l_NumberOfMapDiffInLevel != 0)
-                {
                     switch (l_NumberOfPass * 100 / l_NumberOfMapDiffInLevel)
                     {
                         case 0:
@@ -1787,39 +1626,60 @@ namespace BSDiscordRanking
                             l_TrophyString = "";
                             break;
                         }
-                        case <= 39:
+                        case <= 25:
                         {
                             l_Plastic = 1;
                             l_TrophyString = "<:plastic:874215132874571787>";
                             break;
                         }
-                        case <= 69:
+                        case <= 50:
                         {
                             l_Silver = 1;
                             l_TrophyString = "<:silver:874215133197500446>";
                             break;
                         }
-                        case <= 99:
+                        case <= 75:
                         {
                             l_Gold = 1;
                             l_TrophyString = "<:gold:874215133147197460>";
                             break;
                         }
-
-                        case 100:
+                        
+                        case <=99:
                         {
                             l_Diamond = 1;
                             l_TrophyString = "<:diamond:874215133289795584>";
                             break;
                         }
+
+                        case 100:
+                        {
+                            l_Ruby = 1;
+                            l_TrophyString = "<:ruby:916807008362057818>";
+                            break;
+                        }
                     }
-                }
 
                 l_PlayerPassPerLevelFormat.Levels.Add(new InPassPerLevelFormat
-                    { LevelID = l_Level.value.m_LevelID, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy { Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond }, TrophyString = l_TrophyString });
+                    { LevelID = l_Level.value.m_LevelID, NumberOfPass = l_NumberOfPass, NumberOfMapDiffInLevel = l_NumberOfMapDiffInLevel, Trophy = new Trophy { Plastic = l_Plastic, Silver = l_Silver, Gold = l_Gold, Diamond = l_Diamond, Ruby = l_Ruby}, TrophyString = l_TrophyString });
             }
 
             return l_PlayerPassPerLevelFormat.Levels == null ? null : l_PlayerPassPerLevelFormat;
+        }
+
+        public class FetchPassFormat
+        {
+            public List<string> newPass { get; set; }
+            public List<string> removedPass { get; set; }
+            public List<string> updatedPass { get; set; }
+            public List<string> adminConfirmationPass { get; set; }
+            public List<string> cheatedPass { get; set; }
+        }
+
+        public class NumberOfPassTypeFormat
+        {
+            public int newPass { get; set; }
+            public int updatedPass { get; set; }
         }
     }
 }

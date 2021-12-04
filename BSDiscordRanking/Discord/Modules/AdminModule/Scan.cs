@@ -57,33 +57,24 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 return;
             }
 
-            Player l_Player = new Player(p_DiscordOrScoreSaberID);
-            if (!l_IsDiscordLinked)
-            {
-                l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.name;
-            }
+            Player l_Player = new(p_DiscordOrScoreSaberID);
+            if (!l_IsDiscordLinked) l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.name;
 
             l_Player.LoadPass();
             int l_OldPlayerLevel = l_Player.GetPlayerLevel(); /// By doing so, as a result => loadstats() inside too.
 
             bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
-            var l_FetchPass = l_Player.FetchPass(Context);
+            Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context);
             if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
             {
                 if (l_IsDiscordLinked)
                 {
                     if (l_FetchPass.Result.newPass >= 1 && l_FetchPass.Result.updatedPass < 1)
-                    {
                         await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result.newPass} new maps!\n");
-                    }
                     else if (l_FetchPass.Result.newPass < 1 && l_FetchPass.Result.updatedPass >= 1)
-                    {
                         await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} updated {l_FetchPass.Result.updatedPass} scores on maps!\n");
-                    }
                     else
-                    {
                         await ReplyAsync($"> 🎉 {l_ScoreSaberOrDiscordName} passed {l_FetchPass.Result.newPass} new maps, and updated their scores on {l_FetchPass.Result.updatedPass} maps!\n");
-                    }
                 }
             }
             else
@@ -109,24 +100,26 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (l_IsDiscordLinked)
                 {
                     await ReplyAsync($"> :clock1: The bot will now update {l_ScoreSaberOrDiscordName}'s roles. This step can take a while. `(The bot should now be responsive again)`");
-                    var l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, l_User.Id, l_NewPlayerLevel);
+                    Task l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, l_User.Id, l_NewPlayerLevel);
                 }
             }
 
-            Trophy l_TotalTrophy = new Trophy()
+            Trophy l_TotalTrophy = new()
             {
                 Plastic = 0,
                 Silver = 0,
                 Gold = 0,
-                Diamond = 0
+                Diamond = 0,
+                Ruby = 0
             };
-            foreach (var l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
+            foreach (PassedLevel l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
             {
                 l_PlayerStatsLevel.Trophy ??= new Trophy();
                 l_TotalTrophy.Plastic += l_PlayerStatsLevel.Trophy.Plastic;
                 l_TotalTrophy.Silver += l_PlayerStatsLevel.Trophy.Silver;
                 l_TotalTrophy.Gold += l_PlayerStatsLevel.Trophy.Gold;
                 l_TotalTrophy.Diamond += l_PlayerStatsLevel.Trophy.Diamond;
+                l_TotalTrophy.Ruby += l_PlayerStatsLevel.Trophy.Ruby;
             }
             /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///////////////////////////
 

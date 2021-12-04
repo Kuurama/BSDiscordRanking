@@ -4,7 +4,6 @@ using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
@@ -35,7 +34,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (ulong.TryParse(p_DiscordOrScoreSaberID, out ulong l_ScoreSaberID))
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder().WithColor(Color.Purple);
-                    Player l_Player = new Player(p_DiscordOrScoreSaberID);
+                    Player l_Player = new(p_DiscordOrScoreSaberID);
                     l_Player.LoadPass();
                     if (l_Player.m_PlayerPass.SongList != null)
                     {
@@ -45,12 +44,13 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             int l_DiffIndex = l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList.FindIndex(p_X => p_X.Difficulty.customData.leaderboardID == l_LeaderboardID);
                             if (l_DiffIndex >= 0)
                             {
-                                l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s pass",$"(key-{l_Player.m_PlayerPass.SongList[l_SongIndex].key}) - {l_Player.m_PlayerPass.SongList[l_SongIndex].name}: {l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList[l_DiffIndex].Score} => {p_Score}.");
+                                l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s pass", $"(key-{l_Player.m_PlayerPass.SongList[l_SongIndex].key}) - {l_Player.m_PlayerPass.SongList[l_SongIndex].name}: {l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList[l_DiffIndex].Score} => {p_Score}.");
                                 if (l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList.Count > 1)
                                 {
                                     l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList[l_DiffIndex].Score = p_Score;
                                     l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList[l_DiffIndex].Rank = -1;
                                 }
+
                                 l_ScoreChanged = true;
                                 l_Player.ReWritePass();
                             }
@@ -66,15 +66,15 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                         int l_ScoreIndex = l_Player.m_PlayerScore.FindIndex(p_X => p_X.leaderboard.id == l_LeaderboardID);
                         if (l_ScoreIndex >= 0)
                         {
-                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score",$"(#{l_Player.m_PlayerScore[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore} => (#{-1}) - {p_Score}.");
+                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScore[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore} => (#{-1}) - {p_Score}.");
                             l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore = p_Score;
                             l_Player.m_PlayerScore[l_ScoreIndex].score.rank = -1;
                             l_ScoreChanged = true;
                             l_Player.ReWriteScore();
                         }
                     }
-                    
-                    MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(l_LeaderboardID);
+
+                    MapLeaderboardController l_MapLeaderboardController = new(l_LeaderboardID);
                     if (l_MapLeaderboardController.m_MapLeaderboard?.scores != null)
                     {
                         int l_MapLeaderboardIndex = l_MapLeaderboardController.m_MapLeaderboard.scores.FindIndex(p_X => p_X.score.leaderboardPlayerInfo.id == l_ScoreSaberID.ToString());
@@ -85,7 +85,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             l_ScoreChanged = true;
                             l_MapLeaderboardController.m_MapLeaderboard.forceAutoWeightRecalculation = true;
                             l_MapLeaderboardController.ReWriteMapLeaderboard();
-                            l_EmbedBuilder.AddField("Map Leaderboard",$"AutoWeight will be recalculated on scan (if the person scanning have a pass on it).");
+                            l_EmbedBuilder.AddField("Map Leaderboard", "AutoWeight will be recalculated on scan (if the person scanning have a pass on it).");
                         }
                     }
 

@@ -12,7 +12,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Shows the latency from Discord & ScoreSaber")]
         public async Task Ping()
         {
-            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.AddField("Discord: ", new Ping().Send("discord.com").RoundtripTime + "ms");
             l_EmbedBuilder.AddField("ScoreSaber: ", new Ping().Send("scoresaber.com").RoundtripTime + "ms");
             l_EmbedBuilder.WithFooter("#LoveArche",

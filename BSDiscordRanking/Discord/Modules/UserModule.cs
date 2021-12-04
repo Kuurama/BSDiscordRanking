@@ -25,24 +25,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             if (p_LevelFormat.songs.Count > 0)
             {
-                foreach (var l_PlayerPassSong in p_PlayerPass.SongList)
-                {
+                foreach (InPlayerSong l_PlayerPassSong in p_PlayerPass.SongList)
                     for (int l_I = p_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
-                    {
                         if (p_LevelFormat.songs.Count > l_I)
-                        {
-                            if (String.Equals(p_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
+                            if (string.Equals(p_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
                                 StringComparison.CurrentCultureIgnoreCase))
-                            {
-                                foreach (var l_PlayerPassSongDifficulty in l_PlayerPassSong.DiffList)
-                                {
+                                foreach (InPlayerPassFormat l_PlayerPassSongDifficulty in l_PlayerPassSong.DiffList)
                                     if (p_LevelFormat.songs.Count > l_I)
-                                    {
                                         for (int l_Y = p_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
-                                        {
                                             if (p_LevelFormat.songs[l_I].difficulties.Count > 0 &&
                                                 p_LevelFormat.songs.Count > 0)
-                                            {
                                                 if (p_LevelFormat.songs[l_I].difficulties[l_Y].characteristic ==
                                                     l_PlayerPassSongDifficulty.Difficulty.characteristic &&
                                                     p_LevelFormat.songs[l_I].difficulties[l_Y].name ==
@@ -50,23 +42,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                                 {
                                                     /// Here remove diff or map if it's the only ranked diff
                                                     if (p_LevelFormat.songs[l_I].difficulties.Count <= 1)
-                                                    {
                                                         p_LevelFormat.songs.Remove(p_LevelFormat.songs[l_I]);
-                                                    }
                                                     else
-                                                    {
                                                         p_LevelFormat.songs[l_I].difficulties
                                                             .Remove(p_LevelFormat.songs[l_I].difficulties[l_Y]);
-                                                    }
                                                 }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
 
                 p_LevelFormat.customData.syncURL = null;
             }
@@ -76,44 +56,27 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         public static RemoveCategoriesFormat RemoveOtherCategoriesFromPlaylist(LevelFormat p_LevelFormat, string p_Category)
         {
-            RemoveCategoriesFormat l_RemoveCategoriesFormat = new RemoveCategoriesFormat(){Categories = new List<string>()};
+            RemoveCategoriesFormat l_RemoveCategoriesFormat = new() { Categories = new List<string>() };
             if (p_LevelFormat.songs.Count > 0)
             {
                 for (int l_I = p_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
-                {
                     if (p_LevelFormat.songs.Count > l_I)
-                    {
                         if (p_LevelFormat.songs.Count > l_I)
-                        {
                             for (int l_Y = p_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
-                            {
                                 if (p_LevelFormat.songs[l_I].difficulties.Count > 0 && p_LevelFormat.songs.Count > 0)
-                                {
                                     if (p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category !=
                                         p_Category)
                                     {
                                         int l_FindIndex = l_RemoveCategoriesFormat.Categories.FindIndex(p_X => p_X == p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
-                                        if (l_FindIndex < 0)
-                                        {
-                                            l_RemoveCategoriesFormat.Categories.Add(p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
-                                        }
+                                        if (l_FindIndex < 0) l_RemoveCategoriesFormat.Categories.Add(p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
 
                                         /// Here remove diffs or maps on which the category isn't correct.
                                         if (p_LevelFormat.songs[l_I].difficulties.Count <= 1)
-                                        {
                                             p_LevelFormat.songs.Remove(p_LevelFormat.songs[l_I]);
-                                        }
                                         else
-                                        {
                                             p_LevelFormat.songs[l_I].difficulties
                                                 .Remove(p_LevelFormat.songs[l_I].difficulties[l_Y]);
-                                        }
                                     }
-                                }
-                            }
-                        }
-                    }
-                }
 
                 p_LevelFormat.customData.syncURL = null;
             }
@@ -123,22 +86,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return l_RemoveCategoriesFormat;
         }
 
-        public class RemoveCategoriesFormat
-        {
-            public LevelFormat LevelFormat;
-            public List<string> Categories;
-        }
-
         private static string RemoveSpecialCharacters(string p_Str)
         {
-            StringBuilder l_SB = new StringBuilder();
+            StringBuilder l_SB = new();
             foreach (char l_C in p_Str)
-            {
                 if (l_C is >= '0' and <= '9' or >= 'A' and <= 'Z' or >= 'a' and <= 'z' or '_')
-                {
                     l_SB.Append(l_C);
-                }
-            }
 
             return l_SB.ToString();
         }
@@ -152,16 +105,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 if (File.Exists(p_OriginalPath + p_FileName + ".zip"))
                     File.Delete(p_OriginalPath + p_FileName + ".zip");
 
-                DirectoryInfo l_Directory = new DirectoryInfo(l_Path);
-                foreach (FileInfo l_File in l_Directory.EnumerateFiles())
-                {
-                    l_File.Delete();
-                }
+                DirectoryInfo l_Directory = new(l_Path);
+                foreach (FileInfo l_File in l_Directory.EnumerateFiles()) l_File.Delete();
 
-                foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories())
-                {
-                    l_Dir.Delete(true);
-                }
+                foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories()) l_Dir.Delete(true);
 
                 Directory.Delete(p_OriginalPath + p_FileName + "/");
                 ///////////////////////////////////////////////////////////////////////
@@ -175,20 +122,20 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         private static string GetTrophyString(bool p_UseBigEmote, int p_NumberOfPass, int p_TotalNumberOfMaps, float p_Multiplier = 1.0f)
         {
             string l_TrophyString = null;
-            
+
             if (p_TotalNumberOfMaps != 0)
             {
                 if (!p_UseBigEmote)
                 {
 #pragma warning disable 8509
                     l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
-#pragma warning restore 8509
                     {
                         0 => "",
-                        <= 39 => "<:plastic:874215132874571787>",
-                        <= 69 => "<:silver:874215133197500446>",
-                        <= 99 => "<:gold:874215133147197460>",
-                        >= 100 => "<:diamond:874215133289795584>",
+                        <= 25 => "<:plastic:874215132874571787>",
+                        <= 50 => "<:silver:874215133197500446>",
+                        <= 75 => "<:gold:874215133147197460>",
+                        <= 99 => "<:diamond:874215133289795584>",
+                        >= 100 => "<:ruby:916807008362057818>",
                     };
                 }
                 else
@@ -198,16 +145,18 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 #pragma warning restore 8509
                     {
                         0 => "",
-                        <= 39 => "<:big_plastic:916492151402164314>",
-                        <= 69 => "<:big_silver:916492243743932467>",
-                        <= 99 => "<:big_gold:916492277780709426>",
-                        >= 100 => "<:big_diamond:916492304108355685>",
+                        <= 25 => "<:big_plastic:916492151402164314>",
+                        <= 50 => "<:big_silver:916492243743932467>",
+                        <= 75 => "<:big_gold:916492277780709426>",
+                        <= 99 => "<:big_diamond:916492304108355685>",
+                        >= 100 => "<:big_ruby:916803316925755473>",
                     };
                 }
             }
+
             return l_TrophyString;
         }
-        
+
         private static double StandardDeviation(IReadOnlyCollection<double> p_Sequence)
         {
             double l_Result = 0;
@@ -216,8 +165,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 double l_Average = p_Sequence.Average();
                 double l_Sum = p_Sequence.Sum(p_X => Math.Pow(p_X - l_Average, 2));
-                l_Result = Math.Sqrt((l_Sum) / (p_Sequence.Count - 1));
+                l_Result = Math.Sqrt(l_Sum / (p_Sequence.Count - 1));
             }
+
             return l_Result;
         }
 
@@ -253,26 +203,26 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 return;
             }
 
-            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            Player l_Player = new(p_DiscordOrScoreSaberID);
             int l_GlobalPlayerLevel = l_Player.GetPlayerLevel();
-            var l_PlayerStats = l_Player.GetStats();
+            PlayerStatsFormat l_PlayerStats = l_Player.GetStats();
 
             int l_Plastics = 0;
             int l_Silvers = 0;
             int l_Golds = 0;
-
             int l_Diamonds = 0;
+            int l_Rubys = 0;
+            
             if (l_Player.m_PlayerStats.Levels is not null)
-            {
-                foreach (var l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
+                foreach (PassedLevel l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
                 {
                     l_PlayerStatsLevel.Trophy ??= new Trophy();
                     l_Plastics += l_PlayerStatsLevel.Trophy.Plastic;
                     l_Silvers += l_PlayerStatsLevel.Trophy.Silver;
                     l_Golds += l_PlayerStatsLevel.Trophy.Gold;
                     l_Diamonds += l_PlayerStatsLevel.Trophy.Diamond;
+                    l_Rubys += l_PlayerStatsLevel.Trophy.Ruby;
                 }
-            }
 
 
             int l_PassFindIndex = -1;
@@ -323,23 +273,17 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_AccRankFieldValue = $":medal: #{l_AccFindIndex + 1} - {l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_AccFindIndex].Points} {l_Config.AccPointsName}";
             }
 
-            if (l_Config.EnableAccBasedLeaderboard || l_Config.EnablePassBasedLeaderboard)
-            {
-                l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
-            }
-            
+            if (l_Config.EnableAccBasedLeaderboard || l_Config.EnablePassBasedLeaderboard) l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
+
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
-            
+
             if (l_Config.EnableLevelByCategory)
             {
-                List<double> l_LevelEquilibriumList = new List<double>();
+                List<double> l_LevelEquilibriumList = new();
                 bool l_GlobalLevelIsUseless = false;
-                List<Tuple<string, int>> l_CategoryTuples = new List<Tuple<string, int>>();
-                foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex =  l_CategoryTuples.FindIndex(p_X => p_X.Item1 == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory)
-                {
-                    l_CategoryTuples.Add(new Tuple<string, int>(l_LevelCategory.Category, l_Player.GetPlayerLevel(false, l_LevelCategory.Category, true)));
-                }
+                List<Tuple<string, int>> l_CategoryTuples = new();
+                foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex = l_CategoryTuples.FindIndex(p_X => p_X.Item1 == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory) l_CategoryTuples.Add(new Tuple<string, int>(l_LevelCategory.Category, l_Player.GetPlayerLevel(false, l_LevelCategory.Category, true)));
 
                 int l_Index = 0;
                 foreach ((string l_CategoryName, int l_CategoryMaxLevel) in l_CategoryTuples.Where(p_Category => p_Category.Item1 != null))
@@ -347,67 +291,55 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_Index++;
                     int l_LevelCategory = l_Player.GetPlayerLevel(false, l_CategoryName);
 
-                    if (l_LevelCategory != l_CategoryMaxLevel)
-                    {
-                        l_LevelEquilibriumList.Add(l_LevelCategory);
-                    }
+                    if (l_LevelCategory != l_CategoryMaxLevel) l_LevelEquilibriumList.Add(l_LevelCategory);
 
-                    l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel, 1.25f)} {l_LevelCategory}/{l_CategoryMaxLevel}", true);
-                    if (l_Index%2 == 0)
-                    {
-                        l_EmbedBuilder.AddField("\u200B", "\u200B", false);
-                    }
+                    l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel)} {l_LevelCategory}/{l_CategoryMaxLevel}", true);
+                    if (l_Index % 2 == 0) l_EmbedBuilder.AddField("\u200B", "\u200B");
 
-                    if (l_GlobalPlayerLevel == l_LevelCategory)
-                    {
-                        l_GlobalLevelIsUseless = true;
-                    }
+                    if (l_GlobalPlayerLevel == l_LevelCategory) l_GlobalLevelIsUseless = true;
                 }
 
-                if (!l_GlobalLevelIsUseless)
-                {
-                    l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
-                }
+                if (!l_GlobalLevelIsUseless) l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
 
                 double l_LevelEquilibriumPercentage;
                 if (l_LevelEquilibriumList.Any())
-                {
-                    l_LevelEquilibriumPercentage = 100f-((StandardDeviation(l_LevelEquilibriumList)*100f)/l_LevelEquilibriumList.Average());
-                }
+                    l_LevelEquilibriumPercentage = 100f - StandardDeviation(l_LevelEquilibriumList) * 100f / l_LevelEquilibriumList.Average();
                 else
-                {
                     l_LevelEquilibriumPercentage = 100f;
-                }
 
-                EmbedFieldBuilder l_LevelEquilibriumField = new EmbedFieldBuilder(){Name = $"Skill Equilibrium",Value = $"{GetTrophyString(true, (int)(l_LevelEquilibriumPercentage), 100, 1.05f)} {l_LevelEquilibriumPercentage:n2}%",IsInline = true};
+                EmbedFieldBuilder l_LevelEquilibriumField = new() { Name = "Skill Equilibrium", Value = $"{GetTrophyString(true, (int)l_LevelEquilibriumPercentage, 100)} {l_LevelEquilibriumPercentage:n2}%", IsInline = true };
                 l_EmbedBuilder.Fields.Insert(4, l_LevelEquilibriumField);
-                l_EmbedBuilder.Fields.Insert(5, new EmbedFieldBuilder(){Name = "\u200B",Value = "\u200B",IsInline = false});
+                l_EmbedBuilder.Fields.Insert(5, new EmbedFieldBuilder { Name = "\u200B", Value = "\u200B", IsInline = false });
             }
             else
             {
                 l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             }
-            
-            
-            l_EmbedBuilder.AddField($"Plastic trophies:", $"<:big_plastic:916492151402164314>: {l_Plastics}", true);
-            l_EmbedBuilder.AddField($"Silver trophies:", $"<:big_silver:916492243743932467>: {l_Silvers}", true);
+
+
+            l_EmbedBuilder.AddField("Plastic trophies:", $"<:big_plastic:916492151402164314>: {l_Plastics}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-            l_EmbedBuilder.AddField($"Gold trophies:", $"<:big_gold:916492277780709426>: {l_Golds}", true);
-            l_EmbedBuilder.AddField($"Diamond trophies:", $"<:big_diamond:916492304108355685>: {l_Diamonds}", true);
+            l_EmbedBuilder.AddField("Silver trophies:", $"<:big_silver:916492243743932467>: {l_Silvers}", true);
+            l_EmbedBuilder.AddField("Gold trophies:", $"<:big_gold:916492277780709426>: {l_Golds}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+            l_EmbedBuilder.AddField("Diamond trophies:", $"<:big_diamond:916492304108355685>: {l_Diamonds}", true);
+            l_EmbedBuilder.AddField("Ruby trophies:", $"<:big_ruby:916803316925755473>: {l_Rubys}", true);
+            
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
         }
 
         public static string FirstCharacterToUpper(string p_Text)
         {
-            if (p_Text.Length == 0)
-                p_Text = null;
-            else if (p_Text.Length == 1)
-                p_Text = char.ToUpper(p_Text[0]).ToString();
-            else
-                // ReSharper disable once ReplaceSubstringWithRangeIndexer
-                p_Text = char.ToUpper(p_Text[0]) + p_Text.Substring(1);
+            if (p_Text == null)
+                return null;
+
+            p_Text = p_Text.Length switch
+            {
+                0 => null,
+                1 => char.ToUpper(p_Text[0]).ToString(),
+                _ => char.ToUpper(p_Text[0]) + p_Text.Substring(1)
+            };
             return p_Text;
         }
 
@@ -421,14 +353,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             for (int l_I = 0;
                 l_I < l_Progress;
                 l_I++)
-            {
                 l_ProgressText += "▇";
-            }
 
-            for (int l_I = 0; l_I < l_EmptyProgress; l_I++)
-            {
-                l_ProgressText += "—";
-            }
+            for (int l_I = 0; l_I < l_EmptyProgress; l_I++) l_ProgressText += "—";
 
             return $"[{l_ProgressText}]";
         }
@@ -436,16 +363,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public static Color GetRoleColor(List<RoleFormat> p_RoleList, IReadOnlyCollection<SocketRole> p_Roles, int p_Level)
         {
             Color l_Color = Color.Default;
-            foreach (var l_UserRole in p_Roles)
-            {
-                foreach (var l_Role in p_RoleList)
-                {
-                    if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
-                    {
-                        l_Color = l_UserRole.Color;
-                    }
-                }
-            }
+            foreach (SocketRole l_UserRole in p_Roles)
+            foreach (RoleFormat l_Role in p_RoleList)
+                if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
+                    l_Color = l_UserRole.Color;
 
             return l_Color;
         }
@@ -471,7 +392,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else
                 {
-                    return new PlayerFromDiscordOrScoreSaberIDFormat()
+                    return new PlayerFromDiscordOrScoreSaberIDFormat
                     {
                         IsScoreSaberAccount = l_IsScoreSaberAccount,
                         DiscordID = l_DiscordID,
@@ -495,7 +416,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
             {
-                return new PlayerFromDiscordOrScoreSaberIDFormat()
+                return new PlayerFromDiscordOrScoreSaberIDFormat
                 {
                     IsScoreSaberAccount = false,
                     DiscordID = p_DiscordOrScoreSaberID,
@@ -504,13 +425,19 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 };
             }
 
-            return new PlayerFromDiscordOrScoreSaberIDFormat()
+            return new PlayerFromDiscordOrScoreSaberIDFormat
             {
                 IsScoreSaberAccount = l_IsScoreSaberAccount,
                 DiscordID = l_DiscordID,
                 IsDiscordLinked = l_IsDiscordLinked,
                 ScoreSaberOrDiscordName = l_ScoreSaberOrDiscordName
             };
+        }
+
+        public class RemoveCategoriesFormat
+        {
+            public List<string> Categories;
+            public LevelFormat LevelFormat;
         }
 
         public class PlayerFromDiscordOrScoreSaberIDFormat
@@ -521,18 +448,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             public string ScoreSaberOrDiscordName { get; set; }
         }
 
-        class CheckChannelAttribute : PreconditionAttribute
+        private class CheckChannelAttribute : PreconditionAttribute
         {
             public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context,
                 CommandInfo p_Command, IServiceProvider p_Services)
             {
-                foreach (var l_AuthorizedChannel in ConfigController.GetConfig().AuthorizedChannels)
-                {
+                foreach (ulong l_AuthorizedChannel in ConfigController.GetConfig().AuthorizedChannels)
                     if (p_Context.Message.Channel.Id == l_AuthorizedChannel)
-                    {
                         return Task.FromResult(PreconditionResult.FromSuccess());
-                    }
-                }
 
                 return Task.FromResult(
                     PreconditionResult.FromError(

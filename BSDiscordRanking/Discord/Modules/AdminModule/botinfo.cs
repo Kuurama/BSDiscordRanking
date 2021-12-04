@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 
@@ -15,17 +16,17 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         [Summary("Shows information about the bot E.G: Uptime or ScoreCount.")]
         public async Task BotInfo()
         {
-            var l_Uptime = DateTime.Now - Process.GetCurrentProcess().StartTime;
+            TimeSpan l_Uptime = DateTime.Now - Process.GetCurrentProcess().StartTime;
             int l_ScoreCount = 0;
 
-            foreach (var l_User in UserController.m_Users)
+            foreach (UserFormat l_User in UserController.m_Users)
             {
-                Player l_Player = new Player(l_User.ScoreSaberID);
+                Player l_Player = new(l_User.ScoreSaberID);
                 l_Player.LoadPass();
                 l_ScoreCount += l_Player.m_PlayerPass.SongList.Count;
             }
-            
-            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+
+            EmbedBuilder l_EmbedBuilder = new();
             l_EmbedBuilder.WithTitle("BotInfos");
             l_EmbedBuilder.AddField("Uptime", $"{l_Uptime.Days}d, {l_Uptime.Hours}h, {l_Uptime.Minutes}m");
             l_EmbedBuilder.AddField("Player count", $"{UserController.m_Users.Count} players");

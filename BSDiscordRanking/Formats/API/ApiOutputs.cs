@@ -61,7 +61,7 @@ namespace BSDiscordRanking.Formats.API
         public bool hasReplay { get; set; }
         public string timeSet { get; set; }
     }
-    
+
     public class ApiLeaderboard
     {
         public int id { get; set; }
@@ -126,7 +126,7 @@ namespace BSDiscordRanking.Formats.API
         public string gameMode { get; set; }
         public string difficultyRaw { get; set; }
     }
-    
+
 
     public class ApiCheck
     {

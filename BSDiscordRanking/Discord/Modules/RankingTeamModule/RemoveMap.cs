@@ -32,30 +32,30 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         if (l_Map is null)
                         {
                             l_MapDeleted = true;
-                            Diff l_Diff = new Diff()
+                            Diff l_Diff = new()
                             {
                                 characteristic = p_Characteristic,
                                 difficulty = p_DifficultyName
                             };
-                            Version l_Version = new Version()
+                            Version l_Version = new()
                             {
                                 hash = null,
                                 key = p_Code,
-                                diffs = new List<Diff>() { l_Diff }
+                                diffs = new List<Diff> { l_Diff }
                             };
-                            l_Map = new BeatSaverFormat()
+                            l_Map = new BeatSaverFormat
                             {
                                 id = p_Code,
-                                versions = new List<Version>() { l_Version }
+                                versions = new List<Version> { l_Version }
                             };
                         }
 
                         LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, null, null, null, false, 1f, false, l_Map.id);
                         if (l_MapExistCheck.MapExist)
                         {
-                            Level l_Level = new Level(l_MapExistCheck.Level);
+                            Level l_Level = new(l_MapExistCheck.Level);
                             l_Level.RemoveMap(l_Map, p_DifficultyName, p_Characteristic, Context);
-                            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                            EmbedBuilder l_EmbedBuilder = new();
                             if (l_Level.m_Level.songs.Count == 0)
                             {
                                 l_Level.DeleteLevel();
@@ -68,15 +68,15 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 if (!l_MapDeleted)
                                 {
                                     l_EmbedBuilder.WithTitle("Map removed!");
-                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
                                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 }
                                 else
                                 {
                                     l_EmbedBuilder.WithTitle("Map removed! (wasn't on BeatSaver anymore)");
-                                    l_EmbedBuilder.AddField("Old Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                    l_EmbedBuilder.AddField("Old Link:", $"https://beatsaver.com/maps/{l_Map.id}");
                                 }
-                                
+
                                 l_EmbedBuilder.AddField("Map name:", l_MapExistCheck.Name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
                                 l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
@@ -88,14 +88,18 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         }
                         else
                         {
-                            await ReplyAsync($"> :x: Sorry, this map difficulty isn't in any levels.");
+                            await ReplyAsync("> :x: Sorry, this map difficulty isn't in any levels.");
                         }
                     }
                     else
+                    {
                         await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree`\"");
+                    }
                 }
                 else
+                {
                     await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                }
             }
         }
     }

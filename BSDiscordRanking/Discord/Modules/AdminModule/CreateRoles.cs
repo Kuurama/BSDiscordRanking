@@ -20,14 +20,10 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         public async Task AllowUser(ulong p_DiscordID)
         {
             if (UserController.GiveRemoveBSDRRole(p_DiscordID, Context, false))
-            {
                 await ReplyAsync(
                     $"{ConfigController.GetConfig().RolePrefix} Ranked Role added to user <@{p_DiscordID}>,{Environment.NewLine}You might want to **check the pins** for *answers*, use the `{ConfigController.GetConfig().CommandPrefix[0]}getstarted` command to get started.");
-            }
             else
-            {
                 await ReplyAsync($"This player can't be found/already have the '{ConfigController.GetConfig().RolePrefix} Ranked' Role.");
-            }
         }
     }
 }

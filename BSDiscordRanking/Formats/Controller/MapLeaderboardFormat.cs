@@ -7,9 +7,9 @@ namespace BSDiscordRanking.Formats.Controller
     {
         public string key { get; set; }
         public bool forceAutoWeightRecalculation { get; set; }
-        
+
         public ApiLeaderboard info { get; set; }
-        
+
         public List<MapPlayerScore> scores { get; set; }
     }
 
@@ -25,5 +25,4 @@ namespace BSDiscordRanking.Formats.Controller
         /// Added this field to help displaying only the players registered on the bot.
         /// </summary>
     }
-    
 }

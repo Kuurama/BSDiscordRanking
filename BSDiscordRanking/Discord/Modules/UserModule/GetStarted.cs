@@ -16,7 +16,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public async Task GetStarted()
         {
             ConfigFormat l_Config = ConfigController.GetConfig();
-            var l_Builder = new EmbedBuilder()
+            EmbedBuilder l_Builder = new EmbedBuilder()
                 .WithTitle("How to get started with the ranking bot? :thinking:")
                 .WithFooter("Prefix: " + Join(", ", l_Config.CommandPrefix) + " | Bot made by Kuurama#3423 & Julien#1234")
                 .AddField("Step 1", $"The first command you wanna use is the link command:\n```{BotHandler.m_Prefix}link [ScoreSaberLink]```")
@@ -35,7 +35,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     $"There two different leaderboard using the `{BotHandler.m_Prefix}ldpass` and the `{BotHandler.m_Prefix}ldacc` command! (or use `{BotHandler.m_Prefix}leaderboard`)\nEach pass you do gives you `{l_Config.PassPointsName}` and/or `{l_Config.AccPointsName}` , those points are used to sort you on the leaderboards, the further you progress in the pools, the harder the maps are, the more points you get!")
                 .AddField("To see your progress through the ranking:", $"Type `{BotHandler.m_Prefix}progress`")
                 .AddField("How do i look at my profile?", $"```{BotHandler.m_Prefix}profile```");
-            var l_Embed = l_Builder.Build();
+            Embed l_Embed = l_Builder.Build();
             await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
         }
     }

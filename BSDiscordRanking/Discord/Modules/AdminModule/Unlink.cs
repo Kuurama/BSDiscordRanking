@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
 
@@ -12,24 +11,20 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         [Summary("Unlinks a specific discord accounts from your ScoreSaber's one (also work the opposite ID way).")]
         public async Task UnLinkUser(string p_DiscordOrScoreSaberID = "")
         {
-            if (!String.IsNullOrEmpty(p_DiscordOrScoreSaberID))
+            if (!string.IsNullOrEmpty(p_DiscordOrScoreSaberID))
             {
                 bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
 
                 if (l_IsScoreSaberAccount)
                 {
                     if (!UserController.SSIsAlreadyLinked(p_DiscordOrScoreSaberID))
-                    {
                         await ReplyAsync("> :x: Sorry, this Score Saber ID isn't registered on the Bot.");
-                    }
                     else
-                    {
                         p_DiscordOrScoreSaberID = UserController.GetDiscordID(p_DiscordOrScoreSaberID);
-                    }
                 }
                 else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
                 {
-                    await ReplyAsync($"> :x: Sorry but this account isn't registered on the bot/wrong ScoreSaber ID, and as a result, can't be unlinked");
+                    await ReplyAsync("> :x: Sorry but this account isn't registered on the bot/wrong ScoreSaber ID, and as a result, can't be unlinked");
                     return;
                 }
 

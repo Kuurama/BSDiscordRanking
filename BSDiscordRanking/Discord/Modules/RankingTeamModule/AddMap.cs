@@ -29,7 +29,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                 if (p_CustomPassText == "null")
                     p_CustomPassText = null;
-                
+
                 p_CustomPassText = p_CustomPassText?.Replace("_", " ");
                 p_InfoOnGGP = p_InfoOnGGP?.Replace("_", " ");
                 p_Category = p_Category?.Replace("_", " ");
@@ -38,18 +38,16 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                 {
                     if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                     {
-                        Level l_Level = new Level(p_Level);
+                        Level l_Level = new(p_Level);
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode, Context);
                         int l_NumberOfNote = 0;
                         bool l_DiffExist = false;
-                        foreach (var l_Diff in l_Map.versions[^1].diffs)
-                        {
+                        foreach (Diff l_Diff in l_Map.versions[^1].diffs)
                             if (l_Diff.characteristic == p_Characteristic && l_Diff.difficulty == p_DifficultyName)
                             {
                                 l_NumberOfNote = l_Diff.notes;
                                 l_DiffExist = true;
                             }
-                        }
 
                         if (l_DiffExist)
                         {
@@ -59,13 +57,13 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, p_AdminPingOnPass, Context);
                                 if (l_Level.m_MapAdded)
                                 {
-                                    EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                                    EmbedBuilder l_EmbedBuilder = new();
                                     l_EmbedBuilder.WithTitle("Map Added:");
                                     l_EmbedBuilder.WithDescription(l_Map.name);
                                     l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                     l_EmbedBuilder.AddField("Level:", p_Level, true);
                                     l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
-                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
                                     l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                     l_EmbedBuilder.WithColor(Color.Blue);
@@ -75,31 +73,31 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
                             {
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, p_AdminPingOnPass, Context);
-                                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+                                EmbedBuilder l_EmbedBuilder = new();
                                 l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
 
                                 if (l_MapExistCheck.DifferentMinScore)
-                                    l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", false);
+                                    l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})");
 
                                 if (l_MapExistCheck.DifferentCategory && p_Category != null)
-                                    l_EmbedBuilder.AddField("New Category:", p_Category, false);
+                                    l_EmbedBuilder.AddField("New Category:", p_Category);
 
                                 if (l_MapExistCheck.DifferentInfoOnGGP && p_InfoOnGGP != null)
-                                    l_EmbedBuilder.AddField("New InfoOnGGP:", p_InfoOnGGP, false);
+                                    l_EmbedBuilder.AddField("New InfoOnGGP:", p_InfoOnGGP);
 
                                 if (l_MapExistCheck.DifferentPassText && p_CustomPassText != null)
-                                    l_EmbedBuilder.AddField("New CustomPassText:", p_CustomPassText, false);
+                                    l_EmbedBuilder.AddField("New CustomPassText:", p_CustomPassText);
 
                                 if (l_MapExistCheck.DifferentForceManualWeight)
-                                    l_EmbedBuilder.AddField("New ManualWeightPreference:", p_ForceManualWeight, false);
+                                    l_EmbedBuilder.AddField("New ManualWeightPreference:", p_ForceManualWeight);
 
                                 if (l_MapExistCheck.DifferentWeight)
-                                    l_EmbedBuilder.AddField("New Weight:", p_Weight, false);
+                                    l_EmbedBuilder.AddField("New Weight:", p_Weight);
 
-                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}", false);
+                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithColor(Color.Blue);
@@ -112,14 +110,18 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         }
                         else
                         {
-                            await Context.Channel.SendMessageAsync($"The diff {p_DifficultyName} - {p_Characteristic} doesn't exist in this BeatMap", false);
+                            await Context.Channel.SendMessageAsync($"The diff {p_DifficultyName} - {p_Characteristic} doesn't exist in this BeatMap");
                         }
                     }
                     else
+                    {
                         await ReplyAsync("> :x: Seems like you didn't entered the difficulty name correctly. Use: \"`Easy,Normal,Hard,Expert or ExpertPlus`\"");
+                    }
                 }
                 else
+                {
                     await ReplyAsync("> :x: Seems like you didn't entered the characteristic name correctly. Use: \"`Standard,Lawless,90Degree or 360Degree or NoArrows`\"");
+                }
             }
         }
     }

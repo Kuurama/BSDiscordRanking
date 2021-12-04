@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.EditorModule
 {
-    public partial class EditorModule : ModuleBase<SocketCommandContext>
+    public class EditorModule : ModuleBase<SocketCommandContext>
     {
         private const int Permission = 1;
     }

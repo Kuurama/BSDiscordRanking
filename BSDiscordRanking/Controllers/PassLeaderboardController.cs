@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Controllers
         private const string PATH = @"./Leaderboard/";
         private const string FILENAME = @"PassLeaderboard";
         private const int ERROR_LIMIT = 3;
-        private int m_ErrorNumber = 0;
+        private int m_ErrorNumber;
         public LeaderboardControllerFormat m_Leaderboard;
 
         public PassLeaderboardController()
@@ -32,7 +32,7 @@ namespace BSDiscordRanking.Controllers
             if (p_ScoreSaberID != null)
             {
                 bool l_NewPlayer = true;
-                SnipeFormat l_Snipe = new SnipeFormat()
+                SnipeFormat l_Snipe = new()
                 {
                     Player = new Sniped(),
                     SnipedByPlayers = new List<Sniped>()
@@ -43,30 +43,15 @@ namespace BSDiscordRanking.Controllers
                     if (p_ScoreSaberID == m_Leaderboard.Leaderboard[l_I].ScoreSaberID)
                     {
                         l_NewPlayer = false;
-                        if (p_Name != null)
-                        {
-                            m_Leaderboard.Leaderboard[l_I].Name = p_Name;
-                        }
+                        if (p_Name != null) m_Leaderboard.Leaderboard[l_I].Name = p_Name;
 
-                        if (p_Points >= 0)
-                        {
-                            m_Leaderboard.Leaderboard[l_I].Points = p_Points;
-                        }
+                        if (p_Points >= 0) m_Leaderboard.Leaderboard[l_I].Points = p_Points;
 
-                        if (p_Level >= 0)
-                        {
-                            m_Leaderboard.Leaderboard[l_I].Level = p_Level;
-                        }
+                        if (p_Level >= 0) m_Leaderboard.Leaderboard[l_I].Level = p_Level;
 
-                        if (p_Trophy != null)
-                        {
-                            m_Leaderboard.Leaderboard[l_I].Trophy = p_Trophy;
-                        }
+                        if (p_Trophy != null) m_Leaderboard.Leaderboard[l_I].Trophy = p_Trophy;
 
-                        if (p_PingToggle)
-                        {
-                            m_Leaderboard.Leaderboard[l_I].IsPingAllowed = !m_Leaderboard.Leaderboard[l_I].IsPingAllowed;
-                        }
+                        if (p_PingToggle) m_Leaderboard.Leaderboard[l_I].IsPingAllowed = !m_Leaderboard.Leaderboard[l_I].IsPingAllowed;
 
                         m_Leaderboard.Leaderboard[l_I].DiscordID = UserController.GetDiscordID(m_Leaderboard.Leaderboard[l_I].ScoreSaberID);
 
@@ -83,7 +68,7 @@ namespace BSDiscordRanking.Controllers
                     }
 
 
-                    l_Snipe.SnipedByPlayers.Add(new Sniped()
+                    l_Snipe.SnipedByPlayers.Add(new Sniped
                     {
                         Name = m_Leaderboard.Leaderboard[l_I].Name,
                         DiscordID = m_Leaderboard.Leaderboard[l_I].DiscordID,
@@ -97,15 +82,12 @@ namespace BSDiscordRanking.Controllers
                 for (int l_I = l_Snipe.SnipedByPlayers.Count - 1; l_I >= 0; l_I--)
                 {
                     l_Snipe.SnipedByPlayers[l_I].NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.SnipedByPlayers[l_I].ScoreSaberID) + 1;
-                    if (l_Snipe.SnipedByPlayers[l_I].OldRank >= l_Snipe.SnipedByPlayers[l_I].NewRank)
-                    {
-                        l_Snipe.SnipedByPlayers.RemoveAt(l_I);
-                    }
+                    if (l_Snipe.SnipedByPlayers[l_I].OldRank >= l_Snipe.SnipedByPlayers[l_I].NewRank) l_Snipe.SnipedByPlayers.RemoveAt(l_I);
                 }
 
                 if (l_NewPlayer)
                 {
-                    RankedPlayer l_RankedPlayer = new RankedPlayer
+                    RankedPlayer l_RankedPlayer = new()
                     {
                         Name = p_Name,
                         ScoreSaberID = p_ScoreSaberID,
@@ -123,21 +105,20 @@ namespace BSDiscordRanking.Controllers
                     if (p_Trophy != null)
                         l_RankedPlayer.Trophy = p_Trophy;
                     else
-                    {
-                        l_RankedPlayer.Trophy = new Trophy()
+                        l_RankedPlayer.Trophy = new Trophy
                         {
                             Plastic = 0,
                             Silver = 0,
                             Gold = 0,
-                            Diamond = 0
+                            Diamond = 0,
+                            Ruby = 0
                         };
-                    }
 
                     m_Leaderboard.Leaderboard.Add(l_RankedPlayer);
                     ReWriteLeaderboard();
-                    return new SnipeFormat()
+                    return new SnipeFormat
                     {
-                        Player = new Sniped()
+                        Player = new Sniped
                         {
                             NewRank = 0,
                             OldRank = 0,
@@ -149,19 +130,15 @@ namespace BSDiscordRanking.Controllers
                         SnipedByPlayers = new List<Sniped>()
                     };
                 }
-                else
-                {
-                    ReWriteLeaderboard();
 
-                    l_Snipe.Player.NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.Player.ScoreSaberID) + 1;
+                ReWriteLeaderboard();
 
-                    return l_Snipe; /// Returns the sniped players only if it not the first time the player is being registered.
-                }
+                l_Snipe.Player.NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.Player.ScoreSaberID) + 1;
+
+                return l_Snipe; /// Returns the sniped players only if it not the first time the player is being registered.
             }
-            else
-            {
-                Console.WriteLine("This player is missing his score saber id");
-            }
+
+            Console.WriteLine("This player is missing his score saber id");
 
             return null;
         }
@@ -171,10 +148,10 @@ namespace BSDiscordRanking.Controllers
             if (p_Snipe.Player.OldRank == p_Snipe.Player.NewRank) /// Don't send message if player's rank didn't changed.
                 return;
 
-            Player l_Player = new Player(p_Snipe.Player.ScoreSaberID);
+            Player l_Player = new(p_Snipe.Player.ScoreSaberID);
             bool l_SnipeExist = false;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
-            var l_Builder = new EmbedBuilder()
+            EmbedBuilder l_Builder = new EmbedBuilder()
                 .WithAuthor(p_Author =>
                 {
                     p_Author
@@ -188,7 +165,7 @@ namespace BSDiscordRanking.Controllers
 
             l_Builder.WithColor(p_Snipe.Player.OldRank < p_Snipe.Player.NewRank ? new Color(255, 0, 0) : new Color(0, 255, 0));
 
-            var l_Embed = l_Builder.Build();
+            Embed l_Embed = l_Builder.Build();
             await p_Context.Channel.SendMessageAsync(null, embed: l_Embed)
                 .ConfigureAwait(false);
 
@@ -198,7 +175,6 @@ namespace BSDiscordRanking.Controllers
             {
                 l_MyText += $"> <:Stonks:884058036371595294> {p_Snipe.Player.Name} #{p_Snipe.Player.OldRank} -> #{p_Snipe.Player.NewRank}\n";
                 foreach (Sniped l_SnipedPlayer in p_Snipe.SnipedByPlayers)
-                {
                     if (l_SnipedPlayer.IsPingAllowed && l_SnipedPlayer.OldRank != l_SnipedPlayer.NewRank)
                     {
                         l_SnipeExist = true;
@@ -219,7 +195,6 @@ namespace BSDiscordRanking.Controllers
 
                         l_MyText += $"> {l_PlayerText} #{l_SnipedPlayer.OldRank} -> #{l_SnipedPlayer.NewRank}\n";
                     }
-                }
             }
 
             if (l_SnipeExist)
@@ -244,23 +219,23 @@ namespace BSDiscordRanking.Controllers
 
                 try
                 {
-                    using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
+                    using (StreamReader l_SR = new($"{PATH}{FILENAME}.json"))
                     {
                         m_Leaderboard = JsonSerializer.Deserialize<LeaderboardControllerFormat>(l_SR.ReadToEnd());
                         if (m_Leaderboard == null) /// json contain "null"
                         {
-                            m_Leaderboard = new LeaderboardControllerFormat()
+                            m_Leaderboard = new LeaderboardControllerFormat
                             {
-                                Leaderboard = new List<RankedPlayer>()
+                                Leaderboard = new List<RankedPlayer>
                                 {
-                                    new RankedPlayer()
+                                    new()
                                     {
                                         Name = "PlayerSample",
                                         IsPingAllowed = false
                                     }
                                 }
                             };
-                            Console.WriteLine($"Leaderboard Created (Empty Format), contained null");
+                            Console.WriteLine("Leaderboard Created (Empty Format), contained null");
                         }
                         else
                         {
@@ -271,24 +246,24 @@ namespace BSDiscordRanking.Controllers
 
                             if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
 
-                            Console.WriteLine($"PassLeaderboard Loaded and Sorted");
+                            Console.WriteLine("PassLeaderboard Loaded and Sorted");
                         }
                     }
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {
-                    m_Leaderboard = new LeaderboardControllerFormat()
+                    m_Leaderboard = new LeaderboardControllerFormat
                     {
-                        Leaderboard = new List<RankedPlayer>()
+                        Leaderboard = new List<RankedPlayer>
                         {
-                            new RankedPlayer()
+                            new()
                             {
                                 Name = "PlayerSample",
                                 IsPingAllowed = false
                             }
                         }
                     };
-                    Console.WriteLine($"Leaderboard Created (Empty Format)");
+                    Console.WriteLine("Leaderboard Created (Empty Format)");
                 }
             }
             else

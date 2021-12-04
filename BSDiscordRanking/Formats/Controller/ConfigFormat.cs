@@ -4,8 +4,9 @@ namespace BSDiscordRanking.Formats.Controller
 {
     public class ConfigFormat
     {
+        public const string SCORE_SABER_API_VERSION = "3.0.0";
         public string DiscordToken { get; set; } = "";
-        public List<string> CommandPrefix { get; set; } = new List<string>();
+        public List<string> CommandPrefix { get; set; } = new();
         public string DiscordStatus { get; set; } = "Made by Kuurama & Julien";
 
         public ulong BotAdminRoleID { get; set; }
@@ -34,7 +35,7 @@ namespace BSDiscordRanking.Formats.Controller
         public bool AllowAutoWeightForAccLeaderboard { get; set; } = true;
 
         public bool AllowAutoWeightForPassLeaderboard { get; set; } = false;
-        
+
         public bool AllowForceManualWeightForAccLeaderboard { get; set; } = true;
 
         public bool AllowForceManualWeightForPassLeaderboard { get; set; } = false;
@@ -42,13 +43,11 @@ namespace BSDiscordRanking.Formats.Controller
 
         public bool OnlyAutoWeightForPassLeaderboard { get; set; } = false;
         public bool PerPlaylistWeighting { get; set; } = true;
-        
+
         public int MaximumNumberOfMapInGetInfo { get; set; } = 8;
 
         public bool DisplayCustomPassTextInGetInfo { get; set; } = false;
         public bool DisplayCategoryEdit { get; set; } = true;
         public bool DisplayCustomPassTextEdit { get; set; } = true;
-
-        public const string SCORE_SABER_API_VERSION = "3.0.0";
     }
 }

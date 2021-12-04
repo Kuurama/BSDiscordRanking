@@ -1,10 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using static System.String;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
@@ -19,7 +17,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             if (p_Command == null)
             {
                 int i = 0;
-                foreach (var l_Module in BotHandler.m_Commands.Modules)
+                foreach (ModuleInfo l_Module in BotHandler.m_Commands.Modules)
                 {
                     // This is very bad, should be changed one day but I don't know how to do it
                     if (l_Module.Name == "AdminModule")
@@ -34,13 +32,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
 
 
-                    EmbedBuilder l_Builder = new EmbedBuilder();
+                    EmbedBuilder l_Builder = new();
                     l_Builder.WithTitle(l_Module.Name);
-                    foreach (var l_Command in l_Module.Commands)
+                    foreach (CommandInfo l_Command in l_Module.Commands)
                     {
                         string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_Command.Name;
-                        foreach (var l_Parameter in l_Command.Parameters)
-                        {
+                        foreach (ParameterInfo l_Parameter in l_Command.Parameters)
                             if (l_Parameter.Summary != null)
                             {
                                 if (l_Parameter.Summary != "DoNotDisplayOnHelp")
@@ -54,7 +51,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                         l_Title += "[...]";
                                         break;
                                     }
-                                    
                                 }
                             }
                             else
@@ -69,8 +65,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     break;
                                 }
                             }
-                           
-                        }
 
                         l_Builder.AddField(l_Title, l_Command.Summary, true);
                         l_Builder.WithFooter("Prefix: " + Join(", ", ConfigController.GetConfig().CommandPrefix) + " | Bot made by Kuurama#3423 & Julien#1234");
@@ -82,14 +76,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
-                var l_FoundCommand = BotHandler.m_Commands.Commands.ToList().Find(x =>
-                    x.Name == p_Command || x.Aliases.ToList().Find(x => x == p_Command) == p_Command);
+                CommandInfo l_FoundCommand = BotHandler.m_Commands.Commands.ToList().Find(p_X =>
+                    p_X.Name == p_Command || p_X.Aliases.ToList().Find(p_X => p_X == p_Command) == p_Command);
                 if (l_FoundCommand != null)
                 {
-                    EmbedBuilder l_Builder = new EmbedBuilder();
+                    EmbedBuilder l_Builder = new();
                     string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_FoundCommand.Name;
-                    foreach (var l_Parameter in l_FoundCommand.Parameters)
-                    {
+                    foreach (ParameterInfo l_Parameter in l_FoundCommand.Parameters)
                         if (l_Parameter.Summary != null)
                         {
                             if (l_Parameter.Summary != "DoNotDisplayOnHelp")
@@ -103,7 +96,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     l_Title += "[...]";
                                     break;
                                 }
-                                    
                             }
                         }
                         else
@@ -118,7 +110,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 break;
                             }
                         }
-                    }
 
                     l_Builder.AddField(l_Title, l_FoundCommand.Summary, true);
                     await Context.Channel.SendMessageAsync("", false, l_Builder.Build());

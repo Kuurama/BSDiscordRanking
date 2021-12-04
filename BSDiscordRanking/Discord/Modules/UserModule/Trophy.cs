@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         [Command("trophy")]
         [Summary("Shows your trophy on a Level, or even on a specific level Category.")]
-        public async Task ShowTrophy(string p_LevelID = null, [Remainder]string p_Category = null)
+        public async Task ShowTrophy(string p_LevelID = null, [Remainder] string p_Category = null)
         {
             if (!UserController.UserExist(Context.User.Id.ToString()))
             {
@@ -39,7 +39,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     return;
                 }
 
-                Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+                Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
                 PlayerStatsFormat l_PlayerStats = l_Player.GetStats();
                 if (l_PlayerStats == null)
                 {
@@ -48,7 +48,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else
                 {
                     foreach (PassedLevel l_PerLevelFormat in l_PlayerStats.Levels)
-                    {
                         if (l_LevelID == l_PerLevelFormat.LevelID)
                         {
                             if (p_Category == null)
@@ -60,55 +59,43 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 }
 
                                 EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(true, l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.TotalNumberOfMaps)}",
-                                    $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.TotalNumberOfMaps} ({Math.Round((l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.TotalNumberOfMaps) * 100.0f)}%)");
+                                    $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.TotalNumberOfMaps} ({Math.Round(l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.TotalNumberOfMaps * 100.0f)}%)");
                                 Embed l_Embed = l_Builder.Build();
                                 await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
                                 return;
                             }
-                            else
+
+                            p_Category = FirstCharacterToUpper(p_Category);
+                            int l_CategoryIndex = l_PerLevelFormat.Categories.FindIndex(p_X => p_X.Category == p_Category);
+                            if (l_CategoryIndex >= 0)
                             {
-                                p_Category = FirstCharacterToUpper(p_Category);
-                                int l_CategoryIndex = l_PerLevelFormat.Categories.FindIndex(p_X => p_X.Category == p_Category);
-                                if (l_CategoryIndex >= 0)
+                                if (l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps == 0)
                                 {
-                                    if (l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps == 0)
-                                    {
-                                        await Context.Channel.SendMessageAsync($"Sorry but the level {l_PerLevelFormat.LevelID} doesn't contain any map.");
-                                        return;
-                                    }
-
-                                    
-                                    EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(true, l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass, l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps)}",
-                                        $"{l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass}/{l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps} ({Math.Round((l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass / (float)l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps) * 100.0f)}%)");
-                                    Embed l_Embed = l_Builder.Build();
-                                    await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                    await Context.Channel.SendMessageAsync($"Sorry but the level {l_PerLevelFormat.LevelID} doesn't contain any map.");
                                     return;
                                 }
-                                else
-                                {
-                                    List<string> l_AvailableCategories = new List<string>();
-                                    foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory)
-                                    {
-                                        l_AvailableCategories.Add(l_LevelCategory.Category);
-                                    }
-                                    
-                                    string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
-                                    l_Message = l_AvailableCategories.Where(p_X => p_X != null).Aggregate(l_Message, (p_Current, p_Y) => p_Current + $"\n> {p_Y}");
 
-                                    if (l_Message.Length <= 1980)
-                                    {
-                                        await ReplyAsync(l_Message);
-                                    }
-                                    else
-                                    {
-                                        await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
-                                    }
-                                    
-                                    return;
-                                }
+
+                                EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(true, l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass, l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps)}",
+                                    $"{l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass}/{l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps} ({Math.Round(l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass / (float)l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps * 100.0f)}%)");
+                                Embed l_Embed = l_Builder.Build();
+                                await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                return;
                             }
+
+                            List<string> l_AvailableCategories = new();
+                            foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory) l_AvailableCategories.Add(l_LevelCategory.Category);
+
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
+                            l_Message = l_AvailableCategories.Where(p_X => p_X != null).Aggregate(l_Message, (p_Current, p_Y) => p_Current + $"\n> {p_Y}");
+
+                            if (l_Message.Length <= 1980)
+                                await ReplyAsync(l_Message);
+                            else
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+
+                            return;
                         }
-                    }
 
                     await Context.Channel.SendMessageAsync($"Sorry but the level {p_LevelID} doesn't exist.");
                 }

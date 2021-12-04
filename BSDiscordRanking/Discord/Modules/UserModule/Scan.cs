@@ -14,11 +14,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Scans all your scores & passes. Also update your rank.")]
         public async Task Scan_Scores()
         {
-            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            Player l_Player = new(UserController.GetPlayer(Context.User.Id.ToString()));
             int l_OldPlayerLevel = l_Player.GetPlayerLevel();
 
             if (!UserController.UserExist(Context.User.Id.ToString()))
+            {
                 await ReplyAsync($"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
+            }
             else
             {
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder()
@@ -28,25 +30,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 l_Player.LoadPass(); /// Load the player's pass if there is.
-                var l_FetchPass = l_Player.FetchPass(Context);
+                Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
                 {
                     if (l_FetchPass.Result.newPass >= 1 && l_FetchPass.Result.updatedPass < 1)
-                    {
                         l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result.newPass} new maps!\n");
-                    }
                     else if (l_FetchPass.Result.newPass < 1 && l_FetchPass.Result.updatedPass >= 1)
-                    {
                         l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You updated {l_FetchPass.Result.updatedPass} scores on maps!\n");
-                    }
                     else
-                    {
                         l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result.newPass} new maps, and updated your scores on {l_FetchPass.Result.updatedPass} maps!\n");
-                    }
-                    if (l_FirsScan)
-                    {
-                        l_EmbedBuilder.AddField("\u200B", $"To see your progress through the pools, *try the* `{BotHandler.m_Prefix}progress` *command.*\nAnd to check your profile, *use the* `{BotHandler.m_Prefix}profile` *command.*\n> You might also want to take the pools playlist:");
-                    }
+                    if (l_FirsScan) l_EmbedBuilder.AddField("\u200B", $"To see your progress through the pools, *try the* `{BotHandler.m_Prefix}progress` *command.*\nAnd to check your profile, *use the* `{BotHandler.m_Prefix}profile` *command.*\n> You might also want to take the pools playlist:");
                 }
                 else
                 {
@@ -58,10 +51,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 l_EmbedBuilder.WithColor(l_Color);
                 await ReplyAsync(null, embed: l_EmbedBuilder.Build());
 
-                if (l_FirsScan)
-                {
-                    await GetPlaylist("all");
-                }
+                if (l_FirsScan) await GetPlaylist("all");
 
                 l_EmbedBuilder = new EmbedBuilder();
                 string l_Description = "";
@@ -80,29 +70,32 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_NewPlayerLevel);
                     l_EmbedBuilder.WithColor(l_Color); /// Changes the color if their level changed.
                     await ReplyAsync(null, embed: l_EmbedBuilder.Build());
-                    var l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, Context.User.Id, l_NewPlayerLevel);
+                    Task l_RoleUpdate = UserController.UpdateRoleAndSendMessage(Context, Context.User.Id, l_NewPlayerLevel);
                 }
 
-                Trophy l_TotalTrophy = new Trophy()
+                Trophy l_TotalTrophy = new()
                 {
                     Plastic = 0,
                     Silver = 0,
                     Gold = 0,
-                    Diamond = 0
+                    Diamond = 0,
+                    Ruby = 0
                 };
                 foreach (PassedLevel l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
                 {
-                    l_PlayerStatsLevel.Trophy ??= new Trophy()
+                    l_PlayerStatsLevel.Trophy ??= new Trophy
                     {
                         Plastic = 0,
                         Silver = 0,
                         Gold = 0,
-                        Diamond = 0
+                        Diamond = 0,
+                        Ruby = 0
                     };
                     l_TotalTrophy.Plastic += l_PlayerStatsLevel.Trophy.Plastic;
                     l_TotalTrophy.Silver += l_PlayerStatsLevel.Trophy.Silver;
                     l_TotalTrophy.Gold += l_PlayerStatsLevel.Trophy.Gold;
                     l_TotalTrophy.Diamond += l_PlayerStatsLevel.Trophy.Diamond;
+                    l_TotalTrophy.Ruby += l_PlayerStatsLevel.Trophy.Ruby;
                 }
 
                 /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///////////////////////////

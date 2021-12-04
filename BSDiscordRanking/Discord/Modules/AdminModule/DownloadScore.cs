@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
@@ -7,7 +6,6 @@ using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
@@ -38,7 +36,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (ulong.TryParse(p_DiscordOrScoreSaberID, out ulong l_ScoreSaberID))
                 {
                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder().WithColor(Color.Green);
-                    Player l_Player = new Player(p_DiscordOrScoreSaberID);
+                    Player l_Player = new(p_DiscordOrScoreSaberID);
                     l_Player.LoadPass();
 
                     List<ApiScore> l_ApiScores;
@@ -47,7 +45,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     l_ApiLeaderboard = MapLeaderboardController.GetInfos(l_LeaderboardID);
                     if (l_ApiLeaderboard == null)
                     {
-                        l_EmbedBuilder.WithTitle($"Sorry but it seems like this LeaderboardID is invalid.");
+                        l_EmbedBuilder.WithTitle("Sorry but it seems like this LeaderboardID is invalid.");
                         l_EmbedBuilder.WithUrl($"https://scoresaber.com/leaderboard/{l_LeaderboardID}");
                         l_EmbedBuilder.WithColor(Color.Red);
                         await ReplyAsync("", embed: l_EmbedBuilder.Build());
@@ -65,6 +63,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                                 l_ApiScores = null;
                                 break;
                             }
+
                             foreach (ApiScore l_Score in l_ApiScores.Where(p_X => p_X.leaderboardPlayerInfo.id == p_DiscordOrScoreSaberID))
                             {
                                 l_DownloadedPlayerScore = l_Score;
@@ -83,14 +82,14 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                         await ReplyAsync("", embed: l_EmbedBuilder.Build());
                         return;
                     }
-                    
+
 
                     if (l_Player.m_PlayerScore != null)
                     {
                         int l_ScoreIndex = l_Player.m_PlayerScore.FindIndex(p_X => p_X.leaderboard.id == l_LeaderboardID);
                         if (l_ScoreIndex >= 0)
                         {
-                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score",$"(#{l_Player.m_PlayerScore[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore} => (#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
+                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScore[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore} => (#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
                             l_Player.m_PlayerScore[l_ScoreIndex].score = l_DownloadedPlayerScore;
                             l_Player.m_PlayerScore[l_ScoreIndex].leaderboard = l_ApiLeaderboard;
                             l_ScoreRedownloaded = true;
@@ -98,12 +97,12 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                         }
                         else
                         {
-                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score",$"(#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
-                            l_Player.m_PlayerScore.Insert(0, new ApiScoreInfo{leaderboard = l_ApiLeaderboard, score = l_DownloadedPlayerScore});
+                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
+                            l_Player.m_PlayerScore.Insert(0, new ApiScoreInfo { leaderboard = l_ApiLeaderboard, score = l_DownloadedPlayerScore });
                             l_Player.ReWriteScore();
                         }
                     }
-                    
+
                     if (l_ScoreRedownloaded)
                     {
                         l_EmbedBuilder.WithTitle("The score have been ReDownloaded and Replaced.");

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace BSDiscordRanking.Formats.Level
 {
@@ -52,8 +51,8 @@ namespace BSDiscordRanking.Formats.Level
 
     public class DiffCustomData
     {
-        private string m_CustomPassText;
         private string m_Category;
+        private string m_CustomPassText;
         private string m_InfoOnGGP;
 
         public int levelWorth { get; set; }
