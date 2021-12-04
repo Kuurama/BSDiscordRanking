@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -232,6 +233,23 @@ namespace BSDiscordRanking
             }
         }
 
+        public List<string> GetAllCategory()
+        {
+            if (m_Level.songs != null)
+            {
+                List<string> l_AvailableCategories = new List<string>();
+                foreach (Difficulty l_Difficulty in from l_Song in m_Level.songs from l_Difficulty in l_Song.difficulties where l_AvailableCategories.FindIndex(p_X => p_X == l_Difficulty.customData.category) < 0 select l_Difficulty)
+                {
+                    l_AvailableCategories.Add(l_Difficulty.customData.category);
+                }
+
+                return l_AvailableCategories;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
         public void DeleteLevel()
         {

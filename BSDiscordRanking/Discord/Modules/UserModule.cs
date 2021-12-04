@@ -172,6 +172,41 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
         }
 
+        private static string GetTrophyString(bool p_UseBigEmote, int p_NumberOfPass, int p_TotalNumberOfMaps, float p_Multiplier = 1.0f)
+        {
+            string l_TrophyString = null;
+            
+            if (p_TotalNumberOfMaps != 0)
+            {
+                if (!p_UseBigEmote)
+                {
+#pragma warning disable 8509
+                    l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
+#pragma warning restore 8509
+                    {
+                        0 => "",
+                        <= 39 => "<:plastic:874215132874571787>",
+                        <= 69 => "<:silver:874215133197500446>",
+                        <= 99 => "<:gold:874215133147197460>",
+                        >= 100 => "<:diamond:874215133289795584>",
+                    };
+                }
+                else
+                {
+#pragma warning disable 8509
+                    l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
+#pragma warning restore 8509
+                    {
+                        0 => "",
+                        <= 39 => "<:big_plastic:916492151402164314>",
+                        <= 69 => "<:big_silver:916492243743932467>",
+                        <= 99 => "<:big_gold:916492277780709426>",
+                        >= 100 => "<:big_diamond:916492304108355685>",
+                    };
+                }
+            }
+            return l_TrophyString;
+        }
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
@@ -206,7 +241,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             Player l_Player = new Player(p_DiscordOrScoreSaberID);
-            int l_PlayerLevel = l_Player.GetPlayerLevel();
+            int l_GlobalPlayerLevel = l_Player.GetPlayerLevel();
             var l_PlayerStats = l_Player.GetStats();
 
             int l_Plastics = 0;
@@ -250,7 +285,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             l_EmbedBuilder.WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
             l_EmbedBuilder.AddField("Score Saber Rank", ":earth_africa: #" + l_Player.m_PlayerFull.rank, true);
 
-            Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_PlayerLevel);
+            Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_GlobalPlayerLevel);
 
             l_EmbedBuilder.WithColor(l_Color);
 
@@ -279,11 +314,68 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
             }
-
+            
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
-            l_EmbedBuilder.AddField("Level", ":trophy: " + l_PlayerLevel, true);
-            l_EmbedBuilder.AddField("\u200B", "\u200B", true);
+            
+            if (l_Config.EnableLevelByCategory)
+            {
+                List<float> l_LevelEquilibriumList = new List<float>();
+                bool l_GlobalLevelIsUseless = false;
+                List<Tuple<string, int>> l_CategoryTuples = new List<Tuple<string, int>>();
+                foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex =  l_CategoryTuples.FindIndex(p_X => p_X.Item1 == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory)
+                {
+                    l_CategoryTuples.Add(new Tuple<string, int>(l_LevelCategory.Category, l_Player.GetPlayerLevel(false, l_LevelCategory.Category, true)));
+                }
+
+                int l_Index = 0;
+                foreach ((string l_CategoryName, int l_CategoryMaxLevel) in l_CategoryTuples.Where(p_Category => p_Category.Item1 != null))
+                {
+                    l_Index++;
+                    int l_LevelCategory = l_Player.GetPlayerLevel(false, l_CategoryName);
+
+                    if (l_LevelCategory != l_CategoryMaxLevel)
+                    {
+                        l_LevelEquilibriumList.Add(l_LevelCategory);
+                    }
+
+                    l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel, 1.25f)} {l_LevelCategory}/{l_CategoryMaxLevel}", true);
+                    if (l_Index%2 == 0)
+                    {
+                        l_EmbedBuilder.AddField("\u200B", "\u200B", false);
+                    }
+
+                    if (l_GlobalPlayerLevel == l_LevelCategory)
+                    {
+                        l_GlobalLevelIsUseless = true;
+                    }
+                }
+
+                if (!l_GlobalLevelIsUseless)
+                {
+                    l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
+                }
+
+                float l_LevelEquilibriumPercentage;
+                if (l_LevelEquilibriumList.Count > 0)
+                {
+                    l_LevelEquilibriumPercentage = (l_LevelEquilibriumList.Sum()/l_LevelEquilibriumList.Count)*100f/l_LevelEquilibriumList.Max();
+                }
+                else
+                {
+                    l_LevelEquilibriumPercentage = 100f;
+                }
+
+                EmbedFieldBuilder l_LevelEquilibriumField = new EmbedFieldBuilder(){Name = $"Skill Equilibrium",Value = $"{GetTrophyString(true, (int)(l_LevelEquilibriumPercentage), 100, 1.05f)} {l_LevelEquilibriumPercentage:n2}%",IsInline = true};
+                l_EmbedBuilder.Fields.Insert(4, l_LevelEquilibriumField);
+                l_EmbedBuilder.Fields.Insert(5, new EmbedFieldBuilder(){Name = "\u200B",Value = "\u200B",IsInline = false});
+            }
+            else
+            {
+                l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
+            }
+            
+            
             l_EmbedBuilder.AddField($"Plastic trophies:", $"<:plastic:874215132874571787>: {l_Plastics}", true);
             l_EmbedBuilder.AddField($"Silver trophies:", $"<:silver:874215133197500446>: {l_Silvers}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);

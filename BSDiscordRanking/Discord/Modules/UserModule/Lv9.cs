@@ -3,7 +3,7 @@ using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
-    [CheckChannel]
+    /*[CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("lvl9")]
@@ -12,5 +12,5 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             await Context.Channel.SendMessageAsync("Here.. (take it, but it's secret) : ||http://prntscr.com/soylt9||", false);
         }
-    }
+    }*/
 }

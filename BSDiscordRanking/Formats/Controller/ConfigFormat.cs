@@ -21,6 +21,7 @@ namespace BSDiscordRanking.Formats.Controller
         public ulong AdminConfirmationChannel { get; set; }
 
         public bool GiveOldRoles { get; set; } = false;
+        public bool EnableLevelByCategory { get; set; } = true;
         public bool EnablePassBasedLeaderboard { get; set; } = true;
         public bool EnableAccBasedLeaderboard { get; set; } = true;
         public string PassPointsName { get; set; } = "PassPoints";
