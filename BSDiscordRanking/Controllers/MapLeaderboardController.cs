@@ -190,7 +190,7 @@ namespace BSDiscordRanking.Controllers
             return null;
         }
 
-        private void ReWriteMapLeaderboard()
+        public void ReWriteMapLeaderboard()
         {
             /// This Method Serialise the data from m_Leaderboard and create the Cache.
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
@@ -258,6 +258,7 @@ namespace BSDiscordRanking.Controllers
                             m_MapLeaderboard = new MapLeaderboardFormat()
                             {
                                 key = m_Key,
+                                forceAutoWeightRecalculation = false,
                                 info = null,
                                 scores = null
                             };
@@ -281,6 +282,7 @@ namespace BSDiscordRanking.Controllers
                     m_MapLeaderboard = new MapLeaderboardFormat()
                     {
                         key = m_Key,
+                        forceAutoWeightRecalculation = false,
                         info = null,
                         scores = null
                     };
@@ -365,6 +367,12 @@ namespace BSDiscordRanking.Controllers
                     }
                 }
 
+                if (m_MapLeaderboard.forceAutoWeightRecalculation)
+                {
+                    m_MapLeaderboard.forceAutoWeightRecalculation = false;
+                    return true;
+                }
+                
                 return false;
             }
             else

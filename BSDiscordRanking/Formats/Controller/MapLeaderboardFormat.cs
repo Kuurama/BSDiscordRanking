@@ -6,6 +6,7 @@ namespace BSDiscordRanking.Formats.Controller
     public class MapLeaderboardFormat
     {
         public string key { get; set; }
+        public bool forceAutoWeightRecalculation { get; set; }
         
         public ApiLeaderboard info { get; set; }
         

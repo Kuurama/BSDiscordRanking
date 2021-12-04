@@ -29,7 +29,7 @@ namespace BSDiscordRanking
         public ApiPlayerFull m_PlayerFull;
         private string m_PlayerID;
         public PlayerPassFormat m_PlayerPass;
-        private List<ApiScoreInfo> m_PlayerScore;
+        public List<ApiScoreInfo> m_PlayerScore;
         public PlayerStatsFormat m_PlayerStats;
 
         public Player(string p_PlayerID)
@@ -426,7 +426,7 @@ namespace BSDiscordRanking
             return false;
         }
 
-        private void ReWriteScore(int p_TryLimit = 3, int p_TryTimeout = 200)
+        public void ReWriteScore(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             /// This Method Serialise the data from m_PlayerScore and cache it to a file depending on the path parameter
             /// Be Aware that it will replace the current cache file (if there is any), it shouldn't be an issue
@@ -1493,7 +1493,7 @@ namespace BSDiscordRanking
             return l_PlayerPass;
         }
 
-        private void ReWritePass(int p_TryLimit = 3, int p_TryTimeout = 200)
+        public void ReWritePass(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
             if (m_PlayerID != null)
             {
