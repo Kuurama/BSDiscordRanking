@@ -424,7 +424,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             bool l_IsCorrectUserID = l_SplicedCustomID.Any(p_SplicedPartCustomID => p_SplicedPartCustomID == l_UserID.ToString());
             if (l_IsCorrectUserID)
             {
-                if (p_MessageComponent.IsValidToken && !p_MessageComponent.HasResponded && p_MessageComponent.Data.Values != null)
+                if (p_MessageComponent.IsValidToken && !p_MessageComponent.HasResponded)
                 {
                     await p_MessageComponent.DeferAsync();
                 }
