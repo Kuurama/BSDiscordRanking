@@ -18,30 +18,59 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ggp")]
         [Alias("getgrindpool")]
         [Summary("Shows the Level's maps while displaying your passes, also work with categories, not giving a specific level or category will display the next available level you might want to grind.")]
-        public async Task GetGrindPool(int p_Level = int.MinValue, string p_Category = null)
+        public async Task GetGrindPool(string p_Level = null, string p_Category = null)
         {
-            bool l_CheckForLastGGP = false;
             LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
             bool l_FullEmbeddedGGP = ConfigController.m_ConfigFormat.FullEmbeddedGGP;
 
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
             try
             {
-                if (p_Level == int.MinValue)
+                if (int.TryParse(p_Level, out int l_Level))
                 {
-                    int l_PlayerLevel = l_Player.GetPlayerLevel();
-                    int l_LevelTemp = int.MaxValue;
-
-                    foreach (int l_ID in l_LevelControllerFormat.LevelID.Where(p_ID => p_ID > l_PlayerLevel && p_ID <= l_LevelTemp))
+                    p_Category = FirstCharacterToUpper(p_Category);
+                    await SendGGP(l_LevelControllerFormat, l_Level, l_Player, p_Category, l_FullEmbeddedGGP, false);
+                }
+                else
+                {
+                    int l_PlayerLevel;
+                    if (p_Level != null) /// Player maybe used p_Level as the Category
                     {
-                        l_LevelTemp = l_ID;
+                        p_Level = FirstCharacterToUpper(p_Level);
+                        l_PlayerLevel = l_Player.GetPlayerLevel(false, p_Level);
+                        if (l_PlayerLevel == l_Player.GetPlayerLevel(false, p_Level, true))
+                        {
+                            l_Level = int.MinValue; /// Max level already reached.
+                        }
+                    }
+                    else
+                    {
+                        l_PlayerLevel = l_Player.GetPlayerLevel();
                     }
 
-                    p_Level = l_LevelTemp;
-                    l_CheckForLastGGP = true;
-                }
+                    if (l_Level != int.MinValue)
+                    {
+                        int l_LevelTemp = int.MaxValue;
 
-                SendGGP(l_LevelControllerFormat, p_Level, l_Player, p_Category, l_FullEmbeddedGGP, l_CheckForLastGGP);
+                        foreach (int l_ID in l_LevelControllerFormat.LevelID.Where(p_ID => p_ID > l_PlayerLevel && p_ID <= l_LevelTemp))
+                        {
+                            l_LevelTemp = l_ID;
+                        }
+
+                        l_Level = l_LevelTemp;
+                        
+                    }
+                    
+                    if (p_Level != null && p_Category == null)
+                    {
+                        p_Category = p_Level; /// Player typed !ggp Category, instead of !ggp LevelID Category.
+                        await SendGGP(l_LevelControllerFormat, l_Level, l_Player, p_Category, l_FullEmbeddedGGP, true);
+                    }
+                    else
+                    {
+                        await ReplyAsync($"> :x: Sorry but you didn't used the command correctly, either use `{BotHandler.m_Prefix}ggp <LevelID> <Category>`, or `{BotHandler.m_Prefix}ggp <Category>`.");
+                    }
+                }
             }
             catch
             {
@@ -94,13 +123,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     if (p_Category != null)
                     {
-                        p_Category = FirstCharacterToUpper(p_Category);
-
                         l_RemoveCategoriesFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
 
                         if (!l_RemoveCategoriesFormat.LevelFormat.songs.Any())
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
+                            string l_Message = $":x: Sorry but there isn't any categories in Level {p_Level} called {p_Category}, here is a list of all the available categories on that Level:";
                             foreach (string l_Category in l_RemoveCategoriesFormat.Categories)
                             {
                                 l_Message += $"\n> {l_Category}";
@@ -112,7 +139,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                             else
                             {
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories in Level {p_Level} called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                             }
 
                             return;
@@ -322,7 +349,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_AlreadyHaveThumbnail = true;
                         }
 
-                        l_EmbedBuilder.WithTitle($"Unpassed maps in level {p_Level}");
+                        l_EmbedBuilder.WithTitle(p_Category != null
+                            ? $"Unpassed maps in `{p_Category}` level {p_Level}"
+                            : $"Unpassed maps in level {p_Level}");
 
                         GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true);
 
@@ -357,8 +386,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else if (p_CheckForLastGGP)
             {
-                await ReplyAsync(
-                    "> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
+                await ReplyAsync("> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
             }
 
             else
