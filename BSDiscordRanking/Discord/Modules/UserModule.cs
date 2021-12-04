@@ -376,11 +376,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             
             
-            l_EmbedBuilder.AddField($"Plastic trophies:", $"<:plastic:874215132874571787>: {l_Plastics}", true);
-            l_EmbedBuilder.AddField($"Silver trophies:", $"<:silver:874215133197500446>: {l_Silvers}", true);
+            l_EmbedBuilder.AddField($"Plastic trophies:", $"<:big_plastic:916492151402164314>: {l_Plastics}", true);
+            l_EmbedBuilder.AddField($"Silver trophies:", $"<:big_silver:916492243743932467>: {l_Silvers}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
-            l_EmbedBuilder.AddField($"Gold trophies:", $"<:gold:874215133147197460>: {l_Golds}", true);
-            l_EmbedBuilder.AddField($"Diamond trophies:", $"<:diamond:874215133289795584>: {l_Diamonds}", true);
+            l_EmbedBuilder.AddField($"Gold trophies:", $"<:big_gold:916492277780709426>: {l_Golds}", true);
+            l_EmbedBuilder.AddField($"Diamond trophies:", $"<:big_diamond:916492304108355685>: {l_Diamonds}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
             // UserController.UpdatePlayerLevel(Context); /// Seems too heavy for !profile

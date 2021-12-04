@@ -59,7 +59,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     return;
                                 }
 
-                                EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(false, l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.TotalNumberOfMaps)}",
+                                EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(true, l_PerLevelFormat.NumberOfPass, l_PerLevelFormat.TotalNumberOfMaps)}",
                                     $"{l_PerLevelFormat.NumberOfPass}/{l_PerLevelFormat.TotalNumberOfMaps} ({Math.Round((l_PerLevelFormat.NumberOfPass / (float)l_PerLevelFormat.TotalNumberOfMaps) * 100.0f)}%)");
                                 Embed l_Embed = l_Builder.Build();
                                 await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
@@ -77,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     }
 
                                     
-                                    EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(false, l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass, l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps)}",
+                                    EmbedBuilder l_Builder = new EmbedBuilder().AddField($"Level {l_PerLevelFormat.LevelID} {GetTrophyString(true, l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass, l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps)}",
                                         $"{l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass}/{l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps} ({Math.Round((l_PerLevelFormat.Categories[l_CategoryIndex].NumberOfPass / (float)l_PerLevelFormat.Categories[l_CategoryIndex].TotalNumberOfMaps) * 100.0f)}%)");
                                     Embed l_Embed = l_Builder.Build();
                                     await Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
