@@ -74,7 +74,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return p_LevelFormat;
         }
 
-        private RemoveCategoriesFormat RemoveOtherCategoriesFromPlaylist(LevelFormat p_LevelFormat, string p_Category)
+        public static RemoveCategoriesFormat RemoveOtherCategoriesFromPlaylist(LevelFormat p_LevelFormat, string p_Category)
         {
             RemoveCategoriesFormat l_RemoveCategoriesFormat = new RemoveCategoriesFormat(){Categories = new List<string>()};
             if (p_LevelFormat.songs.Count > 0)
@@ -123,7 +123,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return l_RemoveCategoriesFormat;
         }
 
-        private class RemoveCategoriesFormat
+        public class RemoveCategoriesFormat
         {
             public LevelFormat LevelFormat;
             public List<string> Categories;
@@ -386,6 +386,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             else
             {
                 l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
+                l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             }
             
             
@@ -396,7 +397,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             l_EmbedBuilder.AddField($"Diamond trophies:", $"<:big_diamond:916492304108355685>: {l_Diamonds}", true);
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-            // UserController.UpdatePlayerLevel(Context); /// Seems too heavy for !profile
         }
 
         public static string FirstCharacterToUpper(string p_Text)
