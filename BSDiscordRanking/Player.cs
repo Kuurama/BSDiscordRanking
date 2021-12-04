@@ -731,10 +731,6 @@ namespace BSDiscordRanking
                                             {
                                                 if (l_Score.leaderboard.difficulty.difficultyRaw == $"_{l_Difficulty.name}_Solo{l_Difficulty.characteristic}")
                                                 {
-                                                    if (l_Score.leaderboard.id == 335786)
-                                                    {
-                                                        Console.WriteLine("yes");
-                                                    }
                                                     bool l_DiffExist = false;
                                                     bool l_TempDiffExist = false;
                                                     bool l_MinScoreRequirementFailed = false;
@@ -1033,11 +1029,7 @@ namespace BSDiscordRanking
                                                             role = m_PlayerFull.role
                                                         };
                                                         l_Score.score.leaderboardPlayerInfo = l_LeaderboardPlayerInfo; /// Needed for map leaderboard.
-
-                                                        if (l_Score.leaderboard.id == 335786)
-                                                        {
-                                                            Console.WriteLine("yes");
-                                                        }
+                                                        
                                                         bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore()
                                                         {
                                                             customData = new LeaderboardCustomData()
