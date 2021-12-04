@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.Level;
@@ -63,6 +65,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                         Level l_Level = new(l_LevelInt);
                         LevelFormat l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
+                        if (l_LevelFormat.songs.SelectMany(p_X => p_X.difficulties).Count() == l_Level.m_Level.songs.SelectMany(p_X => p_X.difficulties).Count())
+                        {
+                            await ReplyAsync($"> It seems like you don't have any pass on this level, i guess you wanted to use the `{BotHandler.m_Prefix}getplaylist {l_LevelInt}` command, here is it:");
+                            await GetPlaylist(p_Level);
+                            return;
+                        }
 
                         if (l_LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
                         {

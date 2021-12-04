@@ -21,67 +21,104 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         public const int Permission = 0;
 
-        private LevelFormat RemovePassFromPlaylist(PlayerPassFormat p_PlayerPass, LevelFormat p_LevelFormat)
+        private static LevelFormat RemovePassFromPlaylist(PlayerPassFormat p_PlayerPass, LevelFormat p_LevelFormat)
         {
+            LevelFormat l_TempFormat = new LevelFormat()
+            {
+                customData = new MainCustomData()
+                {
+                    syncURL = null,
+                    autoWeightDifficultyMultiplier = p_LevelFormat.customData.autoWeightDifficultyMultiplier,
+                    customPassText = p_LevelFormat.customData.customPassText,
+                    level = p_LevelFormat.customData.level,
+                    weighting = p_LevelFormat.customData.weighting
+                },
+                image = p_LevelFormat.image,
+                playlistAuthor = p_LevelFormat.playlistAuthor,
+                playlistDescription = p_LevelFormat.playlistDescription,
+                playlistTitle = p_LevelFormat.playlistTitle,
+                songs = new List<SongFormat>()
+            };
+            
             if (p_LevelFormat.songs.Count > 0)
             {
+                foreach (SongFormat l_Song in p_LevelFormat.songs)
+                {
+                    l_TempFormat.songs.Add(l_Song);
+                }
                 foreach (InPlayerSong l_PlayerPassSong in p_PlayerPass.SongList)
-                    for (int l_I = p_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
-                        if (p_LevelFormat.songs.Count > l_I)
-                            if (string.Equals(p_LevelFormat.songs[l_I].hash, l_PlayerPassSong.hash,
+                    for (int l_I = l_TempFormat.songs.Count - 1; l_I >= 0; l_I--)
+                        if (l_TempFormat.songs.Count > l_I)
+                            if (string.Equals(l_TempFormat.songs[l_I].hash, l_PlayerPassSong.hash,
                                 StringComparison.CurrentCultureIgnoreCase))
                                 foreach (InPlayerPassFormat l_PlayerPassSongDifficulty in l_PlayerPassSong.DiffList)
-                                    if (p_LevelFormat.songs.Count > l_I)
-                                        for (int l_Y = p_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
-                                            if (p_LevelFormat.songs[l_I].difficulties.Count > 0 &&
-                                                p_LevelFormat.songs.Count > 0)
-                                                if (p_LevelFormat.songs[l_I].difficulties[l_Y].characteristic ==
+                                    if (l_TempFormat.songs.Count > l_I)
+                                        for (int l_Y = l_TempFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
+                                            if (l_TempFormat.songs[l_I].difficulties.Count > 0 &&
+                                                l_TempFormat.songs.Count > 0)
+                                                if (l_TempFormat.songs[l_I].difficulties[l_Y].characteristic ==
                                                     l_PlayerPassSongDifficulty.Difficulty.characteristic &&
-                                                    p_LevelFormat.songs[l_I].difficulties[l_Y].name ==
+                                                    l_TempFormat.songs[l_I].difficulties[l_Y].name ==
                                                     l_PlayerPassSongDifficulty.Difficulty.name)
                                                 {
                                                     /// Here remove diff or map if it's the only ranked diff
-                                                    if (p_LevelFormat.songs[l_I].difficulties.Count <= 1)
-                                                        p_LevelFormat.songs.Remove(p_LevelFormat.songs[l_I]);
+                                                    if (l_TempFormat.songs[l_I].difficulties.Count <= 1)
+                                                        l_TempFormat.songs.Remove(l_TempFormat.songs[l_I]);
                                                     else
-                                                        p_LevelFormat.songs[l_I].difficulties
-                                                            .Remove(p_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                                        l_TempFormat.songs[l_I].difficulties
+                                                            .Remove(l_TempFormat.songs[l_I].difficulties[l_Y]);
                                                 }
-
-                p_LevelFormat.customData.syncURL = null;
             }
 
-            return p_LevelFormat;
+            return l_TempFormat;
         }
 
         public static RemoveCategoriesFormat RemoveOtherCategoriesFromPlaylist(LevelFormat p_LevelFormat, string p_Category)
         {
             RemoveCategoriesFormat l_RemoveCategoriesFormat = new() { Categories = new List<string>() };
+            LevelFormat l_TempFormat = new LevelFormat()
+            {
+                customData = new MainCustomData()
+                {
+                    syncURL = null,
+                    autoWeightDifficultyMultiplier = p_LevelFormat.customData.autoWeightDifficultyMultiplier,
+                    customPassText = p_LevelFormat.customData.customPassText,
+                    level = p_LevelFormat.customData.level,
+                    weighting = p_LevelFormat.customData.weighting
+                },
+                image = p_LevelFormat.image,
+                playlistAuthor = p_LevelFormat.playlistAuthor,
+                playlistDescription = p_LevelFormat.playlistDescription,
+                playlistTitle = p_LevelFormat.playlistTitle,
+                songs = new List<SongFormat>()
+            };
             if (p_LevelFormat.songs.Count > 0)
             {
-                for (int l_I = p_LevelFormat.songs.Count - 1; l_I >= 0; l_I--)
-                    if (p_LevelFormat.songs.Count > l_I)
-                        if (p_LevelFormat.songs.Count > l_I)
-                            for (int l_Y = p_LevelFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
-                                if (p_LevelFormat.songs[l_I].difficulties.Count > 0 && p_LevelFormat.songs.Count > 0)
-                                    if (p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category !=
+                foreach (SongFormat l_Song in p_LevelFormat.songs)
+                {
+                    l_TempFormat.songs.Add(l_Song);
+                }
+                for (int l_I = l_TempFormat.songs.Count - 1; l_I >= 0; l_I--)
+                    if (l_TempFormat.songs.Count > l_I)
+                        if (l_TempFormat.songs.Count > l_I)
+                            for (int l_Y = l_TempFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
+                                if (l_TempFormat.songs[l_I].difficulties.Count > 0 && l_TempFormat.songs.Count > 0)
+                                    if (l_TempFormat.songs[l_I].difficulties[l_Y].customData.category !=
                                         p_Category)
                                     {
-                                        int l_FindIndex = l_RemoveCategoriesFormat.Categories.FindIndex(p_X => p_X == p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
-                                        if (l_FindIndex < 0) l_RemoveCategoriesFormat.Categories.Add(p_LevelFormat.songs[l_I].difficulties[l_Y].customData.category);
+                                        int l_FindIndex = l_RemoveCategoriesFormat.Categories.FindIndex(p_X => p_X == l_TempFormat.songs[l_I].difficulties[l_Y].customData.category);
+                                        if (l_FindIndex < 0) l_RemoveCategoriesFormat.Categories.Add(l_TempFormat.songs[l_I].difficulties[l_Y].customData.category);
 
                                         /// Here remove diffs or maps on which the category isn't correct.
-                                        if (p_LevelFormat.songs[l_I].difficulties.Count <= 1)
-                                            p_LevelFormat.songs.Remove(p_LevelFormat.songs[l_I]);
+                                        if (l_TempFormat.songs[l_I].difficulties.Count <= 1)
+                                            l_TempFormat.songs.Remove(l_TempFormat.songs[l_I]);
                                         else
-                                            p_LevelFormat.songs[l_I].difficulties
-                                                .Remove(p_LevelFormat.songs[l_I].difficulties[l_Y]);
+                                            l_TempFormat.songs[l_I].difficulties
+                                                .Remove(l_TempFormat.songs[l_I].difficulties[l_Y]);
                                     }
-
-                p_LevelFormat.customData.syncURL = null;
             }
 
-            l_RemoveCategoriesFormat.LevelFormat = p_LevelFormat;
+            l_RemoveCategoriesFormat.LevelFormat = l_TempFormat;;
 
             return l_RemoveCategoriesFormat;
         }
