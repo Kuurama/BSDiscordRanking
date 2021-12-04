@@ -45,7 +45,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                             int l_DiffIndex = l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList.FindIndex(p_X => p_X.Difficulty.customData.leaderboardID == l_LeaderboardID);
                             if (l_DiffIndex >= 0)
                             {
-                                l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s pass",$"(key-{l_Player.m_PlayerPass.SongList[l_DiffIndex].key}) - {l_Player.m_PlayerPass.SongList[l_DiffIndex].name}.");
+                                l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s pass",$"(key-{l_Player.m_PlayerPass.SongList[l_SongIndex].key}) - {l_Player.m_PlayerPass.SongList[l_SongIndex].name}.");
                                 if (l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList.Count > 1)
                                 {
                                     l_Player.m_PlayerPass.SongList[l_SongIndex].DiffList.RemoveAt(l_DiffIndex);
