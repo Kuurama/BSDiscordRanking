@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
@@ -80,7 +81,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         Level l_Level = new Level(l_LevelInt);
                         RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
 
-                        if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
+                        if (l_LevelFormat.LevelFormat.songs.Any()) /// Only create the file if it's not empty.
                         {
                             JsonDataBaseController.CreateDirectory(l_Path);
                             Level.ReWriteStaticPlaylist(l_LevelFormat.LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
@@ -92,13 +93,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                         else
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level}, here is a list of all the available categories:";
                             foreach (string l_Category in l_LevelFormat.Categories) l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);
                             else
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level},\n+ there is too many categories in that level to send all of them in one message.");
                         }
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
@@ -139,12 +140,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     try
                     {
-                        if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Length > 0)
+                        if (Directory.GetFiles(l_Path, "*", SearchOption.AllDirectories).Any())
                         {
                             ZipFile.CreateFromDirectory(l_Path, $"{ORIGINAL_PATH}{l_FileName}.zip");
                             await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's the {p_Category}'s playlist folder!");
+                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                         }
-                        else
+                        else /// Shouldn't ever happen but actually, i prefer doing it.
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_AvailableCategories)
@@ -156,8 +158,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             else
                                 await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
                         }
-
-                        DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                     }
                     catch
                     {
@@ -171,7 +171,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);
                             else
-                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                                await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in all levels to send all of them in one message.");
                         }
                         else
                         {
