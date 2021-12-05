@@ -94,7 +94,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         else
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level}, here is a list of all the available categories:";
-                            foreach (string l_Category in l_LevelFormat.Categories) l_Message += $"\n> {l_Category}";
+                            foreach (string l_Category in l_LevelFormat.Categories)  if (l_Category != null) if (l_Category != "") l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);
@@ -149,9 +149,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         else /// Shouldn't ever happen but actually, i prefer doing it.
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
-                            foreach (string l_Category in l_AvailableCategories)
-                                if (l_Category != null)
-                                    l_Message += $"\n> {l_Category}";
+                            foreach (string l_Category in l_AvailableCategories) if (l_Category != null) if (l_Category != "") l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);
@@ -166,7 +164,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
                             foreach (string l_Category in l_AvailableCategories)
                                 if (l_Category != null)
-                                    l_Message += $"\n> {l_Category}";
+                                    if (l_Category != "") 
+                                        l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);

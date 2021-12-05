@@ -279,15 +279,15 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                     l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount)} ({p_NewMinPercentageRequirement:n2}%)");
 
                                                 if (l_MapExistCheck.DifferentCategory)
-                                                    l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory);
+                                                    l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory??"\u200B");
 
                                                 if (l_MapExistCheck.DifferentInfoOnGGP)
-                                                    l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP);
+                                                    l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP??"\u200B");
 
                                                 if (l_MapExistCheck.DifferentPassText)
                                                 {
                                                     if (l_Config.DisplayCustomPassTextInGetInfo)
-                                                        l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText);
+                                                        l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText??"\u200B");
                                                     else
                                                         l_MapChangeEmbedBuilder.AddField("New secret CustomPassText added", "\u200B");
                                                 }
@@ -393,7 +393,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
                             .AddField("\u200B", "\u200B")
-                            .AddField("__Category-Edit__", "Please type the category you want the map to be in (this will force the first letter to be UpperCase). Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
+                            .AddField("__Category-Edit__", "Please type the category you want the map to be in  (`null` for none) (this will force the first letter to be UpperCase). Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
@@ -403,6 +403,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
+                            if (l_LastUserMessage == "null")
+                            {
+                                l_LastUserMessage = null;
+                            }
                             l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
 
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
@@ -417,7 +421,12 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                             string l_OldCategory = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value.ToString();
                             l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = "New Category";
-                            l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = l_LastUserMessage;
+                            
+                            if (l_LastUserMessage == null)
+                            {
+                                l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = "\u200B";
+                            }
+                            
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCategory: true, p_NewCategory: l_LastUserMessage);
 
@@ -534,7 +543,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
                             .AddField("\u200B", "\u200B")
-                            .AddField("__InfoOnGGP-Edit__", "Please type the InfoOnGGP you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                            .AddField("__InfoOnGGP-Edit__", "Please type the InfoOnGGP you want the map to have (`null` for none). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
@@ -544,6 +553,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
+                            if (l_LastUserMessage == "null")
+                            {
+                                l_LastUserMessage = null;
+                            }
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_InfoOnGGPEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("InfoOnGGP-Edit"));
                             l_EmbedBuilder.Fields.RemoveAt(l_InfoOnGGPEditTitleFieldIndex); /// Removing the "InfoOnGGP-Edit" Field
@@ -556,7 +569,11 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                             string l_OldInfoOnGGP = l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value.ToString();
                             l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = "New InfoOnGGP";
-                            l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = l_LastUserMessage;
+                            
+                            if (l_LastUserMessage == null)
+                            {
+                                l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = "\u200B";
+                            }
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeInfoOnGGP: true, p_NewInfoOnGGP: l_LastUserMessage);
 
@@ -626,7 +643,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
                             .AddField("\u200B", "\u200B")
-                            .AddField("__CustomPassText-Edit__", "Please type the CustomPassText you want the map to have. Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                            .AddField("__CustomPassText-Edit__", "Please type the CustomPassText you want the map to have (`null` for none). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
@@ -636,6 +653,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
+                            if (l_LastUserMessage == "null")
+                            {
+                                l_LastUserMessage = null;
+                            }
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_CustomPassTextEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomPassText-Edit"));
                             l_EmbedBuilder.Fields.RemoveAt(l_CustomPassTextEditTitleFieldIndex); /// Removing the "CustomPassText-Edit" Field
@@ -648,7 +669,11 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                             string l_OldCustomPassText = l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value.ToString();
                             l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = "New CustomPassText";
-                            l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = l_LastUserMessage;
+
+                            if (l_LastUserMessage == null)
+                            {
+                                l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = "\u200B";
+                            }
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomPassText: true, p_NewCustomPassText: l_LastUserMessage);
 

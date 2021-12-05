@@ -87,7 +87,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             foreach (CategoryPassed l_LevelCategory in from l_Level in l_PlayerStats.Levels where l_Level.Categories != null from l_LevelCategory in l_Level.Categories let l_CategoryFindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_LevelCategory.Category) where l_CategoryFindIndex < 0 && l_Level.LevelID == 1 select l_LevelCategory) l_AvailableCategories.Add(l_LevelCategory.Category);
 
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called {p_Category}, here is a list of all the available categories:";
-                            l_Message = l_AvailableCategories.Where(p_X => p_X != null).Aggregate(l_Message, (p_Current, p_Y) => p_Current + $"\n> {p_Y}");
+                            l_Message = l_AvailableCategories.Where(p_X => p_X != null).Where(p_X => p_X != "").Aggregate(l_Message, (p_Current, p_X) => p_Current + $"\n> {p_X}");
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);
