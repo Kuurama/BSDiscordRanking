@@ -58,9 +58,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         p_Category = p_Level; /// Player typed !ggp Category, instead of !ggp LevelID Category.
                         await SendGGP(l_LevelControllerFormat, l_Level, l_Player, p_Category, l_FullEmbeddedGGP, true);
                     }
-                    else
+                    else if (p_Level != null)
                     {
                         await ReplyAsync($"> :x: Sorry but you didn't used the command correctly, either use `{BotHandler.m_Prefix}ggp <LevelID> <Category>`, or `{BotHandler.m_Prefix}ggp <Category>`.");
+                    }
+                    else
+                    {
+                        await SendGGP(l_LevelControllerFormat, l_Level, l_Player, p_Category, l_FullEmbeddedGGP, true);
                     }
                 }
             }
