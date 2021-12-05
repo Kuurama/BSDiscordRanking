@@ -207,8 +207,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 else
                                 {
                                     await ReplyAsync($"Sorry but you already passed all the maps from all pools, good job!");
-                                    DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                                 }
+                                DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                             }
                             
                         }
