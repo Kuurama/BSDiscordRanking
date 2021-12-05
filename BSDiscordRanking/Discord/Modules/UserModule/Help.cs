@@ -1,13 +1,15 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats;
+using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
 using static System.String;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
-    [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("help")]
@@ -16,23 +18,41 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             if (p_Command == null)
             {
-                int i = 0;
+                
+                ConfigFormat l_Config = ConfigController.GetConfig();
+                List<int> l_PermLevel = PermissionHandler.GetUserPermLevel(Context);
                 foreach (ModuleInfo l_Module in BotHandler.m_Commands.Modules)
                 {
-                    // This is very bad, should be changed one day but I don't know how to do it
+                    EmbedBuilder l_Builder = new EmbedBuilder();
                     if (l_Module.Name == "AdminModule")
                     {
-                        if (!(PermissionHandler.GetUserPermLevel(Context) >= 2))
+                        if (l_PermLevel.FindIndex(p_X => p_X == 3) < 0)
                             break;
+                        l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.BotAdminRoleID));
+                    }
+                    else if (l_Module.Name == "ScoringTeamModule")
+                    {
+                        if (l_PermLevel.FindIndex(p_X => p_X == 2) < 0)
+                            break;
+                        l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.ScoringTeamRoleID));
                     }
                     else if (l_Module.Name == "RankingTeamModule")
                     {
-                        if (!(PermissionHandler.GetUserPermLevel(Context) >= 1))
+                        if (l_PermLevel.FindIndex(p_X => p_X == 1) < 0)
                             break;
+                        l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.RankingTeamRoleID));
+                    }
+                    else if (l_Module.Name == "UserModule")
+                    {
+                        RoleFormat l_RoleFormat = RoleController.ReadRolesDB().Roles.Find(p_X => p_X.LevelID == 0);
+                        if (l_RoleFormat != null)
+                        {
+                            l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_RoleFormat.RoleID));
+                        }
                     }
 
 
-                    EmbedBuilder l_Builder = new EmbedBuilder();
+                    
                     l_Builder.WithTitle(l_Module.Name);
                     foreach (CommandInfo l_Command in l_Module.Commands)
                     {
@@ -71,7 +91,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
 
                     await Context.Channel.SendMessageAsync("", false, l_Builder.Build());
-                    i++;
                 }
             }
             else

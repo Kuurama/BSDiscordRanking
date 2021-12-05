@@ -6,7 +6,7 @@ using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 {
-    [PermissionHandler.RequirePermissionAttribute(Permission)]
+    [PermissionHandler.RequirePermissionAttribute(PERMISSION)]
     public partial class RankingTeamModule : ModuleBase<SocketCommandContext>
     {
         [Command("addmap")]

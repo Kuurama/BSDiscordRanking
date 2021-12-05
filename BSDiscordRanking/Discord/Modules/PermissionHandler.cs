@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
@@ -10,22 +11,20 @@ namespace BSDiscordRanking.Discord.Modules
 {
     public static class PermissionHandler
     {
-        public static int GetUserPermLevel(ICommandContext p_Context)
+        public static List<int> GetUserPermLevel(ICommandContext p_Context)
         {
-            if (p_Context.User is SocketGuildUser l_User)
-            {
-                if (l_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().RankingTeamRoleID) != null)
-                    return 1;
-                if (l_User.Roles.ToList()
-                    .Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null)
-                    return 2;
-            }
-
-            return 0;
+            List<int> l_Ints = new List<int>(){0};
+            if (p_Context.User is SocketGuildUser l_User1 && l_User1.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().RankingTeamRoleID) != null)
+                l_Ints.Add(1);
+            if (p_Context.User is SocketGuildUser l_User2 && l_User2.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().ScoringTeamRoleID) != null)
+                l_Ints.Add(2);
+            if (p_Context.User is SocketGuildUser l_User3 && l_User3.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null)
+                l_Ints.Add(3);
+            return l_Ints;
         }
 
         /// <summary>
-        ///     Check if user has the correct permission level. 1 = RankingTeam, 2 = Admin
+        ///     Check if user has the correct permission level. 1 = RankingTeam, 2 = ScoringTeam, 3 = Admin
         /// </summary>
         public class RequirePermissionAttribute : PreconditionAttribute
         {
@@ -43,13 +42,18 @@ namespace BSDiscordRanking.Discord.Modules
                 if (p_Context.User is SocketGuildUser l_User)
                     switch (m_PermissionLevel)
                     {
-                        case >= 2:
+                        case >= 3:
                             if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.BotAdminRoleID))
                                 return Task.FromResult(PreconditionResult.FromSuccess());
                             break;
+                        
+                        case 2:
+                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.ScoringTeamRoleID || p_Role.Id == m_Config.BotAdminRoleID)) /// Gives moderator the ability to use permission == 2.
+                                return Task.FromResult(PreconditionResult.FromSuccess());
+                            break;
 
-                        case >= 1:
-                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.RankingTeamRoleID || p_Role.Id == m_Config.BotAdminRoleID)) /// Gives moderator the ability to use permission < 2.
+                        case 1:
+                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.RankingTeamRoleID || p_Role.Id == m_Config.BotAdminRoleID)) /// Gives moderator the ability to use permission == 1.
                                 return Task.FromResult(PreconditionResult.FromSuccess());
                             break;
 

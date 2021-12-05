@@ -7,16 +7,21 @@ using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
 
-namespace BSDiscordRanking.Discord.Modules.AdminModule
+namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
 {
-    [PermissionHandler.RequirePermissionAttribute(Permission)]
-    public partial class AdminModule : ModuleBase<SocketCommandContext>
+    [PermissionHandler.RequirePermissionAttribute(PERMISSION)]
+    public partial class ScoringTeamModule : ModuleBase<SocketCommandContext>
     {
         [Command("downloadscore")]
         [Alias("scoredownload", "redownloadscore")]
         [Summary("Downloads a player's score from a map leaderboard, adding it to their Stored Scores, passes, and the map stored leaderboard (trigger the weight recalculation).")]
-        public async Task DownloadScore(string p_DiscordOrScoreSaberID, string p_LeaderboardID)
+        public async Task DownloadScore(string p_DiscordOrScoreSaberID = null, string p_LeaderboardID = null)
         {
+            if (string.IsNullOrEmpty(p_DiscordOrScoreSaberID) || string.IsNullOrEmpty(p_LeaderboardID))
+            {
+                await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}downloadscore [DiscordOrScoreSaberID] [LeaderboardID]`");
+                return;
+            }
             if (int.TryParse(p_LeaderboardID, out int l_LeaderboardID))
             {
                 ConfigFormat l_Config = ConfigController.GetConfig();

@@ -11,7 +11,6 @@ using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
-    [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("ggp")]
@@ -124,8 +123,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                         if (!l_RemoveCategoriesFormat.LevelFormat.songs.Any())
                         {
-                            string l_Message = $":x: Sorry but there isn't any categories in Level {p_Level} called {p_Category}, here is a list of all the available categories on that Level:";
-                            foreach (string l_Category in l_RemoveCategoriesFormat.Categories) l_Message += $"\n> {l_Category}";
+                            string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level}, here is a list of all the available categories:";
+                            foreach (string l_Category in l_RemoveCategoriesFormat.Categories) if (l_Category != null) if (l_Category != "") l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);

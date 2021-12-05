@@ -11,6 +11,7 @@ namespace BSDiscordRanking.Formats.Controller
 
         public ulong BotAdminRoleID { get; set; }
         public ulong RankingTeamRoleID { get; set; }
+        public ulong ScoringTeamRoleID { get; set; }
         public bool FullEmbeddedGGP { get; set; } = false;
 
         public string RolePrefix { get; set; } = "";

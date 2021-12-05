@@ -16,10 +16,10 @@ using Discord.WebSocket;
 // ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
-    [CheckChannel]
+    [CheckChannel] /// Actually makes all user's related command only work on the specifics attributed channels.
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
-        public const int Permission = 0;
+        private const int PERMISSION = 0;
 
         private static LevelFormat RemovePassFromPlaylist(PlayerPassFormat p_PlayerPass, LevelFormat p_LevelFormat)
         {
@@ -396,18 +396,31 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return $"[{l_ProgressText}]";
         }
 
-        public static Color GetRoleColor(List<RoleFormat> p_RoleList, IReadOnlyCollection<SocketRole> p_Roles, int p_Level)
+        public static Color GetRoleColor(List<RoleFormat> p_RoleList, IEnumerable<SocketRole> p_Roles, int p_Level, ulong p_RoleID = default(ulong))
         {
             Color l_Color = Color.Default;
             foreach (SocketRole l_UserRole in p_Roles)
-            foreach (RoleFormat l_Role in p_RoleList)
-                if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
-                    l_Color = l_UserRole.Color;
+            {
+                if (p_RoleID != default(ulong))
+                {
+                    if (l_UserRole.Id == p_RoleID)
+                            return l_UserRole.Color;
+                }
+                else
+                {
+                    foreach (RoleFormat l_Role in p_RoleList)
+                        if (p_RoleID == default(ulong))
+                        {
+                            if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
+                                return l_UserRole.Color;
+                        }
+                }
+            }
 
             return l_Color;
         }
 
-        public static PlayerFromDiscordOrScoreSaberIDFormat PlayerFromDiscordOrScoreSaberID(string p_DiscordOrScoreSaberID, SocketCommandContext p_Context)
+        private static PlayerFromDiscordOrScoreSaberIDFormat PlayerFromDiscordOrScoreSaberID(string p_DiscordOrScoreSaberID, SocketCommandContext p_Context)
         {
             bool l_IsDiscordLinked = false;
             string l_ScoreSaberOrDiscordName = "";

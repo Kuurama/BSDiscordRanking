@@ -4,10 +4,10 @@ using Discord.Commands;
 // ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
-    [PermissionHandler.RequirePermissionAttribute(Permission)]
+    [PermissionHandler.RequirePermissionAttribute(PERMISSION)]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
-        private const int Permission = 2;
+        private const int PERMISSION = 3;
 
         public static int ScoreFromAcc(float p_Acc = 0f, int p_NoteCount = 0)
         {

@@ -6,7 +6,7 @@ using Discord.Commands;
 
 namespace BSDiscordRanking.Discord.Modules.AdminModule
 {
-    [PermissionHandler.RequirePermissionAttribute(Permission)]
+    [PermissionHandler.RequirePermissionAttribute(PERMISSION)]
     public partial class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("addchannel")]

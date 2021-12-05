@@ -3,9 +3,9 @@
 // ReSharper disable once CheckNamespace
 namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 {
-    [PermissionHandler.RequirePermissionAttribute(Permission)]
+    [PermissionHandler.RequirePermissionAttribute(PERMISSION)]
     public partial class RankingTeamModule : ModuleBase<SocketCommandContext>
     {
-        public const int Permission = 1;
+        private const int PERMISSION = 1;
     }
 }

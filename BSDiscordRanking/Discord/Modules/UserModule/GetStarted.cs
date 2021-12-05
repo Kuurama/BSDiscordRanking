@@ -7,7 +7,6 @@ using static System.String;
 
 namespace BSDiscordRanking.Discord.Modules.UserModule
 {
-    [CheckChannel]
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("getstarted")]
@@ -33,6 +32,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     $"Yes you can! To get them, *do the* `{BotHandler.m_Prefix}gupl all` *command!* (stands for !getunpassedplaylist [MapPoolNumber]")
                 .AddField("About the 'ranking'?",
                     $"There two different leaderboard using the `{BotHandler.m_Prefix}ldpass` and the `{BotHandler.m_Prefix}ldacc` command! (or use `{BotHandler.m_Prefix}leaderboard`)\nEach pass you do gives you `{l_Config.PassPointsName}` and/or `{l_Config.AccPointsName}` , those points are used to sort you on the leaderboards, the further you progress in the pools, the harder the maps are, the more points you get!")
+                .AddField($"How are calculated the {l_Config.AccPointsName}?", $"Each map in the ranking have an accuracy weight which is calculated with an algorithm taking account the average of the {l_Config.MinimumNumberOfScoreForAutoWeight} first scores and the difficulty worth of the map (usually the level number), it's then multiplied by your accuracy and give you those sweet points.")
                 .AddField("To see your progress through the ranking:", $"Type `{BotHandler.m_Prefix}progress`")
                 .AddField("How do i look at my profile?", $"```{BotHandler.m_Prefix}profile```");
             Embed l_Embed = l_Builder.Build();
