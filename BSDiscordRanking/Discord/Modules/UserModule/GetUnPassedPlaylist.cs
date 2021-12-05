@@ -188,6 +188,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             if (l_CategoryExist)
                             {
                                 await ReplyAsync($"Sorry but you already passed all the maps from all `{p_Category}` pools, good job!");
+                                DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                             }
                             else
                             {
@@ -206,6 +207,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 else
                                 {
                                     await ReplyAsync($"Sorry but you already passed all the maps from all pools, good job!");
+                                    DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                                 }
                             }
                             
