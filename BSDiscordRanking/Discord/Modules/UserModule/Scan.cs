@@ -30,21 +30,22 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 l_Player.LoadPass(); /// Load the player's pass if there is.
-                Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context);
-                if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
-                {
-                    if (l_FetchPass.Result.newPass >= 1 && l_FetchPass.Result.updatedPass < 1)
-                        l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result.newPass} new maps!\n");
-                    else if (l_FetchPass.Result.newPass < 1 && l_FetchPass.Result.updatedPass >= 1)
-                        l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You updated {l_FetchPass.Result.updatedPass} scores on maps!\n");
-                    else
-                        l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result.newPass} new maps, and updated your scores on {l_FetchPass.Result.updatedPass} maps!\n");
-                    if (l_FirsScan) l_EmbedBuilder.AddField("\u200B", $"To see your progress through the pools, *try the* `{BotHandler.m_Prefix}progress` *command.*\nAnd to check your profile, *use the* `{BotHandler.m_Prefix}profile` *command.*\n> You might also want to take the pools playlist:");
-                }
-                else
-                {
-                    l_EmbedBuilder.WithDescription(l_FirsScan ? $"> Oh <@{Context.User.Id.ToString()}>, Seems like you didn't pass any maps from the pools." : $"> :x: Sorry <@{Context.User.Id.ToString()}>, but you didn't pass/updated any new scores on maps.");
-                }
+                
+                // Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context);
+                // if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
+                // {
+                //     if (l_FetchPass.Result.newPass >= 1 && l_FetchPass.Result.updatedPass < 1)
+                //         l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result.newPass} new maps!\n");
+                //     else if (l_FetchPass.Result.newPass < 1 && l_FetchPass.Result.updatedPass >= 1)
+                //         l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You updated {l_FetchPass.Result.updatedPass} scores on maps!\n");
+                //     else
+                //         l_EmbedBuilder.AddField("\u200B", $"> 🎉 Congratulations! <@{Context.User.Id.ToString()}>, You passed {l_FetchPass.Result.newPass} new maps, and updated your scores on {l_FetchPass.Result.updatedPass} maps!\n");
+                //     if (l_FirsScan) l_EmbedBuilder.AddField("\u200B", $"To see your progress through the pools, *try the* `{BotHandler.m_Prefix}progress` *command.*\nAnd to check your profile, *use the* `{BotHandler.m_Prefix}profile` *command.*\n> You might also want to take the pools playlist:");
+                // }
+                // else
+                // {
+                //     l_EmbedBuilder.WithDescription(l_FirsScan ? $"> Oh <@{Context.User.Id.ToString()}>, Seems like you didn't pass any maps from the pools." : $"> :x: Sorry <@{Context.User.Id.ToString()}>, but you didn't pass/updated any new scores on maps.");
+                // }
 
                 Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_OldPlayerLevel);
 
