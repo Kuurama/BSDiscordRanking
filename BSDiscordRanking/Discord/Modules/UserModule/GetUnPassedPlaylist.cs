@@ -89,6 +89,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     await ReplyAsync(l_Message);
                                 else
                                     await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level},\n+ there is too many categories in that level to send all of them in one message.");
+                                
+                                DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                                 return;
                             }
                             
@@ -105,6 +107,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             await ReplyAsync($"> It seems like you don't have any pass on this level, i guess you wanted to use the `{BotHandler.m_Prefix}getplaylist {l_LevelInt}` command, here is it:");
                             await GetPlaylist(p_Level);
+                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
                             return;
                         }
 
