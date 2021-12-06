@@ -25,7 +25,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     EmbedBuilder l_Builder = new EmbedBuilder();
                     if (l_Module.Name == "AdminModule")
                     {
-                        if (l_PermLevel.FindIndex(p_X => p_X == 3) < 0)
+                        if (l_PermLevel.FindIndex(p_X => p_X >= 3) < 0)
                             continue;
                         l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.BotAdminRoleID));
                     }

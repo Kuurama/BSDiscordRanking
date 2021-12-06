@@ -13,7 +13,7 @@ namespace BSDiscordRanking.Discord.Modules
     {
         public static List<int> GetUserPermLevel(ICommandContext p_Context)
         {
-            List<int> l_Ints = new List<int>(){0};
+            List<int> l_Ints = new List<int>{0};
             if (p_Context.User is SocketGuildUser l_User1 && l_User1.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().RankingTeamRoleID) != null)
                 l_Ints.Add(1);
             if (p_Context.User is SocketGuildUser l_User2 && l_User2.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().ScoringTeamRoleID) != null)
@@ -55,20 +55,22 @@ namespace BSDiscordRanking.Discord.Modules
             public override Task<PreconditionResult> CheckPermissionsAsync(ICommandContext p_Context, CommandInfo p_Command, IServiceProvider p_Services)
             {
                 if (p_Context.User is SocketGuildUser l_User)
+                {
+                    List<int> l_Ints = GetUserPermLevel(p_Context);
                     switch (m_PermissionLevel)
                     {
                         case >= 3:
-                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.BotAdminRoleID))
+                            if (l_Ints.FindIndex(p_X => p_X >= 3) >= 0)
                                 return Task.FromResult(PreconditionResult.FromSuccess());
                             break;
-                        
+
                         case 2:
-                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.ScoringTeamRoleID || p_Role.Id == m_Config.BotAdminRoleID)) /// Gives moderator the ability to use permission == 2.
+                            if (l_Ints.FindIndex(p_X => p_X == 2) >= 0)
                                 return Task.FromResult(PreconditionResult.FromSuccess());
                             break;
 
                         case 1:
-                            if (l_User.Roles.Any(p_Role => p_Role.Id == m_Config.RankingTeamRoleID || p_Role.Id == m_Config.BotAdminRoleID)) /// Gives moderator the ability to use permission == 1.
+                            if (l_Ints.FindIndex(p_X => p_X == 1) >= 0)
                                 return Task.FromResult(PreconditionResult.FromSuccess());
                             break;
 
@@ -76,6 +78,7 @@ namespace BSDiscordRanking.Discord.Modules
                             /// No need.
                             break;
                     }
+                }
 
                 return Task.FromResult(PreconditionResult.FromError(ExecuteResult.FromError(new Exception(ErrorMessage = "Incorrect user's permissions"))));
             }
