@@ -16,7 +16,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Command("ggp")]
         [Alias("getgrindpool")]
         [Summary("Shows the Level's maps while displaying your passes, also work with categories, not giving a specific level or category will display the next available level you might want to grind.")]
-        public async Task GetGrindPool(string p_Level = null,  [Remainder] string p_Category = null)
+        public async Task GetGrindPool(string p_Level = null, [Remainder] string p_Category = null)
         {
             LevelControllerFormat l_LevelControllerFormat = LevelController.GetLevelControllerCache();
             bool l_FullEmbeddedGGP = ConfigController.m_ConfigFormat.FullEmbeddedGGP;
@@ -124,7 +124,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (!l_RemoveCategoriesFormat.LevelFormat.songs.Any())
                         {
                             string l_Message = $":x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level}, here is a list of all the available categories:";
-                            foreach (string l_Category in l_RemoveCategoriesFormat.Categories) if (l_Category != null) if (l_Category != "") l_Message += $"\n> {l_Category}";
+                            foreach (string l_Category in l_RemoveCategoriesFormat.Categories)
+                                if (l_Category != null)
+                                    if (l_Category != "")
+                                        l_Message += $"\n> {l_Category}";
 
                             if (l_Message.Length <= 1980)
                                 await ReplyAsync(l_Message);
@@ -313,7 +316,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                         p_Player.m_PlayerStats.Levels[l_LevelIndex].Passed = l_LevelIsPassed;
                     }
-                    
+
                     p_Player.ReWriteStats();
 
                     List<string> l_Messages = new List<string> { "" }; /// Reset the Message between Passed and Unpassed maps
@@ -386,25 +389,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples = new List<Tuple<InPlayerSong, InPlayerPassFormat, string>>();
             foreach (InPlayerSong l_Map in p_PlayerPassFormat.SongList)
             foreach (InPlayerPassFormat l_Diff in l_Map.DiffList)
-            {
                 if (l_Diff.Difficulty.customData.category != null && l_Diff.Difficulty.customData.customCategoryInfo != null)
-                {
                     l_MapsTuples.Add(new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, $"{l_Diff.Difficulty.customData.category}/{l_Diff.Difficulty.customData.customCategoryInfo}")); /// Category + Info
-                }
                 else if (l_Diff.Difficulty.customData.category != null)
-                {
                     l_MapsTuples.Add(new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, $"{l_Diff.Difficulty.customData.category}")); /// Normal category, no info.
-                }
                 else if (l_Diff.Difficulty.customData.customCategoryInfo != null)
-                {
                     l_MapsTuples.Add(new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, $"{l_Diff.Difficulty.customData.customCategoryInfo}")); /// Fake category.
-                   
-                }
                 else
-                {
                     l_MapsTuples.Add(new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, null)); /// No category
-                }
-            }
 
             IOrderedEnumerable<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_SortedMapsTuples = from l_Category in l_MapsTuples orderby l_Category.Item3 select l_Category;
 

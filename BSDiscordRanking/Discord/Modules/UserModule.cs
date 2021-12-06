@@ -164,7 +164,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 #pragma warning disable 8509
                     l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
                     {
-                        <=  0 => "",
+                        <= 0 => "",
                         <= 25 => "<:plastic:874215132874571787>",
                         <= 50 => "<:silver:874215133197500446>",
                         <= 75 => "<:gold:874215133147197460>",
@@ -178,7 +178,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
 #pragma warning restore 8509
                     {
-                        <=  0 => "",
+                        <= 0 => "",
                         <= 25 => "<:big_plastic:916492151402164314>",
                         <= 50 => "<:big_silver:916492243743932467>",
                         <= 75 => "<:big_gold:916492277780709426>",
@@ -203,7 +203,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             return l_Result;
-       }
+        }
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
@@ -336,8 +336,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel)} {l_LevelCategory}/{l_CategoryMaxLevel}", true);
                     }
+
                     if (l_Index % 2 == 0) l_EmbedBuilder.AddField("\u200B", "\u200B");
-                    
                 }
 
                 if (l_Index != 0 && l_Index % 2 != 0) l_EmbedBuilder.AddField("\u200B", "\u200B");
@@ -407,22 +407,18 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             Color l_Color = Color.Default;
             foreach (SocketRole l_UserRole in p_Roles)
-            {
                 if (p_RoleID != default(ulong))
                 {
                     if (l_UserRole.Id == p_RoleID)
-                            return l_UserRole.Color;
+                        return l_UserRole.Color;
                 }
                 else
                 {
                     foreach (RoleFormat l_Role in p_RoleList)
                         if (p_RoleID == default(ulong))
-                        {
                             if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
                                 return l_UserRole.Color;
-                        }
                 }
-            }
 
             return l_Color;
         }

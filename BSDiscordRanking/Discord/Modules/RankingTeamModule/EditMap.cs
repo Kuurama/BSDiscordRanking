@@ -89,7 +89,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
 
                                         if (l_LevelDiff.customData.category != null) l_EmbedBuilder.AddField("Category", l_LevelDiff.customData.category, true);
-                                        
+
                                         if (l_LevelDiff.customData.customCategoryInfo != null) l_EmbedBuilder.AddField("CustomCategoryInfo", l_LevelDiff.customData.customCategoryInfo, true);
 
                                         if (l_LevelDiff.customData.infoOnGGP != null) l_EmbedBuilder.AddField("InfoOnGGP", l_LevelDiff.customData.infoOnGGP, true);
@@ -118,7 +118,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         {
                                             BeatSaverFormat = l_Map,
                                             Category = l_LevelDiff.customData.category,
-                                            CustomCategoryInfo =  l_LevelDiff.customData.customCategoryInfo,
+                                            CustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo,
                                             CustomPassText = l_LevelDiff.customData.customPassText,
                                             ForceManualWeight = l_LevelDiff.customData.forceManualWeight,
                                             InfoOnGGP = l_LevelDiff.customData.infoOnGGP,
@@ -258,7 +258,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 if (!p_ChangeMinScoreRequirement) p_NewMinPercentageRequirement = 100f * l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore;
 
                                                 if (!p_ChangeCategory) p_NewCategory = l_LevelDiff.customData.category;
-                                                
+
                                                 if (!p_ChangeCustomCategoryInfo) p_NewCustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo;
 
                                                 if (!p_ChangeInfoOnGGP) p_NewInfoOnGGP = l_LevelDiff.customData.infoOnGGP;
@@ -288,7 +288,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                                 if (l_MapExistCheck.DifferentCategory)
                                                     l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory ?? "\u200B");
-                                                
+
                                                 if (l_MapExistCheck.DifferentCustomCategoryInfo)
                                                     l_MapChangeEmbedBuilder.AddField("New CustomCategoryInfo:", p_NewCustomCategoryInfo ?? "\u200B");
 
@@ -325,6 +325,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                             break;
                                                         }
                                             }
+                                        break;
                                     }
                     }
 
@@ -417,10 +418,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
-                            if (l_LastUserMessage == "null")
-                            {
-                                l_LastUserMessage = null;
-                            }
+                            if (l_LastUserMessage == "null") l_LastUserMessage = null;
 
                             l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
 
@@ -438,13 +436,9 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = "New Category";
 
                             if (l_LastUserMessage == null)
-                            {
                                 l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = "\u200B";
-                            }
                             else
-                            {
                                 l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = l_LastUserMessage;
-                            }
 
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCategory: true, p_NewCategory: l_LastUserMessage);
@@ -456,6 +450,56 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         }
 
                         break;
+
+
+                    case "CustomCategoryInfoChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"CustomCategoryInfoChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B", "\u200B")
+                            .AddField("__CustomCategoryInfo-Edit__", "Please type the CustomCategoryInfo you want the map to have (`null` for none) (this will force the first letter to be UpperCase). Then press \"Validate my choice\" => Your next (and last) typed message will be read.\n(Make sure you typed the right category as it's Cap sensitive)").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+
+                    case "CustomCategoryInfoChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            if (l_LastUserMessage == "null") l_LastUserMessage = null;
+                            l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
+
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_CustomCategoryInfoTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomCategoryInfo-Edit"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_CustomCategoryInfoTitleFieldIndex); /// Removing the "CustomCategoryInfo-Edit" Field
+                            int l_CustomCategoryInfoFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomCategoryInfo"));
+                            if (l_CustomCategoryInfoFieldIndex < 0)
+                            {
+                                l_EmbedBuilder.AddField("CustomCategoryInfo", "\u200B");
+                                l_CustomCategoryInfoFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                            }
+
+                            string l_CustomCategoryInfo = l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value.ToString();
+                            l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Name = "New CustomCategoryInfo";
+
+                            if (l_LastUserMessage == null)
+                                l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value = "\u200B";
+                            else
+                                l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value = l_LastUserMessage;
+
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomCategoryInfo: true, p_NewCustomCategoryInfo: l_LastUserMessage);
+
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__CustomCategoryInfo-Edit Done__", $"Old CustomCategoryInfo: {l_CustomCategoryInfo}").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                        }
+
+                        break;
+
 
                     case "ToggleManualWeight":
                         l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
@@ -572,10 +616,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
-                            if (l_LastUserMessage == "null")
-                            {
-                                l_LastUserMessage = null;
-                            }
+                            if (l_LastUserMessage == "null") l_LastUserMessage = null;
 
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_InfoOnGGPEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("InfoOnGGP-Edit"));
@@ -591,72 +632,13 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = "New InfoOnGGP";
 
                             if (l_LastUserMessage == null)
-                            {
                                 l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = "\u200B";
-                            }
                             else
-                            {
                                 l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = l_LastUserMessage;
-                            }
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeInfoOnGGP: true, p_NewInfoOnGGP: l_LastUserMessage);
 
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__InfoOnGGP-Edit Done__", $"Old InfoOnGGP: {l_OldInfoOnGGP}").Build());
-                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
-                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
-                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
-                        }
-
-                        break;
-                    
-                    case "CustomCategoryInfoChange":
-                        l_ComponentBuilder
-                            .WithButton(new ButtonBuilder("Validate my choice", $"CustomCategoryInfoChangeValidation_{l_UserID}", ButtonStyle.Success))
-                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
-                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
-                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
-                            .AddField("\u200B", "\u200B")
-                            .AddField("__CustomCategoryInfo-Edit__", "Please type the CustomCategoryInfo you want the map to have (`null` for none). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
-                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
-                        break;
-
-                    case "CustomCategoryInfoChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
-                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
-
-                        if (l_LastUserMessage != null)
-                        {
-                            if (l_LastUserMessage == "null")
-                            {
-                                l_LastUserMessage = null;
-                            }
-                            l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
-                            
-                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
-                            int l_CustomCategoryInfoTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomCategoryInfo-Edit"));
-                            l_EmbedBuilder.Fields.RemoveAt(l_CustomCategoryInfoTitleFieldIndex); /// Removing the "CustomCategoryInfo-Edit" Field
-                            int l_CustomCategoryInfoFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomCategoryInfo"));
-                            if (l_CustomCategoryInfoFieldIndex < 0)
-                            {
-                                l_EmbedBuilder.AddField("CustomCategoryInfo", "\u200B");
-                                l_CustomCategoryInfoFieldIndex = l_EmbedBuilder.Fields.Count - 1;
-                            }
-
-                            string l_CustomCategoryInfo = l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value.ToString();
-                            l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Name = "New CustomCategoryInfo";
-
-                            if (l_LastUserMessage == null)
-                            {
-                                l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value = "\u200B";
-                            }
-                            else
-                            {
-                                l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value = l_LastUserMessage;
-                            }
-
-                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomCategoryInfo: true, p_NewCustomCategoryInfo: l_LastUserMessage);
-
-                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__CustomCategoryInfo-Edit Done__", $"Old CustomCategoryInfo: {l_CustomCategoryInfo}").Build());
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
@@ -732,10 +714,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_LastUserMessage != null)
                         {
-                            if (l_LastUserMessage == "null")
-                            {
-                                l_LastUserMessage = null;
-                            }
+                            if (l_LastUserMessage == "null") l_LastUserMessage = null;
 
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_CustomPassTextEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomPassText-Edit"));
@@ -751,13 +730,9 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = "New CustomPassText";
 
                             if (l_LastUserMessage == null)
-                            {
                                 l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = "\u200B";
-                            }
                             else
-                            {
                                 l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = l_LastUserMessage;
-                            }
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomPassText: true, p_NewCustomPassText: l_LastUserMessage);
 
@@ -920,7 +895,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             l_CurrentLevel.RemoveMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic);
             Level l_NewLevel = new Level(p_NewLevelID);
             if (l_CurrentLevel.m_MapRemoved)
-                l_NewLevel.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.CustomCategoryInfo, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass, p_LeaderboardID:p_EditMapFormat.LeaderboardID);
+                l_NewLevel.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.CustomCategoryInfo, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass, p_LeaderboardID: p_EditMapFormat.LeaderboardID);
 
             if (l_NewLevel.m_MapAdded)
             {

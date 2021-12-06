@@ -44,14 +44,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     else if (l_Module.Name == "UserModule")
                     {
                         RoleFormat l_RoleFormat = RoleController.ReadRolesDB().Roles.Find(p_X => p_X.LevelID == 0);
-                        if (l_RoleFormat != null)
-                        {
-                            l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_RoleFormat.RoleID));
-                        }
+                        if (l_RoleFormat != null) l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_RoleFormat.RoleID));
                     }
 
 
-                    
                     l_Builder.WithTitle(l_Module.Name);
                     foreach (CommandInfo l_Command in l_Module.Commands)
                     {
@@ -120,11 +116,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     else if (l_FoundCommand.Module.Name == "UserModule")
                     {
                         RoleFormat l_RoleFormat = RoleController.ReadRolesDB().Roles.Find(p_X => p_X.LevelID == 0);
-                        if (l_RoleFormat != null)
-                        {
-                            l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_RoleFormat.RoleID));
-                        }
+                        if (l_RoleFormat != null) l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_RoleFormat.RoleID));
                     }
+
                     string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_FoundCommand.Name;
                     foreach (ParameterInfo l_Parameter in l_FoundCommand.Parameters)
                         if (l_Parameter.Summary != null)

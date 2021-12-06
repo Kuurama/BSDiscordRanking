@@ -49,7 +49,7 @@ namespace BSDiscordRanking.Controllers
 
                         break;
                     }
-                }   
+                }
             }
         }
 

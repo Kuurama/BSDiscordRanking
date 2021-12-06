@@ -13,7 +13,7 @@ namespace BSDiscordRanking.Discord.Modules
     {
         public static List<int> GetUserPermLevel(ICommandContext p_Context)
         {
-            List<int> l_Ints = new List<int>{0};
+            List<int> l_Ints = new List<int> { 0 };
             if (p_Context.User is SocketGuildUser l_User1 && l_User1.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().RankingTeamRoleID) != null)
                 l_Ints.Add(1);
             if (p_Context.User is SocketGuildUser l_User2 && l_User2.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().ScoringTeamRoleID) != null)
@@ -22,19 +22,13 @@ namespace BSDiscordRanking.Discord.Modules
             {
                 case SocketGuildUser l_User3 when l_User3.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null:
                 {
-                    if (l_Ints.FindIndex(p_X => p_X == 1) < 0)
-                    {
-                        l_Ints.Add(1);
-                    }
-                    if (l_Ints.FindIndex(p_X => p_X == 2) < 0)
-                    {
-                        l_Ints.Add(2);
-                    }
+                    if (l_Ints.FindIndex(p_X => p_X == 1) < 0) l_Ints.Add(1);
+                    if (l_Ints.FindIndex(p_X => p_X == 2) < 0) l_Ints.Add(2);
                     l_Ints.Add(3);
                     break;
                 }
             }
-                
+
             return l_Ints;
         }
 

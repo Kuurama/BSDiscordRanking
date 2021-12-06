@@ -301,8 +301,11 @@ namespace BSDiscordRanking
                         bool l_WeightEdit = false;
                         bool l_NameEdit = false;
                         bool l_ForceManualWeightPreferenceEdit = false;
+                        bool l_NameParameterIsNull = false;
                         try
                         {
+                            if (p_Name == null) l_NameParameterIsNull = true;
+                            
                             StringBuilder l_SBMapName = new StringBuilder(p_Name ?? m_BeatSaver.name);
                             string l_NewMapName = p_Name ?? m_BeatSaver.name;
                             do /// Might want to implement Trim()
@@ -373,7 +376,7 @@ namespace BSDiscordRanking
                                                     l_LevelDifficulty.customData.category = l_Difficulty.customData.category;
                                                     l_CategoryEdit = true;
                                                 }
-                                                
+
                                                 if (l_Difficulty.customData.customCategoryInfo != l_LevelDifficulty.customData.customCategoryInfo)
                                                 {
                                                     l_LevelDifficulty.customData.customCategoryInfo = l_Difficulty.customData.customCategoryInfo;
@@ -406,7 +409,7 @@ namespace BSDiscordRanking
 
                                                 if (l_Difficulty.customData.adminConfirmationOnPass != l_LevelDifficulty.customData.adminConfirmationOnPass) l_LevelDifficulty.customData.adminConfirmationOnPass = l_Difficulty.customData.adminConfirmationOnPass;
 
-                                                if (l_LevelDifficulty.name != l_NewMapName)
+                                                if ((l_LevelDifficulty.name != l_NewMapName) && !l_NameParameterIsNull)
                                                 {
                                                     l_NameEdit = true;
                                                     m_Level.songs[l_I].name = l_NewMapName;

@@ -191,7 +191,7 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.Category = p_Category;
                                     l_MapExistFormat.DifferentCategory = true;
                                 }
-                                
+
                                 if (l_Difficulty.customData.customCategoryInfo != p_CustomCategoryInfo)
                                 {
                                     l_MapExistFormat.CustomCategoryInfo = p_CustomCategoryInfo;

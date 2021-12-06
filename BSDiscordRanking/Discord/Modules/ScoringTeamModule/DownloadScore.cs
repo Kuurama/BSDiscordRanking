@@ -22,6 +22,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}downloadscore [DiscordOrScoreSaberID] [LeaderboardID]`");
                 return;
             }
+
             if (int.TryParse(p_LeaderboardID, out int l_LeaderboardID))
             {
                 ConfigFormat l_Config = ConfigController.GetConfig();

@@ -84,7 +84,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                 if (l_MapExistCheck.DifferentCategory && p_Category != null)
                                     l_EmbedBuilder.AddField("New Category:", p_Category);
-                                
+
                                 if (l_MapExistCheck.DifferentCustomCategoryInfo && p_CustomCategoryInfo != null)
                                     l_EmbedBuilder.AddField("New CustomCategoryInfo:", p_CustomCategoryInfo);
 

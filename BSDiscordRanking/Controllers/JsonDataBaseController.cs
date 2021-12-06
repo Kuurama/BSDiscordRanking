@@ -14,7 +14,6 @@ namespace BSDiscordRanking.Controllers
             if (p_TryLimit > 0)
             {
                 if (p_Path != null)
-                {
                     if (!Directory.Exists(p_Path))
                         try
                         {
@@ -27,7 +26,6 @@ namespace BSDiscordRanking.Controllers
                             Thread.Sleep(p_TryTimeout);
                             CreateDirectory(p_Path, p_TryLimit - 1, p_TryTimeout);
                         }
-                }
             }
             else
             {

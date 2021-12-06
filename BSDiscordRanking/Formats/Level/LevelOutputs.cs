@@ -52,9 +52,9 @@ namespace BSDiscordRanking.Formats.Level
     public class DiffCustomData
     {
         private string m_Category;
+        private string m_CustomCategoryInfo;
         private string m_CustomPassText;
         private string m_InfoOnGGP;
-        private string m_CustomCategoryInfo;
 
         public int levelWorth { get; set; }
         public int leaderboardID { get; set; }
