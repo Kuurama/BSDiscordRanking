@@ -23,6 +23,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
+                LevelController.ReWriteController(LevelController.FetchAndGetLevel());
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder()
                     .WithTitle(l_Player.m_PlayerFull.name)
                     .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.id)

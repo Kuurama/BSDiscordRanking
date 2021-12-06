@@ -85,6 +85,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_EmbedBuilder.AddField(l_MapDifficulty.name, l_MapDifficulty.characteristic, true);
                             l_EmbedBuilder.AddField("Level", $"Lv.{l_MapLevelID}", true);
                             if (l_MapDifficulty.customData.category != null) l_EmbedBuilder.AddField("Category", l_MapDifficulty.customData.category, true);
+                            
+                            if (l_MapDifficulty.customData.customCategoryInfo != null) l_EmbedBuilder.AddField("CustomCategoryInfo", l_MapDifficulty.customData.customCategoryInfo, true);
 
                             if (l_MapDifficulty.customData.infoOnGGP != null) l_EmbedBuilder.AddField("InfoOnGGP", l_MapDifficulty.customData.infoOnGGP, true);
 

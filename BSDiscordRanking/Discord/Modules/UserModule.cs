@@ -164,7 +164,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 #pragma warning disable 8509
                     l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
                     {
-                        0 => "",
+                        <=  0 => "",
                         <= 25 => "<:plastic:874215132874571787>",
                         <= 50 => "<:silver:874215133197500446>",
                         <= 75 => "<:gold:874215133147197460>",
@@ -178,7 +178,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
 #pragma warning restore 8509
                     {
-                        0 => "",
+                        <=  0 => "",
                         <= 25 => "<:big_plastic:916492151402164314>",
                         <= 50 => "<:big_silver:916492243743932467>",
                         <= 75 => "<:big_gold:916492277780709426>",
@@ -203,7 +203,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
 
             return l_Result;
-        }
+       }
 
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
@@ -327,19 +327,26 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     if (l_LevelCategory != l_CategoryMaxLevel) l_LevelEquilibriumList.Add(l_LevelCategory);
 
-                    l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel)} {l_LevelCategory}/{l_CategoryMaxLevel}", true);
+                    if (l_GlobalPlayerLevel == l_LevelCategory)
+                    {
+                        l_GlobalLevelIsUseless = true;
+                        l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel)} **{l_LevelCategory}/{l_CategoryMaxLevel}**", true);
+                    }
+                    else
+                    {
+                        l_EmbedBuilder.AddField($"{l_CategoryName}", $"{GetTrophyString(true, l_LevelCategory, l_CategoryMaxLevel)} {l_LevelCategory}/{l_CategoryMaxLevel}", true);
+                    }
                     if (l_Index % 2 == 0) l_EmbedBuilder.AddField("\u200B", "\u200B");
-
-                    if (l_GlobalPlayerLevel == l_LevelCategory) l_GlobalLevelIsUseless = true;
+                    
                 }
 
                 if (l_Index != 0 && l_Index % 2 != 0) l_EmbedBuilder.AddField("\u200B", "\u200B");
 
-                if (!l_GlobalLevelIsUseless) l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
+                if (!l_GlobalLevelIsUseless) l_EmbedBuilder.AddField("Global Level", $":trophy: **{l_GlobalPlayerLevel}**", true);
 
                 double l_LevelEquilibriumPercentage;
                 if (l_LevelEquilibriumList.Any())
-                    l_LevelEquilibriumPercentage = 100f - StandardDeviation(l_LevelEquilibriumList) * 100f / l_LevelEquilibriumList.Average();
+                    l_LevelEquilibriumPercentage = Math.Abs(100f - StandardDeviation(l_LevelEquilibriumList) * 100f / l_LevelEquilibriumList.Average());
                 else
                     l_LevelEquilibriumPercentage = 100f;
 
@@ -349,7 +356,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else
             {
-                l_EmbedBuilder.AddField("Global Level", ":trophy: " + l_GlobalPlayerLevel, true);
+                l_EmbedBuilder.AddField("Global Level", $":trophy: **{l_GlobalPlayerLevel}**", true);
                 l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             }
 

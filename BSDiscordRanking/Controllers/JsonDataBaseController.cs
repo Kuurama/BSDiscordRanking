@@ -13,18 +13,21 @@ namespace BSDiscordRanking.Controllers
 
             if (p_TryLimit > 0)
             {
-                if (!Directory.Exists(p_Path))
-                    try
-                    {
-                        Directory.CreateDirectory(p_Path);
-                        Console.WriteLine($"Directory {p_Path} Created");
-                    }
-                    catch (Exception l_Exception)
-                    {
-                        Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
-                        Thread.Sleep(p_TryTimeout);
-                        CreateDirectory(p_Path, p_TryLimit - 1, p_TryTimeout);
-                    }
+                if (p_Path != null)
+                {
+                    if (!Directory.Exists(p_Path))
+                        try
+                        {
+                            Directory.CreateDirectory(p_Path);
+                            Console.WriteLine($"Directory {p_Path} Created");
+                        }
+                        catch (Exception l_Exception)
+                        {
+                            Console.WriteLine($"[Error] Couldn't Create Directory : {l_Exception.Message}");
+                            Thread.Sleep(p_TryTimeout);
+                            CreateDirectory(p_Path, p_TryLimit - 1, p_TryTimeout);
+                        }
+                }
             }
             else
             {

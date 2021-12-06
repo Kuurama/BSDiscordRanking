@@ -85,7 +85,7 @@ namespace BSDiscordRanking
                                     {
                                         if (!p_GetMaxLevel)
                                         {
-                                            if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 1)
+                                            if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || (l_Level.LevelID == 1 && l_Level.Categories[l_CategoryIndex].Passed))
                                             {
                                                 l_PlayerLevel = l_Level.LevelID;
                                                 l_LevelIndex++;

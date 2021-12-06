@@ -54,6 +54,7 @@ namespace BSDiscordRanking.Formats.Level
         private string m_Category;
         private string m_CustomPassText;
         private string m_InfoOnGGP;
+        private string m_CustomCategoryInfo;
 
         public int levelWorth { get; set; }
         public int leaderboardID { get; set; }
@@ -77,6 +78,12 @@ namespace BSDiscordRanking.Formats.Level
         {
             get => m_InfoOnGGP;
             set => m_InfoOnGGP = string.IsNullOrEmpty(value) ? null : value;
+        }
+
+        public string customCategoryInfo
+        {
+            get => m_CustomCategoryInfo;
+            set => m_CustomCategoryInfo = string.IsNullOrEmpty(value) ? null : value;
         }
 
         public int noteCount { get; set; }

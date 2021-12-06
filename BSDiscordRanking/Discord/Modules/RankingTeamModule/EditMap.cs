@@ -22,7 +22,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", [Summary("DoNotDisplayOnHelp")] bool p_DisplayEditMap = true, [Summary("DoNotDisplayOnHelp")] bool p_ChangeLevel = false, [Summary("DoNotDisplayOnHelp")] int p_NewLevel = default(int), [Summary("DoNotDisplayOnHelp")] bool p_ChangeMinScoreRequirement = false, [Summary("DoNotDisplayOnHelp")] float p_NewMinPercentageRequirement = default(float), [Summary("DoNotDisplayOnHelp")] bool p_ChangeCategory = false,
             [Summary("DoNotDisplayOnHelp")] string p_NewCategory = null,
             [Summary("DoNotDisplayOnHelp")] bool p_ChangeInfoOnGGP = false, [Summary("DoNotDisplayOnHelp")] string p_NewInfoOnGGP = null, [Summary("DoNotDisplayOnHelp")] bool p_ChangeCustomPassText = false, [Summary("DoNotDisplayOnHelp")] string p_NewCustomPassText = null, [Summary("DoNotDisplayOnHelp")] bool p_ToggleManualWeight = false, [Summary("DoNotDisplayOnHelp")] bool p_ChangeWeight = false, [Summary("DoNotDisplayOnHelp")] float p_NewWeight = default(float),
-            [Summary("DoNotDisplayOnHelp")] bool p_ChangeName = false, [Summary("DoNotDisplayOnHelp")] string p_NewName = null, [Summary("DoNotDisplayOnHelp")] bool p_ToggleAdminConfirmationOnPass = false, [Summary("DoNotDisplayOnHelp")] bool p_RemoveMap = false, [Summary("DoNotDisplayOnHelp")] ulong p_UserID = default(ulong), [Summary("DoNotDisplayOnHelp")] ulong p_ChannelID = default(ulong))
+            [Summary("DoNotDisplayOnHelp")] bool p_ChangeName = false, [Summary("DoNotDisplayOnHelp")] string p_NewName = null, [Summary("DoNotDisplayOnHelp")] bool p_ToggleAdminConfirmationOnPass = false, [Summary("DoNotDisplayOnHelp")] string p_NewCustomCategoryInfo = null, [Summary("DoNotDisplayOnHelp")] bool p_ChangeCustomCategoryInfo = false, [Summary("DoNotDisplayOnHelp")] bool p_RemoveMap = false, [Summary("DoNotDisplayOnHelp")] ulong p_UserID = default(ulong), [Summary("DoNotDisplayOnHelp")] ulong p_ChannelID = default(ulong))
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
@@ -55,7 +55,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                     };
                 }
 
-                LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight, false, l_Map.id);
+                LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight, false, l_Map.id);
                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                 if (l_MapDeleted && !l_MapExistCheck.MapExist)
                 {
@@ -83,12 +83,14 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 foreach (Difficulty l_LevelDiff in l_LevelSong.difficulties)
                                     if (l_LevelDiff.characteristic == p_Characteristic && l_LevelDiff.name == p_DifficultyName)
                                     {
-                                        l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
+                                        l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
                                         l_EmbedBuilder.AddField("BSRCode", p_BSRCode, true);
                                         l_EmbedBuilder.AddField(l_LevelDiff.name, l_LevelDiff.characteristic, true);
                                         l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
 
                                         if (l_LevelDiff.customData.category != null) l_EmbedBuilder.AddField("Category", l_LevelDiff.customData.category, true);
+                                        
+                                        if (l_LevelDiff.customData.customCategoryInfo != null) l_EmbedBuilder.AddField("CustomCategoryInfo", l_LevelDiff.customData.customCategoryInfo, true);
 
                                         if (l_LevelDiff.customData.infoOnGGP != null) l_EmbedBuilder.AddField("InfoOnGGP", l_LevelDiff.customData.infoOnGGP, true);
 
@@ -116,6 +118,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         {
                                             BeatSaverFormat = l_Map,
                                             Category = l_LevelDiff.customData.category,
+                                            CustomCategoryInfo =  l_LevelDiff.customData.customCategoryInfo,
                                             CustomPassText = l_LevelDiff.customData.customPassText,
                                             ForceManualWeight = l_LevelDiff.customData.forceManualWeight,
                                             InfoOnGGP = l_LevelDiff.customData.infoOnGGP,
@@ -124,6 +127,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             SelectedCharacteristic = l_LevelDiff.characteristic,
                                             SelectedDifficultyName = l_LevelDiff.name,
                                             Weighting = l_LevelDiff.customData.manualWeight,
+                                            LeaderboardID = l_LevelDiff.customData.leaderboardID,
                                             adminConfirmationOnPass = l_LevelDiff.customData.adminConfirmationOnPass
                                         };
 
@@ -138,6 +142,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                         .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change CustomCategoryInfo", $"CustomCategoryInfoChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{Context.User.Id}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{Context.User.Id}", ButtonStyle.Secondary))
@@ -160,6 +165,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                         .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{p_UserID}", ButtonStyle.Secondary))
+                                                        .WithButton(new ButtonBuilder("Change CustomCategoryInfo", $"CustomCategoryInfoChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{p_UserID}", ButtonStyle.Secondary))
                                                         .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{p_UserID}", ButtonStyle.Secondary))
@@ -243,8 +249,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                         if (p_ChangeName) ChangeName(l_EditMapFormat, l_MapExistCheck.Level, p_NewName);
 
-                                        if (!l_MapDeleted && (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminConfirmationOnPass)) /// || p_ChangeCustomPassText But i choosed to not display it.
-                                            if (p_ChangeLevel || p_ToggleAdminConfirmationOnPass || p_ToggleManualWeight || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentWeight)
+                                        if (!l_MapDeleted && (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeCustomCategoryInfo || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminConfirmationOnPass)) /// || p_ChangeCustomPassText But i choosed to not display it.
+                                            if (p_ChangeLevel || p_ToggleAdminConfirmationOnPass || p_ToggleManualWeight || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentCustomCategoryInfo || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentWeight)
                                             {
                                                 int l_OldLevel = default(int);
                                                 if (p_ChangeLevel) l_OldLevel = l_MapExistCheck.Level;
@@ -252,6 +258,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 if (!p_ChangeMinScoreRequirement) p_NewMinPercentageRequirement = 100f * l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore;
 
                                                 if (!p_ChangeCategory) p_NewCategory = l_LevelDiff.customData.category;
+                                                
+                                                if (!p_ChangeCustomCategoryInfo) p_NewCustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo;
 
                                                 if (!p_ChangeInfoOnGGP) p_NewInfoOnGGP = l_LevelDiff.customData.infoOnGGP;
 
@@ -263,8 +271,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                                 if (p_ToggleAdminConfirmationOnPass) l_EditMapFormat.adminConfirmationOnPass = !l_LevelDiff.customData.adminConfirmationOnPass;
 
-                                                l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_EditMapFormat.adminConfirmationOnPass);
-                                                if (!p_ChangeLevel) l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.noteCount, l_EditMapFormat.adminConfirmationOnPass);
+                                                l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_EditMapFormat.adminConfirmationOnPass);
+                                                if (!p_ChangeLevel) l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.noteCount, l_EditMapFormat.adminConfirmationOnPass);
 
                                                 EmbedBuilder l_MapChangeEmbedBuilder = new EmbedBuilder();
                                                 l_MapChangeEmbedBuilder.WithTitle("Maps infos changed on:");
@@ -279,15 +287,18 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                     l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount)} ({p_NewMinPercentageRequirement:n2}%)");
 
                                                 if (l_MapExistCheck.DifferentCategory)
-                                                    l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory??"\u200B");
+                                                    l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory ?? "\u200B");
+                                                
+                                                if (l_MapExistCheck.DifferentCustomCategoryInfo)
+                                                    l_MapChangeEmbedBuilder.AddField("New CustomCategoryInfo:", p_NewCustomCategoryInfo ?? "\u200B");
 
                                                 if (l_MapExistCheck.DifferentInfoOnGGP)
-                                                    l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP??"\u200B");
+                                                    l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP ?? "\u200B");
 
                                                 if (l_MapExistCheck.DifferentPassText)
                                                 {
                                                     if (l_Config.DisplayCustomPassTextInGetInfo)
-                                                        l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText??"\u200B");
+                                                        l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText ?? "\u200B");
                                                     else
                                                         l_MapChangeEmbedBuilder.AddField("New secret CustomPassText added", "\u200B");
                                                 }
@@ -306,10 +317,13 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 l_MapChangeEmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                                 l_MapChangeEmbedBuilder.WithColor(Color.Blue);
 
-                                                if (p_ChangeCategory && l_Config.DisplayCategoryEdit || p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit || p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ToggleAdminConfirmationOnPass)
+                                                if (p_ChangeCategory && l_Config.DisplayCategoryEdit || p_ChangeCustomCategoryInfo && l_Config.DisplayCustomCategoryInfoEdit || p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit || p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ToggleAdminConfirmationOnPass)
                                                     foreach (SocketTextChannel l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
                                                         if (l_TextChannel.Id == l_Config.LoggingChannel)
+                                                        {
                                                             await l_TextChannel.SendMessageAsync("", false, l_MapChangeEmbedBuilder.Build());
+                                                            break;
+                                                        }
                                             }
                                     }
                     }
@@ -407,6 +421,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             {
                                 l_LastUserMessage = null;
                             }
+
                             l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
 
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
@@ -421,12 +436,16 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                             string l_OldCategory = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value.ToString();
                             l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = l_EmbedBuilder.Fields[l_CategoryFieldIndex].Name = "New Category";
-                            
+
                             if (l_LastUserMessage == null)
                             {
                                 l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = "\u200B";
                             }
-                            
+                            else
+                            {
+                                l_EmbedBuilder.Fields[l_CategoryFieldIndex].Value = l_LastUserMessage;
+                            }
+
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCategory: true, p_NewCategory: l_LastUserMessage);
 
@@ -557,6 +576,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             {
                                 l_LastUserMessage = null;
                             }
+
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_InfoOnGGPEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("InfoOnGGP-Edit"));
                             l_EmbedBuilder.Fields.RemoveAt(l_InfoOnGGPEditTitleFieldIndex); /// Removing the "InfoOnGGP-Edit" Field
@@ -568,16 +588,75 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             }
 
                             string l_OldInfoOnGGP = l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value.ToString();
-                            l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = "New InfoOnGGP";
-                            
+                            l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Name = "New InfoOnGGP";
+
                             if (l_LastUserMessage == null)
                             {
                                 l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = "\u200B";
+                            }
+                            else
+                            {
+                                l_EmbedBuilder.Fields[l_InfoOnGGPFieldIndex].Value = l_LastUserMessage;
                             }
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeInfoOnGGP: true, p_NewInfoOnGGP: l_LastUserMessage);
 
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__InfoOnGGP-Edit Done__", $"Old InfoOnGGP: {l_OldInfoOnGGP}").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
+                        }
+
+                        break;
+                    
+                    case "CustomCategoryInfoChange":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Validate my choice", $"CustomCategoryInfoChangeValidation_{l_UserID}", ButtonStyle.Success))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B", "\u200B")
+                            .AddField("__CustomCategoryInfo-Edit__", "Please type the CustomCategoryInfo you want the map to have (`null` for none). Then press \"Validate my choice\" => Your next (and last) typed message will be read.").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+
+                    case "CustomCategoryInfoChangeValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            if (l_LastUserMessage == "null")
+                            {
+                                l_LastUserMessage = null;
+                            }
+                            l_LastUserMessage = UserModule.UserModule.FirstCharacterToUpper(l_LastUserMessage);
+                            
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_CustomCategoryInfoTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomCategoryInfo-Edit"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_CustomCategoryInfoTitleFieldIndex); /// Removing the "CustomCategoryInfo-Edit" Field
+                            int l_CustomCategoryInfoFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomCategoryInfo"));
+                            if (l_CustomCategoryInfoFieldIndex < 0)
+                            {
+                                l_EmbedBuilder.AddField("CustomCategoryInfo", "\u200B");
+                                l_CustomCategoryInfoFieldIndex = l_EmbedBuilder.Fields.Count - 1;
+                            }
+
+                            string l_CustomCategoryInfo = l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value.ToString();
+                            l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Name = "New CustomCategoryInfo";
+
+                            if (l_LastUserMessage == null)
+                            {
+                                l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value = "\u200B";
+                            }
+                            else
+                            {
+                                l_EmbedBuilder.Fields[l_CustomCategoryInfoFieldIndex].Value = l_LastUserMessage;
+                            }
+
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomCategoryInfo: true, p_NewCustomCategoryInfo: l_LastUserMessage);
+
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__CustomCategoryInfo-Edit Done__", $"Old CustomCategoryInfo: {l_CustomCategoryInfo}").Build());
                             await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
@@ -657,6 +736,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             {
                                 l_LastUserMessage = null;
                             }
+
                             l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
                             int l_CustomPassTextEditTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("CustomPassText-Edit"));
                             l_EmbedBuilder.Fields.RemoveAt(l_CustomPassTextEditTitleFieldIndex); /// Removing the "CustomPassText-Edit" Field
@@ -668,11 +748,15 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             }
 
                             string l_OldCustomPassText = l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value.ToString();
-                            l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = "New CustomPassText";
+                            l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Name = "New CustomPassText";
 
                             if (l_LastUserMessage == null)
                             {
                                 l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = "\u200B";
+                            }
+                            else
+                            {
+                                l_EmbedBuilder.Fields[l_CustomPassTextFieldIndex].Value = l_LastUserMessage;
                             }
 
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_ChangeCustomPassText: true, p_NewCustomPassText: l_LastUserMessage);
@@ -836,7 +920,18 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             l_CurrentLevel.RemoveMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic);
             Level l_NewLevel = new Level(p_NewLevelID);
             if (l_CurrentLevel.m_MapRemoved)
-                l_NewLevel.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass);
+                l_NewLevel.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.CustomCategoryInfo, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass, p_LeaderboardID:p_EditMapFormat.LeaderboardID);
+
+            if (l_NewLevel.m_MapAdded)
+            {
+                MapLeaderboardController l_MapLeaderboardController = new MapLeaderboardController(p_EditMapFormat.LeaderboardID);
+                if (l_MapLeaderboardController.m_MapLeaderboard != null)
+                    if (l_MapLeaderboardController.m_MapLeaderboard.info != null)
+                    {
+                        l_MapLeaderboardController.m_MapLeaderboard.forceAutoWeightRecalculation = true;
+                        l_MapLeaderboardController.ReWriteMapLeaderboard();
+                    }
+            }
 
             return l_CurrentLevel.m_MapRemoved && l_NewLevel.m_MapAdded;
         }
@@ -851,7 +946,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         private static void ChangeName(EditMapFormat p_EditMapFormat, int p_LevelID, string p_NewName)
         {
             Level l_Level = new Level(p_LevelID);
-            l_Level.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass, null, p_NewName);
+            l_Level.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.CustomCategoryInfo, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass, p_NewName);
         }
 
         public class EditMapArgumentFormat
@@ -868,11 +963,13 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             public string SelectedCharacteristic { get; set; }
             public int MinScoreRequirement { get; set; }
             public string Category { get; set; }
+            public string CustomCategoryInfo { get; set; }
             public string InfoOnGGP { get; set; }
             public string CustomPassText { get; set; }
             public bool ForceManualWeight { get; set; }
             public float Weighting { get; set; }
             public int NumberOfNote { get; set; }
+            public int LeaderboardID { get; set; }
             public bool adminConfirmationOnPass { get; set; }
         }
     }

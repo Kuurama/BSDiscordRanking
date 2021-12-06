@@ -137,7 +137,7 @@ namespace BSDiscordRanking.Controllers
             return FILENAME;
         }
 
-        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass, string p_Key = null)
+        public static MapExistFormat MapExist_Check(string p_Hash, string p_Difficulty, string p_Characteristic, int p_MinScoreRequirement, string p_Category, string p_CustomCategoryInfo, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weight, bool p_AdmingPingOnPass, string p_Key = null)
         {
             LevelControllerFormat l_LevelControllerFormat = GetLevelControllerCache();
             MapExistFormat l_MapExistFormat = new MapExistFormat
@@ -148,6 +148,7 @@ namespace BSDiscordRanking.Controllers
                 DifferentPassText = false,
                 DifferentInfoOnGGP = false,
                 DifferentCategory = false,
+                DifferentCustomCategoryInfo = false,
                 ForceManualWeight = p_ForceManualWeight,
                 DifferentForceManualWeight = false,
                 adminConfirmationOnPass = p_AdmingPingOnPass,
@@ -190,6 +191,12 @@ namespace BSDiscordRanking.Controllers
                                     l_MapExistFormat.Category = p_Category;
                                     l_MapExistFormat.DifferentCategory = true;
                                 }
+                                
+                                if (l_Difficulty.customData.customCategoryInfo != p_CustomCategoryInfo)
+                                {
+                                    l_MapExistFormat.CustomCategoryInfo = p_CustomCategoryInfo;
+                                    l_MapExistFormat.DifferentCustomCategoryInfo = true;
+                                }
 
                                 if (l_Difficulty.customData.forceManualWeight != p_ForceManualWeight)
                                 {
@@ -223,9 +230,11 @@ namespace BSDiscordRanking.Controllers
             public bool MapExist { get; set; }
             public bool DifferentMinScore { get; set; }
             public string Category { get; set; }
+            public string CustomCategoryInfo { get; set; }
             public string InfoOnGGP { get; set; }
             public bool DifferentPassText { get; set; }
             public bool DifferentCategory { get; set; }
+            public bool DifferentCustomCategoryInfo { get; set; }
             public bool DifferentInfoOnGGP { get; set; }
             public string CustomPassText { get; set; }
             public bool ForceManualWeight { get; set; }

@@ -26,27 +26,30 @@ namespace BSDiscordRanking.Controllers
             m_Key = p_Key;
             LoadMapLeaderboard();
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
-            if (p_MaxScore != default(int)) m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
-
-            switch (m_MapLeaderboard.scores)
+            if (m_MapLeaderboard.info != null)
             {
-                case null:
-                {
-                    m_MapLeaderboard.scores = new List<MapPlayerScore>();
-                    List<ApiScore> l_ApiScores = GetLeaderboardScores(p_LeaderboardID, p_MaxScore);
-                    if (l_ApiScores != null)
-                    {
-                        l_ApiScores.RemoveAll(p_X => p_X.baseScore > m_MapLeaderboard.info.maxScore);
-                        foreach (ApiScore l_Score in l_ApiScores)
-                            m_MapLeaderboard.scores.Add(new MapPlayerScore
-                            {
-                                customData = new LeaderboardCustomData { isBotRegistered = false },
-                                score = l_Score
-                            });
-                    }
+                if (p_MaxScore != default(int)) m_MapLeaderboard.info.maxScore = p_MaxScore; /// Solution until Umbra fix his api.
 
-                    break;
-                }
+                switch (m_MapLeaderboard.scores)
+                {
+                    case null:
+                    {
+                        m_MapLeaderboard.scores = new List<MapPlayerScore>();
+                        List<ApiScore> l_ApiScores = GetLeaderboardScores(p_LeaderboardID, p_MaxScore);
+                        if (l_ApiScores != null)
+                        {
+                            l_ApiScores.RemoveAll(p_X => p_X.baseScore > m_MapLeaderboard.info.maxScore);
+                            foreach (ApiScore l_Score in l_ApiScores)
+                                m_MapLeaderboard.scores.Add(new MapPlayerScore
+                                {
+                                    customData = new LeaderboardCustomData { isBotRegistered = false },
+                                    score = l_Score
+                                });
+                        }
+
+                        break;
+                    }
+                }   
             }
         }
 

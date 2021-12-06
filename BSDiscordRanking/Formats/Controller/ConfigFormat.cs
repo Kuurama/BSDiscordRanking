@@ -49,6 +49,7 @@ namespace BSDiscordRanking.Formats.Controller
 
         public bool DisplayCustomPassTextInGetInfo { get; set; } = false;
         public bool DisplayCategoryEdit { get; set; } = true;
+        public bool DisplayCustomCategoryInfoEdit { get; set; } = true;
         public bool DisplayCustomPassTextEdit { get; set; } = true;
     }
 }

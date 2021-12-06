@@ -275,8 +275,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminConfirmationOnPass,
-            SocketCommandContext p_Context = null, string p_Name = null)
+        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_CustomCategoryInfo, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminConfirmationOnPass, string p_Name = null, int p_LeaderboardID = default(int))
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -295,18 +294,12 @@ namespace BSDiscordRanking
                         bool l_SongAlreadyExist = false;
                         bool l_DifficultyAlreadyExist = false;
                         bool l_ScoreRequirementEdit = false;
-                        int l_OriginalScoreRequirement = -1;
-                        string l_OriginalCategory = null;
-                        string l_OriginalInfoOnGGP = null;
-                        string l_OriginalCustomPassText = null;
-                        float l_OriginalManualWeight = 1f;
                         bool l_CategoryEdit = false;
+                        bool l_CustomCategoryInfoEdit = false;
                         bool l_InfoOnGGPEdit = false;
                         bool l_CustomPassTextEdit = false;
                         bool l_WeightEdit = false;
                         bool l_NameEdit = false;
-                        string l_OriginalName = null;
-                        string l_NewManualWeightPreference = null;
                         bool l_ForceManualWeightPreferenceEdit = false;
                         try
                         {
@@ -330,10 +323,11 @@ namespace BSDiscordRanking
                                 customData = new DiffCustomData
                                 {
                                     levelWorth = m_LevelID,
-                                    leaderboardID = 0,
+                                    leaderboardID = p_LeaderboardID,
                                     minScoreRequirement = p_MinScoreRequirement,
                                     manualWeight = p_Weighting,
                                     category = p_Category,
+                                    customCategoryInfo = p_CustomCategoryInfo,
                                     customPassText = p_CustomPassText,
                                     infoOnGGP = p_InfoOnGGP,
                                     forceManualWeight = p_ForceManualWeight,
@@ -370,35 +364,36 @@ namespace BSDiscordRanking
                                                 l_DifficultyAlreadyExist = true;
                                                 if (l_Difficulty.customData.minScoreRequirement != l_LevelDifficulty.customData.minScoreRequirement)
                                                 {
-                                                    l_OriginalScoreRequirement = l_LevelDifficulty.customData.minScoreRequirement;
                                                     l_LevelDifficulty.customData.minScoreRequirement = l_Difficulty.customData.minScoreRequirement;
                                                     l_ScoreRequirementEdit = true;
                                                 }
 
                                                 if (l_Difficulty.customData.category != l_LevelDifficulty.customData.category)
                                                 {
-                                                    l_OriginalCategory = l_LevelDifficulty.customData.category;
                                                     l_LevelDifficulty.customData.category = l_Difficulty.customData.category;
                                                     l_CategoryEdit = true;
+                                                }
+                                                
+                                                if (l_Difficulty.customData.customCategoryInfo != l_LevelDifficulty.customData.customCategoryInfo)
+                                                {
+                                                    l_LevelDifficulty.customData.customCategoryInfo = l_Difficulty.customData.customCategoryInfo;
+                                                    l_CustomCategoryInfoEdit = true;
                                                 }
 
                                                 if (l_Difficulty.customData.infoOnGGP != l_LevelDifficulty.customData.infoOnGGP)
                                                 {
-                                                    l_OriginalInfoOnGGP = l_LevelDifficulty.customData.infoOnGGP;
                                                     l_LevelDifficulty.customData.infoOnGGP = l_Difficulty.customData.infoOnGGP;
                                                     l_InfoOnGGPEdit = true;
                                                 }
 
                                                 if (l_Difficulty.customData.customPassText != l_LevelDifficulty.customData.customPassText)
                                                 {
-                                                    l_OriginalCustomPassText = l_LevelDifficulty.customData.customPassText;
                                                     l_LevelDifficulty.customData.customPassText = l_Difficulty.customData.customPassText;
                                                     l_CustomPassTextEdit = true;
                                                 }
 
                                                 if (Math.Abs(l_Difficulty.customData.manualWeight - l_LevelDifficulty.customData.manualWeight) > 0.001f)
                                                 {
-                                                    l_OriginalManualWeight = l_LevelDifficulty.customData.manualWeight;
                                                     l_LevelDifficulty.customData.manualWeight = l_Difficulty.customData.manualWeight;
                                                     l_WeightEdit = true;
                                                 }
@@ -406,7 +401,6 @@ namespace BSDiscordRanking
                                                 if (l_Difficulty.customData.forceManualWeight != l_LevelDifficulty.customData.forceManualWeight)
                                                 {
                                                     l_LevelDifficulty.customData.forceManualWeight = l_Difficulty.customData.forceManualWeight;
-                                                    l_NewManualWeightPreference = l_Difficulty.customData.forceManualWeight ? "true" : "false";
                                                     l_ForceManualWeightPreferenceEdit = true;
                                                 }
 
@@ -415,82 +409,47 @@ namespace BSDiscordRanking
                                                 if (l_LevelDifficulty.name != l_NewMapName)
                                                 {
                                                     l_NameEdit = true;
-                                                    l_OriginalName = m_Level.songs[l_I].name;
                                                     m_Level.songs[l_I].name = l_NewMapName;
                                                 }
 
                                                 break;
                                             }
 
-                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_NameEdit)
+                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_CustomCategoryInfoEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_NameEdit)
                                         {
-                                            p_Context?.Channel.SendMessageAsync(
-                                                $"> :ballot_box_with_check: The following maps info has been changed in Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} ranked in Level {m_LevelID} :\n");
-                                            if (l_ScoreRequirementEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> Min Score: {l_OriginalScoreRequirement} => {l_Difficulty.customData.minScoreRequirement}.");
-
-                                            if (l_CategoryEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> Category: {l_OriginalCategory} => {l_Difficulty.customData.category}.");
-
-                                            if (l_InfoOnGGPEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> InfoOnGGP: {l_OriginalInfoOnGGP} => {l_Difficulty.customData.infoOnGGP}.");
-
-                                            if (l_CustomPassTextEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> CustomPassText: {l_OriginalCustomPassText} => {l_Difficulty.customData.customPassText}.");
-
-                                            if (l_ForceManualWeightPreferenceEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> Manual Weight Preference has been set to : **{l_NewManualWeightPreference}**.");
-
-                                            if (l_WeightEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> Weight: {l_OriginalManualWeight} => {l_Difficulty.customData.manualWeight}.");
-
-                                            if (l_NameEdit)
-                                                p_Context?.Channel.SendMessageAsync(
-                                                    $"> Name: {l_OriginalName} => {l_NewMapName}.");
-
                                             ReWritePlaylist(false);
                                         }
-                                        else if (l_DifficultyAlreadyExist)
-                                        {
-                                            p_Context?.Channel.SendMessageAsync($"> :x: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} Already Exist In that Playlist");
-                                        }
-                                        else
+                                        else if (!l_DifficultyAlreadyExist)
                                         {
                                             m_Level.songs[l_I].difficulties.Add(l_Difficulty);
-                                            p_Context?.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                            Console.WriteLine($"Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                             ReWritePlaylist(false);
                                         }
                                     }
                                     else
                                     {
                                         m_Level.songs.Add(l_SongFormat);
-                                        p_Context?.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                        Console.WriteLine($"Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                         ReWritePlaylist(false);
                                     }
                                 }
                                 else
                                 {
                                     m_Level.songs.Add(l_SongFormat);
-                                    p_Context?.Channel.SendMessageAsync($"> :white_check_mark: Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
+                                    Console.WriteLine($"Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
                                     ReWritePlaylist(false);
                                 }
                             }
                             else
                             {
                                 m_ErrorNumber++;
-                                p_Context?.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
+                                Console.WriteLine("> :x: Impossible to get the map name, the key provided could be wrong.");
                             }
                         }
                         catch
                         {
                             m_ErrorNumber++;
-                            p_Context?.Channel.SendMessageAsync("> :x: Impossible to get the map name, the key provided could be wrong.");
+                            Console.WriteLine("> :x: Impossible to get the map name, the key provided could be wrong.");
                         }
 
                         m_MapAdded = !l_DifficultyAlreadyExist;
@@ -502,7 +461,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_BeatSaverMap.id}");
-                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminConfirmationOnPass, p_Context);
+                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminConfirmationOnPass);
                 }
             }
             else
