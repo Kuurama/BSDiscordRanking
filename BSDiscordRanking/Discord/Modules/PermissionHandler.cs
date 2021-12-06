@@ -18,8 +18,23 @@ namespace BSDiscordRanking.Discord.Modules
                 l_Ints.Add(1);
             if (p_Context.User is SocketGuildUser l_User2 && l_User2.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().ScoringTeamRoleID) != null)
                 l_Ints.Add(2);
-            if (p_Context.User is SocketGuildUser l_User3 && l_User3.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null)
-                l_Ints.Add(3);
+            switch (p_Context.User)
+            {
+                case SocketGuildUser l_User3 when l_User3.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null:
+                {
+                    if (l_Ints.FindIndex(p_X => p_X == 1) < 0)
+                    {
+                        l_Ints.Add(1);
+                    }
+                    if (l_Ints.FindIndex(p_X => p_X == 2) < 0)
+                    {
+                        l_Ints.Add(2);
+                    }
+                    l_Ints.Add(3);
+                    break;
+                }
+            }
+                
             return l_Ints;
         }
 

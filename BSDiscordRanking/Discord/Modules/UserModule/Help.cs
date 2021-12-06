@@ -16,30 +16,29 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Shows all the commands & their summaries.")]
         public async Task Help(string p_Command = null)
         {
+            ConfigFormat l_Config = ConfigController.GetConfig();
+            List<int> l_PermLevel = PermissionHandler.GetUserPermLevel(Context);
             if (p_Command == null)
             {
-                
-                ConfigFormat l_Config = ConfigController.GetConfig();
-                List<int> l_PermLevel = PermissionHandler.GetUserPermLevel(Context);
                 foreach (ModuleInfo l_Module in BotHandler.m_Commands.Modules)
                 {
                     EmbedBuilder l_Builder = new EmbedBuilder();
                     if (l_Module.Name == "AdminModule")
                     {
                         if (l_PermLevel.FindIndex(p_X => p_X == 3) < 0)
-                            break;
+                            continue;
                         l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.BotAdminRoleID));
                     }
                     else if (l_Module.Name == "ScoringTeamModule")
                     {
                         if (l_PermLevel.FindIndex(p_X => p_X == 2) < 0)
-                            break;
+                            continue;
                         l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.ScoringTeamRoleID));
                     }
                     else if (l_Module.Name == "RankingTeamModule")
                     {
                         if (l_PermLevel.FindIndex(p_X => p_X == 1) < 0)
-                            break;
+                            continue;
                         l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.RankingTeamRoleID));
                     }
                     else if (l_Module.Name == "UserModule")
@@ -96,10 +95,36 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             else
             {
                 CommandInfo l_FoundCommand = BotHandler.m_Commands.Commands.ToList().Find(p_X =>
-                    p_X.Name == p_Command || p_X.Aliases.ToList().Find(p_X => p_X == p_Command) == p_Command);
+                    p_X.Name == p_Command || p_X.Aliases.ToList().Find(p_Y => p_Y == p_Command) == p_Command);
                 if (l_FoundCommand != null)
                 {
                     EmbedBuilder l_Builder = new EmbedBuilder();
+                    if (l_FoundCommand.Module.Name == "AdminModule")
+                    {
+                        if (l_PermLevel.FindIndex(p_X => p_X == 3) < 0)
+                            return;
+                        l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.BotAdminRoleID));
+                    }
+                    else if (l_FoundCommand.Module.Name == "ScoringTeamModule")
+                    {
+                        if (l_PermLevel.FindIndex(p_X => p_X == 2) < 0)
+                            return;
+                        l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.ScoringTeamRoleID));
+                    }
+                    else if (l_FoundCommand.Module.Name == "RankingTeamModule")
+                    {
+                        if (l_PermLevel.FindIndex(p_X => p_X == 1) < 0)
+                            return;
+                        l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_Config.RankingTeamRoleID));
+                    }
+                    else if (l_FoundCommand.Module.Name == "UserModule")
+                    {
+                        RoleFormat l_RoleFormat = RoleController.ReadRolesDB().Roles.Find(p_X => p_X.LevelID == 0);
+                        if (l_RoleFormat != null)
+                        {
+                            l_Builder.WithColor(GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, 0, l_RoleFormat.RoleID));
+                        }
+                    }
                     string l_Title = ConfigController.GetConfig().CommandPrefix.First() + l_FoundCommand.Name;
                     foreach (ParameterInfo l_Parameter in l_FoundCommand.Parameters)
                         if (l_Parameter.Summary != null)
