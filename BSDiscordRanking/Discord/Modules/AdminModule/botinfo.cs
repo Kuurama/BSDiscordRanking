@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             l_EmbedBuilder.WithTitle("BotInfos");
             l_EmbedBuilder.AddField("Uptime", $"{l_Uptime.Days}d, {l_Uptime.Hours}h, {l_Uptime.Minutes}m");
             l_EmbedBuilder.AddField("Player count", $"{UserController.m_Users.Count} players");
-            l_EmbedBuilder.AddField("Score count", $"{l_ScoreCount} total scores");
+            l_EmbedBuilder.AddField("Pass count", $"{l_ScoreCount} total scores");
             await Context.Channel.SendMessageAsync(null, false, l_EmbedBuilder.Build());
         }
     }

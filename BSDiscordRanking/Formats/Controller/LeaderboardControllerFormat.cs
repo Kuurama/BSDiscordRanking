@@ -17,5 +17,6 @@ namespace BSDiscordRanking.Formats.Controller
         public int Level { get; set; }
         public Trophy Trophy { get; set; }
         public bool IsPingAllowed { get; set; }
+        public bool IsBanned { get; set; } = false;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.API;
 using Discord;
@@ -12,7 +13,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         [Command("addmap")]
         [Alias("rankmap")]
         [Summary("Adds a map or updates it from a desired level. Not used fields can be wrote null or 0 depending on their types. (or even ignored if you don't need any of the next ones)")]
-        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_CustomCategoryInfo = null, string p_InfoOnGGP = null, string p_CustomPassText = null, bool p_AdminPingOnPass = false, bool p_ForceManualWeight = false, float p_Weight = default(float))
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, string p_CustomCategoryInfo = null, bool p_AdminPingOnPass = false, bool p_ForceManualWeight = false, float p_Weight = default(float))
         {
             if (string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -29,6 +30,9 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                 if (p_CustomPassText == "null")
                     p_CustomPassText = null;
+                
+                if (p_CustomCategoryInfo == "null")
+                    p_CustomCategoryInfo = null;
 
                 p_CustomPassText = p_CustomPassText?.Replace("_", " ");
                 p_InfoOnGGP = p_InfoOnGGP?.Replace("_", " ");
@@ -62,7 +66,30 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                     l_EmbedBuilder.WithDescription(l_Map.name);
                                     l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                     l_EmbedBuilder.AddField("Level:", p_Level, true);
-                                    l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})", true);
+                                    if (Math.Abs(p_MinPercentageRequirement - default(float)) > 0.01)
+                                        l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})");
+
+                                    if (p_Category != null)
+                                        l_EmbedBuilder.AddField("Category:", p_Category);
+
+                                    if (p_CustomCategoryInfo != null)
+                                        l_EmbedBuilder.AddField("CustomCategoryInfo:", p_CustomCategoryInfo);
+
+                                    if (p_InfoOnGGP != null)
+                                        l_EmbedBuilder.AddField("InfoOnGGP:", p_InfoOnGGP);
+
+                                    if (p_CustomPassText != null)
+                                        l_EmbedBuilder.AddField("CustomPassText:", p_CustomPassText);
+
+                                    if (p_ForceManualWeight)
+                                        l_EmbedBuilder.AddField("ManualWeightPreference:", true);
+
+                                    if (Math.Abs(p_Weight - default(float)) > 0.01)
+                                        l_EmbedBuilder.AddField("Weight:", p_Weight);
+                                    
+                                    if (p_AdminPingOnPass)
+                                        l_EmbedBuilder.AddField("Admin Confirmation Preference:", true);
+                                    
                                     l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
                                     l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
@@ -70,7 +97,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                     await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                 }
                             }
-                            else if (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentCustomCategoryInfo || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight)
+                            else if (l_MapExistCheck.MapExist && l_MapExistCheck.Level == p_Level && (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentCustomCategoryInfo || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight))
                             {
                                 l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_NumberOfNote, p_AdminPingOnPass);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();

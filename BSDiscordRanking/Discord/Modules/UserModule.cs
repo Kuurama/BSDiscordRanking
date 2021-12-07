@@ -261,10 +261,13 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             int l_PassFindIndex = -1;
             PassLeaderboardController l_PassLeaderboardController = null;
+            bool l_IsAccLeaderboardBan = false;
+            bool l_IsPassLeaderboardBan = false;
             if (l_Config.EnableAccBasedLeaderboard)
             {
                 l_PassLeaderboardController = new PassLeaderboardController();
                 l_PassFindIndex = l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
+                l_IsPassLeaderboardBan = l_PassLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
             }
 
             int l_AccFindIndex = -1;
@@ -273,6 +276,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 l_AccLeaderboardController = new AccLeaderboardController();
                 l_AccFindIndex = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
+                l_IsAccLeaderboardBan = l_AccLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
             }
 
 
@@ -289,7 +293,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             string l_PassRankFieldValue = null;
             string l_AccRankFieldValue = null;
 
-            if (l_Config.EnablePassBasedLeaderboard && l_PassLeaderboardController is not null)
+            if (l_Config.EnablePassBasedLeaderboard && l_PassLeaderboardController is not null && !l_IsPassLeaderboardBan)
             {
                 if (l_PassFindIndex == -1)
                     l_PassRankFieldValue = $":medal: #0 - 0 {l_Config.PassPointsName}";
@@ -298,7 +302,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_PassRankFieldValue = $":medal: #{l_PassFindIndex + 1} - {l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_PassFindIndex].Points} {l_Config.PassPointsName}";
             }
 
-            if (l_Config.EnableAccBasedLeaderboard && l_AccLeaderboardController is not null)
+            if (l_Config.EnableAccBasedLeaderboard && l_AccLeaderboardController is not null && !l_IsAccLeaderboardBan)
             {
                 if (l_AccFindIndex == -1)
                     l_AccRankFieldValue = $":medal: #0 - 0 {l_Config.AccPointsName}";
@@ -307,7 +311,19 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_AccRankFieldValue = $":medal: #{l_AccFindIndex + 1} - {l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_AccFindIndex].Points} {l_Config.AccPointsName}";
             }
 
-            if (l_Config.EnableAccBasedLeaderboard || l_Config.EnablePassBasedLeaderboard) l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
+            if (l_Config.EnableAccBasedLeaderboard || l_Config.EnablePassBasedLeaderboard)
+                if (l_PassRankFieldValue != null && l_AccRankFieldValue != null)
+                {
+                    l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
+                }
+                else if (l_PassRankFieldValue != null)
+                {
+                    l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}", true);
+                }
+                else if (l_AccRankFieldValue != null)
+                {
+                    l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_AccRankFieldValue}", true);
+                }
 
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);

@@ -21,8 +21,11 @@ namespace BSDiscordRanking.Formats.Controller
 
     public class LeaderboardCustomData
     {
-        public bool isBotRegistered { get; set; } /// <summary>
+        public bool isBotRegistered { get; set; }
+
+        /// <summary>
         /// Added this field to help displaying only the players registered on the bot.
         /// </summary>
+        public bool isBanned { get; set; } = false;
     }
 }
