@@ -35,11 +35,11 @@ namespace BSDiscordRanking.Controllers
                     case null:
                     {
                         m_MapLeaderboard.scores = new List<MapPlayerScore>();
-                        List<ApiScore> l_ApiScores = GetLeaderboardScores(p_LeaderboardID, p_MaxScore);
+                        ApiScoreCollection l_ApiScores = GetLeaderboardScores(p_LeaderboardID);
                         if (l_ApiScores != null)
                         {
-                            l_ApiScores.RemoveAll(p_X => p_X.baseScore > m_MapLeaderboard.info.maxScore);
-                            foreach (ApiScore l_Score in l_ApiScores)
+                            l_ApiScores.scores.RemoveAll(p_X => p_X.baseScore > m_MapLeaderboard.info.maxScore);
+                            foreach (ApiScore l_Score in l_ApiScores.scores)
                                 m_MapLeaderboard.scores.Add(new MapPlayerScore
                                 {
                                     customData = new LeaderboardCustomData { isBotRegistered = false },
@@ -53,7 +53,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        public static List<ApiScore> GetLeaderboardScores(int p_LeaderboardID, int p_Page = 1, int p_TryLimit = 3)
+        public static ApiScoreCollection GetLeaderboardScores(int p_LeaderboardID, int p_Page = 1, int p_TryLimit = 3)
         {
             /// This Method Get the Scores from a Leaderboard (with it's ID) from the Score Saber API.
             /// It handle most of the exceptions possible and return null if an error happen.
@@ -66,7 +66,7 @@ namespace BSDiscordRanking.Controllers
                 {
                     try
                     {
-                        List<ApiScore> l_LeaderboardScores = JsonConvert.DeserializeObject<List<ApiScore>>(
+                        ApiScoreCollection l_LeaderboardScores = JsonConvert.DeserializeObject<ApiScoreCollection>(
                             l_WebClient.DownloadString(@$"https://scoresaber.com/api/leaderboard/by-id/{p_LeaderboardID}/scores?page={p_Page}"));
                         return l_LeaderboardScores;
                     }
@@ -121,7 +121,7 @@ namespace BSDiscordRanking.Controllers
             return null;
         }
 
-        public static ApiLeaderboard GetInfos(int p_LeaderboardID, int p_TryLimit = 3)
+        public static ApiLeaderboardInfo GetInfos(int p_LeaderboardID, int p_TryLimit = 3)
         {
             /// This Method Get the Leaderboard's Info from the Score Saber API.
             /// It handle most of the exceptions possible and return null if an error happen.
@@ -134,7 +134,7 @@ namespace BSDiscordRanking.Controllers
                 {
                     try
                     {
-                        ApiLeaderboard l_MapLeaderboardInfo = JsonConvert.DeserializeObject<ApiLeaderboard>(
+                        ApiLeaderboardInfo l_MapLeaderboardInfo = JsonConvert.DeserializeObject<ApiLeaderboardInfo>(
                             l_WebClient.DownloadString(@$"https://scoresaber.com/api/leaderboard/by-id/{p_LeaderboardID}/info"));
                         return l_MapLeaderboardInfo;
                     }

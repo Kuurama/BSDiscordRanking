@@ -266,6 +266,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             if (l_Config.EnableAccBasedLeaderboard)
             {
                 l_PassLeaderboardController = new PassLeaderboardController();
+                l_PassLeaderboardController.m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
                 l_PassFindIndex = l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
                 l_IsPassLeaderboardBan = l_PassLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
             }
@@ -275,6 +276,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             if (l_Config.EnableAccBasedLeaderboard)
             {
                 l_AccLeaderboardController = new AccLeaderboardController();
+                l_AccLeaderboardController.m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
                 l_AccFindIndex = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
                 l_IsAccLeaderboardBan = l_AccLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
             }

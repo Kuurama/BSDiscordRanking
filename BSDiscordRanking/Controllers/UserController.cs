@@ -25,7 +25,7 @@ namespace BSDiscordRanking.Controllers
             try
             {
                 WebClient l_WebClient = new WebClient();
-                ApiPlayerFull l_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>
+                ApiPlayer l_PlayerFull = JsonSerializer.Deserialize<ApiPlayer>
                     (l_WebClient.DownloadString(@$"https://scoresaber.com/api/player/{p_ScoreSaberID}/full"));
                 // ReSharper disable once PossibleNullReferenceException
                 if (l_PlayerFull != null && !string.IsNullOrEmpty(l_PlayerFull.name)) return true;

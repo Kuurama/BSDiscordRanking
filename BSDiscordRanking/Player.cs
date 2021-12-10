@@ -26,10 +26,10 @@ namespace BSDiscordRanking
         private bool m_HavePlayerInfo;
         private LevelControllerFormat m_LevelController;
         private string m_Path;
-        public ApiPlayerFull m_PlayerFull;
+        public ApiPlayer m_PlayerFull;
         private string m_PlayerID;
         public PlayerPassFormat m_PlayerPass;
-        public List<ApiScoreInfo> m_PlayerScore;
+        public ApiPlayerScoreCollection m_PlayerScoreCollection;
         public PlayerStatsFormat m_PlayerStats;
 
         public Player(string p_PlayerID)
@@ -202,7 +202,7 @@ namespace BSDiscordRanking
                     {
                         try
                         {
-                            m_PlayerFull = JsonSerializer.Deserialize<ApiPlayerFull>(
+                            m_PlayerFull = JsonSerializer.Deserialize<ApiPlayer>(
                                 l_WebClient.DownloadString(@$"https://scoresaber.com/api/player/{m_PlayerID}/full"));
                             m_HavePlayerInfo = true;
                         }
@@ -253,10 +253,10 @@ namespace BSDiscordRanking
 
         private void LoadSavedScore()
         {
-            /// If First Launch* : Assign a Scores Sample to m_PlayerScore. (mean there isn't any cache file yet)
+            /// If First Launch* : Assign a Scores Sample to m_PlayerScoreCollection. (mean there isn't any cache file yet)
             /// This Method Load a cache file from its path. (The player's scores)
-            /// then Deserialise it to m_PlayerScore.
-            /// * => If the Scores's file failed to load (or don't exist), it will still load an empty scores format to m_PlayerScore.
+            /// then Deserialise it to m_PlayerScoreCollection.
+            /// * => If the Scores's file failed to load (or don't exist), it will still load an empty scores format to m_PlayerScoreCollection.
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
 
@@ -272,13 +272,13 @@ namespace BSDiscordRanking
                 {
                     using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
                     {
-                        m_PlayerScore = JsonSerializer.Deserialize<List<ApiScoreInfo>>(l_SR.ReadToEnd());
+                        m_PlayerScoreCollection = JsonSerializer.Deserialize<ApiPlayerScoreCollection>(l_SR.ReadToEnd());
                         Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
                     }
                 }
                 catch (Exception)
                 {
-                    m_PlayerScore = new List<ApiScoreInfo>();
+                    m_PlayerScoreCollection = new ApiPlayerScoreCollection(){playerScores = new List<ApiPlayerScore>(), metadata = new ApiMetadata()};
                     Console.WriteLine($"Player {m_PlayerID} Created (Empty Format) => (Nothing to load/Wrong Format)");
                 }
             }
@@ -313,7 +313,7 @@ namespace BSDiscordRanking
 
                 if (m_HavePlayerInfo) /// Check if Player have Player's Info
                 {
-                    if (m_PlayerScore != null)
+                    if (m_PlayerScoreCollection != null)
                     {
                         int l_Page = 1;
                         int l_NumberOfAddedScore = 0;
@@ -330,25 +330,25 @@ namespace BSDiscordRanking
                                 try
                                 {
                                     Console.WriteLine(l_URL);
-                                    List<ApiScoreInfo> l_Result = JsonConvert.DeserializeObject<List<ApiScoreInfo>>(l_WebClient.DownloadString(l_URL)); ///< Result From Request but Serialized.
+                                    ApiPlayerScoreCollection l_Result = JsonConvert.DeserializeObject<ApiPlayerScoreCollection>(l_WebClient.DownloadString(l_URL)); ///< Result From Request but Serialized.
                                     l_Page++;
 
                                     // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
-                                    foreach (ApiScoreInfo l_PlayerScore in m_PlayerScore)
+                                    foreach (ApiPlayerScore l_PlayerScore in m_PlayerScoreCollection.playerScores)
                                     {
                                         if (l_Skip)
                                             break; ///< break the for and l_Skip will cause the end of the While Loop.
                                         if (l_Result == null) continue;
 
-                                        if (l_Result.Any(p_ResultScore => p_ResultScore.score.timeSet == l_PlayerScore.score.timeSet)) l_Skip = true; ///< One score already exist (will end the While Loop)
+                                        if (l_Result.playerScores.Any(p_ResultScore => p_ResultScore.score.timeSet == l_PlayerScore.score.timeSet)) l_Skip = true; ///< One score already exist (will end the While Loop)
                                     }
 
                                     if (l_Result != null)
-                                        foreach (ApiScoreInfo l_NewScore in l_Result.Where(p_NewScore =>
-                                            m_PlayerScore.RemoveAll(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id && p_X.score != p_NewScore.score) > 0
-                                            || !m_PlayerScore.Any(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id)))
+                                        foreach (ApiPlayerScore l_NewScore in l_Result.playerScores.Where(p_NewScore =>
+                                            m_PlayerScoreCollection.playerScores.RemoveAll(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id && p_X.score != p_NewScore.score) > 0
+                                            || m_PlayerScoreCollection.playerScores.All(p_X => p_X.leaderboard.id != p_NewScore.leaderboard.id)))
                                         {
-                                            m_PlayerScore.Add(l_NewScore);
+                                            m_PlayerScoreCollection.playerScores.Add(l_NewScore);
                                             l_NumberOfAddedScore++;
                                         }
                                 }
@@ -419,9 +419,9 @@ namespace BSDiscordRanking
 
         public void ReWriteScore(int p_TryLimit = 3, int p_TryTimeout = 200)
         {
-            /// This Method Serialise the data from m_PlayerScore and cache it to a file depending on the path parameter
+            /// This Method Serialise the data from m_PlayerScoreCollection and cache it to a file depending on the path parameter
             /// Be Aware that it will replace the current cache file (if there is any), it shouldn't be an issue
-            /// as you needed to Deserialised that cache (or set an empty format) to m_PlayerScore by using LoadSavedScore();
+            /// as you needed to Deserialised that cache (or set an empty format) to m_PlayerScoreCollection by using LoadSavedScore();
             ///
             /// m_ErrorNumber will be increased at every error and lock the method if it exceed m_ErrorLimit
             if (m_PlayerID != null)
@@ -430,13 +430,13 @@ namespace BSDiscordRanking
                 {
                     try
                     {
-                        if (m_PlayerScore != null)
+                        if (m_PlayerScoreCollection != null)
                         {
-                            File.WriteAllText(m_Path + "score.json", JsonSerializer.Serialize(m_PlayerScore));
+                            File.WriteAllText(m_Path + "score.json", JsonSerializer.Serialize(m_PlayerScoreCollection));
                             try
                             {
                                 Console.WriteLine(
-                                    $"{m_PlayerFull.name} Updated, ({m_PlayerScore.Count} Scores stored)");
+                                    $"{m_PlayerFull.name} Updated, ({m_PlayerScoreCollection.playerScores.Count} Scores stored)");
                             }
                             catch (Exception)
                             {
@@ -683,7 +683,7 @@ namespace BSDiscordRanking
 
                         foreach (SongFormat l_Song in l_Level.value.m_Level.songs)
                         {
-                            foreach (ApiScoreInfo l_Score in m_PlayerScore)
+                            foreach (ApiPlayerScore l_Score in m_PlayerScoreCollection.playerScores)
                                 if (!l_Score.score.modifiers.Contains("NF") && !l_Score.score.modifiers.Contains("NA") && !l_Score.score.modifiers.Contains("SS") && !l_Score.score.modifiers.Contains("NB"))
                                 {
                                     bool l_ScoreDeleted = false;
@@ -1022,7 +1022,7 @@ namespace BSDiscordRanking
                                     l_CategoryPerLevelList.Add(l_Difficulty.customData.category);
                         }
 
-                        foreach (int l_LeaderboardID in l_LeaderboardIdToRemove) m_PlayerScore.RemoveAll(p_X => p_X.leaderboard.id == l_LeaderboardID); /// Removing potential cheated scores
+                        foreach (int l_LeaderboardID in l_LeaderboardIdToRemove) m_PlayerScoreCollection.playerScores.RemoveAll(p_X => p_X.leaderboard.id == l_LeaderboardID); /// Removing potential cheated scores
 
                         List<Difficulty> l_LevelDifficultyList = l_Level.value.m_Level.songs.SelectMany(p_Song => p_Song.difficulties).ToList();
                         l_NumberOfDifficulties += l_LevelDifficultyList.Count;

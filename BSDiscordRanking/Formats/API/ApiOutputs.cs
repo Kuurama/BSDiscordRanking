@@ -2,7 +2,13 @@
 
 namespace BSDiscordRanking.Formats.API
 {
-    public class ApiPlayerFull
+    public class PlayerCollection
+    {
+        public List<ApiPlayer> players { get; set; }
+        public Metadata metadata { get; set; }
+    }
+    
+    public class ApiPlayer
     {
         public string id { get; set; }
         public string name { get; set; }
@@ -12,15 +18,15 @@ namespace BSDiscordRanking.Formats.API
         public int rank { get; set; }
         public int countryRank { get; set; }
         public string role { get; set; }
-        public List<ApiPlayerBadge> badges { get; set; }
-        public string history { get; set; }
+        public List<ApiBadge> badges { get; set; }
+        public string histories { get; set; }
         public short permissions { get; set; }
         public bool banned { get; set; }
         public bool inactive { get; set; }
         public ApiScoreStats scoreStats { get; set; }
     }
 
-    public class ApiPlayerBadge
+    public class ApiBadge
     {
         public string description { get; set; }
         public string image { get; set; }
@@ -36,10 +42,21 @@ namespace BSDiscordRanking.Formats.API
         public int replaysWatched { get; set; }
     }
 
-    public class ApiScoreInfo
+    public class ApiScoreCollection
+    {
+        public List<ApiScore> scores { get; set; }
+        public ApiMetadata metadata { get; set; }
+    }
+    public class ApiPlayerScoreCollection
+    {
+        public List<ApiPlayerScore> playerScores { get; set; }
+        public ApiMetadata metadata { get; set; }
+    }
+
+    public class ApiPlayerScore
     {
         public ApiScore score { get; set; }
-        public ApiLeaderboard leaderboard { get; set; }
+        public ApiLeaderboardInfo leaderboard { get; set; }
     }
 
     public class ApiScore
@@ -62,7 +79,13 @@ namespace BSDiscordRanking.Formats.API
         public string timeSet { get; set; }
     }
 
-    public class ApiLeaderboard
+    public class ApiLeaderboardInfoCollection
+    {
+        public ApiLeaderboardInfo leaderboards { get; set; }
+        public Metadata metadata { get; set; }
+    }
+
+    public class ApiLeaderboardInfo
     {
         public int id { get; set; }
         public string songHash { get; set; }
@@ -85,28 +108,15 @@ namespace BSDiscordRanking.Formats.API
         public int plays { get; set; }
         public int dailyPlays { get; set; }
         public string coverImage { get; set; }
-        public ApiPlayerScore playerScore { get; set; }
+        public ApiScore playerScore { get; set; }
         public List<ApiDifficulty> difficulties { get; set; }
     }
 
-    public class ApiPlayerScore
+    public class ApiMetadata
     {
-        public ulong id { get; set; }
-        public ApiLeaderboardPlayerInfo leaderboardPlayerInfo { get; set; }
-        public int rank { get; set; }
-        public int baseScore { get; set; }
-        public int modifiedScore { get; set; }
-        public float pp { get; set; }
-        public float weight { get; set; }
-        public string modifiers { get; set; }
-        public float multiplier { get; set; }
-        public int badCuts { get; set; }
-        public int missedNotes { get; set; }
-        public int maxCombo { get; set; }
-        public bool fullCombo { get; set; }
-        public short hmd { get; set; }
-        public bool hasReplay { get; set; }
-        public string timeSet { get; set; }
+        public int total { get; set; }
+        public int page { get; set; }
+        public int itemsPerPage { get; set; }
     }
 
     public class ApiLeaderboardPlayerInfo

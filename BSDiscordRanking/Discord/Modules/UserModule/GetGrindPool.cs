@@ -367,7 +367,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             }
             else if (p_CheckForLastGGP)
             {
-                await ReplyAsync("> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
+                if (p_Level != int.MinValue)
+                {
+                    await ReplyAsync("> :white_check_mark: Seems like there isn't any new level to grind for you right now, good job.");
+                }
+                else
+                {
+                    await ReplyAsync($"> :x: Sorry but there isn't any category called `{p_Category}` (stored in your stats) available for category's level grind pool.");
+                }
             }
 
             else

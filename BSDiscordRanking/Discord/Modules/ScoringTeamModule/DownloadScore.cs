@@ -45,11 +45,11 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                     Player l_Player = new Player(p_DiscordOrScoreSaberID);
                     l_Player.LoadPass();
 
-                    List<ApiScore> l_ApiScores;
+                    ApiScoreCollection l_ApiScoreCollection;
                     ApiScore l_DownloadedPlayerScore = null;
-                    ApiLeaderboard l_ApiLeaderboard = null;
-                    l_ApiLeaderboard = MapLeaderboardController.GetInfos(l_LeaderboardID);
-                    if (l_ApiLeaderboard == null)
+                    ApiLeaderboardInfo l_ApiLeaderboardInfo = null;
+                    l_ApiLeaderboardInfo = MapLeaderboardController.GetInfos(l_LeaderboardID);
+                    if (l_ApiLeaderboardInfo == null)
                     {
                         l_EmbedBuilder.WithTitle("Sorry but it seems like this LeaderboardID is invalid.");
                         l_EmbedBuilder.WithUrl($"https://scoresaber.com/leaderboard/{l_LeaderboardID}");
@@ -61,16 +61,16 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                     int l_Page = 1;
                     do
                     {
-                        l_ApiScores = MapLeaderboardController.GetLeaderboardScores(l_LeaderboardID, l_Page);
-                        if (l_ApiScores != null)
+                        l_ApiScoreCollection = MapLeaderboardController.GetLeaderboardScores(l_LeaderboardID, l_Page);
+                        if (l_ApiScoreCollection != null)
                         {
-                            if (!l_ApiScores.Any())
+                            if (!l_ApiScoreCollection.scores.Any())
                             {
-                                l_ApiScores = null;
+                                l_ApiScoreCollection = null;
                                 break;
                             }
 
-                            foreach (ApiScore l_Score in l_ApiScores.Where(p_X => p_X.leaderboardPlayerInfo.id == p_DiscordOrScoreSaberID))
+                            foreach (ApiScore l_Score in l_ApiScoreCollection.scores.Where(p_X => p_X.leaderboardPlayerInfo.id == p_DiscordOrScoreSaberID))
                             {
                                 l_DownloadedPlayerScore = l_Score;
                                 break;
@@ -78,7 +78,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                         }
 
                         l_Page++;
-                    } while (l_ApiScores != null && l_DownloadedPlayerScore == null);
+                    } while (l_ApiScoreCollection?.scores != null && l_DownloadedPlayerScore == null);
 
                     if (l_DownloadedPlayerScore == null)
                     {
@@ -90,21 +90,21 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                     }
 
 
-                    if (l_Player.m_PlayerScore != null)
+                    if (l_Player.m_PlayerScoreCollection != null)
                     {
-                        int l_ScoreIndex = l_Player.m_PlayerScore.FindIndex(p_X => p_X.leaderboard.id == l_LeaderboardID);
+                        int l_ScoreIndex = l_Player.m_PlayerScoreCollection.playerScores.FindIndex(p_X => p_X.leaderboard.id == l_LeaderboardID);
                         if (l_ScoreIndex >= 0)
                         {
-                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScore[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore} => (#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
-                            l_Player.m_PlayerScore[l_ScoreIndex].score = l_DownloadedPlayerScore;
-                            l_Player.m_PlayerScore[l_ScoreIndex].leaderboard = l_ApiLeaderboard;
+                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score.baseScore} => (#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
+                            l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score = l_DownloadedPlayerScore;
+                            l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].leaderboard = l_ApiLeaderboardInfo;
                             l_ScoreRedownloaded = true;
                             l_Player.ReWriteScore();
                         }
                         else
                         {
                             l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
-                            l_Player.m_PlayerScore.Insert(0, new ApiScoreInfo { leaderboard = l_ApiLeaderboard, score = l_DownloadedPlayerScore });
+                            l_Player.m_PlayerScoreCollection.playerScores.Insert(0, new ApiPlayerScore() { leaderboard = l_ApiLeaderboardInfo, score = l_DownloadedPlayerScore });
                             l_Player.ReWriteScore();
                         }
                     }

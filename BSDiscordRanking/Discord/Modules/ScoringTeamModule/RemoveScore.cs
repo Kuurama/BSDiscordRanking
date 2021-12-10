@@ -65,13 +65,13 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                         }
                     }
 
-                    if (l_Player.m_PlayerScore != null)
+                    if (l_Player.m_PlayerScoreCollection != null)
                     {
-                        int l_ScoreIndex = l_Player.m_PlayerScore.FindIndex(p_X => p_X.leaderboard.id == l_LeaderboardID);
+                        int l_ScoreIndex = l_Player.m_PlayerScoreCollection.playerScores.FindIndex(p_X => p_X.leaderboard.id == l_LeaderboardID);
                         if (l_ScoreIndex >= 0)
                         {
-                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScore[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScore[l_ScoreIndex].score.baseScore}.");
-                            l_Player.m_PlayerScore.RemoveAt(l_ScoreIndex);
+                            l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score.baseScore}.");
+                            l_Player.m_PlayerScoreCollection.playerScores.RemoveAt(l_ScoreIndex);
                             l_ScoreRemoved = true;
                             l_Player.ReWriteScore();
                         }
