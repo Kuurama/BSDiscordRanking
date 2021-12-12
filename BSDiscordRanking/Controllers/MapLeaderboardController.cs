@@ -258,7 +258,7 @@ namespace BSDiscordRanking.Controllers
                             m_MapLeaderboard = new MapLeaderboardFormat
                             {
                                 key = m_Key,
-                                forceAutoWeightRecalculation = false,
+                                forceAutoWeightRecalculation = true, /// Force first check
                                 info = null,
                                 scores = null
                             };
@@ -282,7 +282,7 @@ namespace BSDiscordRanking.Controllers
                     m_MapLeaderboard = new MapLeaderboardFormat
                     {
                         key = m_Key,
-                        forceAutoWeightRecalculation = false,
+                        forceAutoWeightRecalculation = true, /// Force first check
                         info = null,
                         scores = null
                     };
@@ -354,7 +354,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         for (int l_Index = 0; l_Index < ConfigController.GetConfig().MinimumNumberOfScoreForAutoWeight; l_Index++) l_NewSumOfFirstScores += m_MapLeaderboard.scores[l_Index].score.baseScore;
 
-                        if (l_SumOfFirstScores < l_NewSumOfFirstScores && l_SumOfFirstScores != 0 || p_CustomDataAutoWeight == 0) return true;
+                        if ((l_SumOfFirstScores < l_NewSumOfFirstScores && l_SumOfFirstScores != 0) || p_CustomDataAutoWeight == 0) return true;
                     }
 
                 return false;

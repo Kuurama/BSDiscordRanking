@@ -93,7 +93,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 else
                                     await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called `{p_Category}` in Level {p_Level},\n+ there is too many categories in that level to send all of them in one message.");
 
-                                DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                                DeleteAllFolderAndFile(l_Path);
+                                DeleteFile(l_PathFile);
                                 return;
                             }
 
@@ -109,7 +110,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             await ReplyAsync($"> It seems like you don't have any pass on this level, i guess you wanted to use the `{BotHandler.m_Prefix}getplaylist {l_LevelInt}` command, here is it:");
                             await GetPlaylist(p_Level);
-                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                            DeleteAllFolderAndFile(l_Path);
+                            DeleteFile(l_PathFile);
                             return;
                         }
 
@@ -131,7 +133,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 await ReplyAsync("> :x: Sorry but you already passed all the maps in that playlist.");
                         }
 
-                        DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                        DeleteAllFolderAndFile(l_Path);
+                        DeleteFile(l_PathFile);
                     }
                     else
                     {
@@ -178,14 +181,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             ZipFile.CreateFromDirectory(l_Path, $"{ORIGINAL_PATH}{l_FileName}.zip");
                             await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's your personal playlist folder! <@{Context.User.Id.ToString()}>");
-                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                            DeleteAllFolderAndFile(l_Path);
+                            DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");
                         }
                         else
                         {
                             if (l_CategoryExist)
                             {
                                 await ReplyAsync($"Sorry but you already passed all the maps from all `{p_Category}` pools, good job!");
-                                DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                                DeleteAllFolderAndFile(l_Path);
+                                DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");
                             }
                             else
                             {
@@ -207,7 +212,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                     await ReplyAsync("Sorry but you already passed all the maps from all pools, good job!");
                                 }
 
-                                DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                                DeleteAllFolderAndFile(l_Path);
+                                DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");
                             }
                         }
                     }

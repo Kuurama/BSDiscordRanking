@@ -130,26 +130,33 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             return l_SB.ToString();
         }
 
-        private void DeletePlaylistZip(string p_OriginalPath, string p_FileName)
+        private static void DeleteAllFolderAndFile(string p_OriginalPath)
         {
             try
             {
-                ///// Delete all personal files before generating new ones /////////
-                string l_Path = p_OriginalPath + p_FileName + "/";
-                if (File.Exists(p_OriginalPath + p_FileName + ".zip"))
-                    File.Delete(p_OriginalPath + p_FileName + ".zip");
-
-                DirectoryInfo l_Directory = new DirectoryInfo(l_Path);
+                DirectoryInfo l_Directory = new DirectoryInfo(p_OriginalPath);
                 foreach (FileInfo l_File in l_Directory.EnumerateFiles()) l_File.Delete();
 
                 foreach (DirectoryInfo l_Dir in l_Directory.EnumerateDirectories()) l_Dir.Delete(true);
 
-                Directory.Delete(p_OriginalPath + p_FileName + "/");
-                ///////////////////////////////////////////////////////////////////////
+                Directory.Delete(p_OriginalPath);
             }
             catch (Exception l_Exception)
             {
-                Console.WriteLine($"DeletePlaylistZip : {l_Exception}");
+                Console.WriteLine($"DeleteAllFolderAndFile : {l_Exception}");
+            }
+        }
+
+        private static void DeleteFile(string p_FilePath)
+        {
+            try
+            {
+                if (File.Exists(p_FilePath)) /// Mean there is already a personnal playlist file.
+                    File.Delete(p_FilePath);
+            }
+            catch (Exception l_Exception)
+            {
+                Console.WriteLine($"DeleteFile : {l_Exception}");
             }
         }
 

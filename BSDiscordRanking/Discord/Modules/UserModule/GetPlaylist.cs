@@ -66,6 +66,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 string l_FileName = RemoveSpecialCharacters(p_Category);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
+                DeleteAllFolderAndFile(l_Path);
+                DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");
 
                 if (int.TryParse(p_Level, out int l_LevelInt))
                 {
@@ -74,8 +76,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         string l_PlaylistName = $"{l_FileName}_{l_LevelInt:D3}{Level.SUFFIX_NAME}";
                         string l_PathFile = l_Path + l_PlaylistName;
 
-                        if (File.Exists(l_PathFile)) /// Mean there is already a personnal playlist file.
-                            File.Delete(l_PathFile);
+                        DeleteFile(l_PathFile); /// Delete playlist file if it already exist.
 
                         Level l_Level = new Level(l_LevelInt);
                         RemoveCategoriesFormat l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
@@ -105,7 +106,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
 
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
-                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                        {
+                            DeleteAllFolderAndFile(l_Path);
+                            DeleteFile(l_PathFile);
+                        }
                     }
                     else
                     {
@@ -114,7 +118,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else if (p_Level == "all")
                 {
-                    // await Context.Channel.SendMessageAsync("> :x: Sorry but this functionality isn't supported yet.");
                     List<string> l_AvailableCategories = new List<string>();
                     foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID)
                     {
@@ -146,7 +149,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         {
                             ZipFile.CreateFromDirectory(l_Path, $"{ORIGINAL_PATH}{l_FileName}.zip");
                             await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's the {p_Category}'s playlist folder!");
-                            DeletePlaylistZip(ORIGINAL_PATH, l_FileName);
+                            DeleteAllFolderAndFile(l_Path);
+                            DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");
                         }
                         else /// Shouldn't ever happen but actually, i prefer doing it.
                         {

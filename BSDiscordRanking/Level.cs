@@ -53,7 +53,7 @@ namespace BSDiscordRanking
             ReWritePlaylist(false);
         }
 
-        private void LoadLevel()
+        public void LoadLevel()
         {
             /// If First Launch* : Assign a Playlist Sample to m_Level. (mean there isn't any cache file yet)
             /// This Method Load a Playlist from its path and Prefix Name
@@ -301,6 +301,7 @@ namespace BSDiscordRanking
                         bool l_WeightEdit = false;
                         bool l_NameEdit = false;
                         bool l_ForceManualWeightPreferenceEdit = false;
+                        bool l_AdminConfirmationOnPassEdit = false;
                         bool l_NameParameterIsNull = false;
                         try
                         {
@@ -407,18 +408,22 @@ namespace BSDiscordRanking
                                                     l_ForceManualWeightPreferenceEdit = true;
                                                 }
 
-                                                if (l_Difficulty.customData.adminConfirmationOnPass != l_LevelDifficulty.customData.adminConfirmationOnPass) l_LevelDifficulty.customData.adminConfirmationOnPass = l_Difficulty.customData.adminConfirmationOnPass;
+                                                if (l_Difficulty.customData.adminConfirmationOnPass != l_LevelDifficulty.customData.adminConfirmationOnPass)
+                                                {
+                                                    l_LevelDifficulty.customData.adminConfirmationOnPass = l_Difficulty.customData.adminConfirmationOnPass;
+                                                    l_AdminConfirmationOnPassEdit = true;
+                                                }
 
                                                 if ((l_LevelDifficulty.name != l_NewMapName) && !l_NameParameterIsNull)
                                                 {
-                                                    l_NameEdit = true;
                                                     m_Level.songs[l_I].name = l_NewMapName;
+                                                    l_NameEdit = true;
                                                 }
 
                                                 break;
                                             }
 
-                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_CustomCategoryInfoEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_NameEdit)
+                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_CustomCategoryInfoEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_AdminConfirmationOnPassEdit || l_NameEdit)
                                         {
                                             ReWritePlaylist(false);
                                         }
