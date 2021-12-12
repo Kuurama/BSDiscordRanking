@@ -58,6 +58,17 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{RemoveSpecialCharacters(Context.User.Username)}_CategoryPlaylistPack.zip", $"> :white_check_mark: Here's the CategoryPlaylistPack, happy grinding!");
                     DeleteAllFolderAndFile(l_UserPath);
                     DeleteFile($"{ORIGINAL_PATH}{RemoveSpecialCharacters(Context.User.Username)}_CategoryPlaylistPack.zip");
+                    
+                    string l_Message = $"> Which mean a pack containing those category: (Put the folders inside your game's playlist folder)";
+                    foreach (string l_Category in l_AvailableCategories)
+                        if (l_Category != null)
+                            if (l_Category != "")
+                                l_Message += $"\n> {l_Category}";
+
+                    if (l_Message.Length <= 1980)
+                        await ReplyAsync(l_Message);
+                    else
+                        await ReplyAsync($"> Which mean a pack containing all available categories (Put the folders inside your game's playlist folder),\n+ there is too many categories in all levels to send all of them in one message.");
                 }
                 else
                 {
