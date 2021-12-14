@@ -1,0 +1,174 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+
+Class BotHandler{
+public CommandService m_Commands
+public static string m_Prefix;
+public static DiscordSocketClient m_Client;
+}
+
+Class Program{
+main()
+}
+
+Class Level{
+const string SUFFIX_NAME = "_Level"
+const string EXTENSION = ".bplist"
+const string PATH = @"./Levels/"
+BeatSaverFormat m_BeatSaverFormat
+LevelFormat m_Level
+int m_LevelID
+bool m_MapAdded
+bool m_MapDeleted
+string m_SyncURL
+
+Level(int p_LevelID) // Constructor
+}
+
+
+Class Player {
+static string m_FolderPath
+bool m_HavePlayerInfo
+LevelControllerFormat m_LevelController
+string m_Path
+ApiPlayerFull m_PlayerFull
+Ulong m_PlayerID
+PlayerPassFormat m_PlayerPass
+List<ApiScoreInfo> m_PlayerScore
+PlayerStatsFormat m_PlayerStats
+
+Player(int p_PlayerID) // Constructor
+}
+
+package Modules{
+    Class PermissionHandler{
+    class RequirePermissionAttribute : PreconditionAttribute
+    }
+
+    Class AdminModule {
+    +AddChannel()
+    +BotInfo()
+    +ConfirmationChannel()
+    +CreateRoles()
+    +Link()
+    +Unlink()
+    +LoggingChannel()
+    +RejectUser()
+    +RemoveChannel()
+    +ResetConfig()
+    +Scan()
+    +SetLevel()
+    +Shutdown()
+    }
+    
+    Class RankingTeamModule {
+    +AddMap()
+    +EditMap()
+    +RemoveMap()
+    +ResetScoreRequirement()
+    }
+    
+    Class ScoringTeamModule {
+    +BanFromLeaderboard()
+    +ChangeScore()
+    +DownloadScore()
+    +RemoveScore()
+    }
+    
+    Class UserModule {
+    +AccPingToggle()
+    +PassPingToggle()
+    +GetCategoryPlaylistPack()
+    +GetGrindPool()
+    +GetInfo()
+    +GetPlaylist()
+    +GetStarted()
+    +GetUnPassedPlaylist()
+    +GetPlaylist()
+    +GetStarted()
+    +Help()
+    +Leaderboard()
+    +Link()
+    +Unlink()
+    +Ping()
+    +Profile()
+    +Progress()
+    +Scan()
+    +Trophy()
+    }
+}
+
+package Controllers{
+    Class MapLeaderboardController {
+    
+    }
+    
+    Class RoleController {
+    }
+    
+    Class UserController {
+    }
+    
+    Class PlayerLeaderboard{
+    }
+    
+    Class AccLeaderboardController{
+    }
+    
+    Class PassLeaderboardController{
+    }
+    
+    Class ConfigController
+    
+    
+    Class JsonDataBaseController{
+    +CreateDirectory()
+    }
+}
+
+package Formats{
+    package ApiFormat{
+    Class ApiOutputs
+    Class BeatSaverFormat
+    }
+    package ControllerFormat{
+    Class ConfigFormat
+    Class LeaderboardControllerFormat
+    Class LevelControllerFormat
+    Class MapLeaderboardControllerFormat   
+    }
+    package LevelFormat{
+    Class LevelOutputs
+    }
+    package PlayerFormat{
+    Class PlayerPassFormat
+    Class PlayerStatsFormat
+    }
+    Class RoleFormat
+    Class SnipeFormat
+    Class UserFormat
+}
+
+PlayerLeaderboard <-- AccLeaderboardController
+PlayerLeaderboard <-- PassLeaderboardController
+
+Program *-- BotHandler
+
+AdminModule "0..*" --- Player
+RankingTeamModule  "0..*" --- Player
+ScoringTeamModule  "0..*" --- Player
+UserModule  "0..*" --- Player
+
+RankingTeamModule "0..*" - Level
+UserModule "0..*" - Level
+Player "0..*" -- Level
+
+Player "0..*" o--- MapLeaderboardController
+Player "0..1" o--- PassLeaderboardController
+Player "0..1" o--- AccLeaderboardController
+
+
+RoleController "0..*" - AdminModule
+
+
+@enduml
