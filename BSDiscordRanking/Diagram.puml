@@ -23,6 +23,13 @@ bool m_MapDeleted
 string m_SyncURL
 
 Level(int p_LevelID) // Constructor
+
++ReWritePlaylist()
++GetAllCategory()
++DeleteLevel()
++AddMap()
++RemoveMap()
++FetchBeatMap()
 }
 
 
@@ -31,70 +38,128 @@ static string m_FolderPath
 bool m_HavePlayerInfo
 LevelControllerFormat m_LevelController
 string m_Path
-ApiPlayerFull m_PlayerFull
+ApiPlayer m_PlayerFull
 Ulong m_PlayerID
 PlayerPassFormat m_PlayerPass
 List<ApiScoreInfo> m_PlayerScore
 PlayerStatsFormat m_PlayerStats
 
 Player(int p_PlayerID) // Constructor
+
++GetPlayerLevel()
++GetInfos()
+
++LoadSavedScore()
++LoadStats()
++LoadPass()
+
++FetchScores()
++FetchPass()
+
++ClearScore()
++ResetTrophy()
++ResetLevels()
+
++ReturnPass()
+
++SetLevelCategoryPass()
++GetStats()
++ReWritePass()
++ReWriteScore()
 }
 
 package Modules{
     Class PermissionHandler{
     class RequirePermissionAttribute : PreconditionAttribute
+    +GetUserPermLevel()
     }
 
     Class AdminModule {
-    +AddChannel()
-    +BotInfo()
-    +ConfirmationChannel()
     +CreateRoles()
+    
+    +AddChannel()
+    +ConfirmationChannel()
+    +LoggingChannel()
+    
+    +BotInfo()
+    
     +Link()
     +Unlink()
-    +LoggingChannel()
+    
     +RejectUser()
+    
     +RemoveChannel()
-    +ResetConfig()
+
     +Scan()
     +SetLevel()
+    
+    +ResetConfig()
     +Shutdown()
     }
     
     Class RankingTeamModule {
+     +EditMap()
+    
     +AddMap()
-    +EditMap()
     +RemoveMap()
-    +ResetScoreRequirement()
+    
+    EditMapInteraction:
+    -case: SelectLevelMenu
+    
+    
+    EditMapButtonHandler:
+    -case: ChangeLevel
+    -case: ChangeCategory
+    -case: ChangeCategoryInfo
+    -case: ToggleManualWeight
+    -case: ToggleAdminPing
+    -case: ChangeMinScoreRequirement
+    -case: ChangeInfoOnGGP
+    -case: ChangeName
+    -case: RemoveMap
+    -case: Back
+    -case: Close
+    
     }
     
     Class ScoringTeamModule {
     +BanFromLeaderboard()
+    
     +ChangeScore()
     +DownloadScore()
     +RemoveScore()
     }
     
     Class UserModule {
-    +AccPingToggle()
-    +PassPingToggle()
-    +GetCategoryPlaylistPack()
-    +GetGrindPool()
-    +GetInfo()
-    +GetPlaylist()
+    
     +GetStarted()
-    +GetUnPassedPlaylist()
-    +GetPlaylist()
-    +GetStarted()
-    +Help()
-    +Leaderboard()
+    
     +Link()
     +Unlink()
-    +Ping()
-    +Profile()
-    +Progress()
+    
     +Scan()
+    
+    +GetCategoryPlaylistPack()
+    +GetPlaylist()
+    +GetUnPassedPlaylist()
+    
+    +Progress()
+    +Profile()
+    +GetGrindPool()
+        
+    +GetInfo()
+    +GetStarted()
+   
+    +Help()
+    +Leaderboard()
+    
+    +Ping()
+
+
     +Trophy()
+    
+    +AccPingToggle()
+    +PassPingToggle()
     }
 }
 
@@ -157,18 +222,16 @@ Program *-- BotHandler
 AdminModule "0..*" --- Player
 RankingTeamModule  "0..*" --- Player
 ScoringTeamModule  "0..*" --- Player
-UserModule  "0..*" --- Player
+UserModule "0..1" --- Player
 
 RankingTeamModule "0..*" - Level
 UserModule "0..*" - Level
-Player "0..*" -- Level
+Player "0..*" - Level
 
-Player "0..*" o--- MapLeaderboardController
-Player "0..1" o--- PassLeaderboardController
-Player "0..1" o--- AccLeaderboardController
-
-
-RoleController "0..*" - AdminModule
+UserModule "0..*" o- MapLeaderboardController
+ScoringTeamModule "0..*" o- MapLeaderboardController
+UserModule "0..1" o- PassLeaderboardController
+UserModule "0..1" o- AccLeaderboardController
 
 
 @enduml
