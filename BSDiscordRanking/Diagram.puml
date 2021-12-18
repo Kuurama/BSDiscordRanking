@@ -219,19 +219,19 @@ PlayerLeaderboard <-- PassLeaderboardController
 
 Program *-- BotHandler
 
-AdminModule "0..*" --- Player
-RankingTeamModule  "0..*" --- Player
-ScoringTeamModule  "0..*" --- Player
-UserModule "0..1" --- Player
+AdminModule  ... "0..*" Player
+RankingTeamModule  ... "0..*" Player
+ScoringTeamModule  ... "0..*" Player
+UserModule  ... "0..1" Player
 
-RankingTeamModule "0..*" - Level
-UserModule "0..*" - Level
-Player "0..*" - Level
+RankingTeamModule . "0..*" Level
+UserModule . "0..*" Level
+Player . "0..*" Level
 
-UserModule "0..*" o- MapLeaderboardController
-ScoringTeamModule "0..*" o- MapLeaderboardController
-UserModule "0..1" o- PassLeaderboardController
-UserModule "0..1" o- AccLeaderboardController
+UserModule *- "0..*" MapLeaderboardController
+ScoringTeamModule *-  "0..*" MapLeaderboardController
+UserModule *- "0..1" PassLeaderboardController
+UserModule *- "0..1" AccLeaderboardController
 
 
 @enduml
