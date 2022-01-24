@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.API;
@@ -104,7 +103,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                         else
                         {
                             l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
-                            l_Player.m_PlayerScoreCollection.playerScores.Insert(0, new ApiPlayerScore() { leaderboard = l_ApiLeaderboardInfo, score = l_DownloadedPlayerScore });
+                            l_Player.m_PlayerScoreCollection.playerScores.Insert(0, new ApiPlayerScore { leaderboard = l_ApiLeaderboardInfo, score = l_DownloadedPlayerScore });
                             l_Player.ReWriteScore();
                         }
                     }

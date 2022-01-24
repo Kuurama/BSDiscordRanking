@@ -68,6 +68,7 @@ namespace BSDiscordRanking
                 if (m_PlayerStats is null)
                     return 0;
 
+                bool l_CategoryExist = false;
                 if (m_PlayerStats.Levels is not null)
                 {
                     m_PlayerStats.Levels = m_PlayerStats.Levels.OrderBy(p_X => p_X.LevelID).ToList();
@@ -83,6 +84,7 @@ namespace BSDiscordRanking
                                     int l_CategoryIndex = l_Level.Categories.FindIndex(p_X => p_X.Category == p_Category);
                                     if (l_CategoryIndex >= 0)
                                     {
+                                        l_CategoryExist = true;
                                         if (!p_GetMaxLevel)
                                         {
                                             if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 1 && l_Level.Categories[l_CategoryIndex].Passed)
@@ -114,20 +116,32 @@ namespace BSDiscordRanking
                             {
                                 if (!p_GetMaxLevel)
                                 {
-                                    if (l_Level.Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                    if (l_LevelIndex == l_Level.LevelID && l_Level.Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                    {
                                         l_PlayerLevel = l_Level.LevelID;
+                                        l_LevelIndex++;
+                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
                                 else
                                 {
-                                    if (l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                    if (l_LevelIndex == l_Level.LevelID && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                    {
                                         l_PlayerLevel = l_Level.LevelID;
+                                        l_LevelIndex++;
+                                    }
                                     else
+                                    {
                                         break;
+                                    }
                                 }
                             }
                         }
+
+                    if (!l_CategoryExist && !p_GetGlobalLevel) return -1; /// Return -1 if category doesn't exist + was asking for a category.
 
                     return l_PlayerLevel;
                 }
@@ -169,10 +183,15 @@ namespace BSDiscordRanking
                         }
                         else
                         {
-                            if (l_Level.Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                            if (l_LevelIndex == l_Level.LevelID && l_Level.Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                            {
                                 l_PlayerLevel = l_Level.LevelID;
+                                l_LevelIndex++;
+                            }
                             else
+                            {
                                 break;
+                            }
                         }
 
                     return l_PlayerLevel;
@@ -210,7 +229,7 @@ namespace BSDiscordRanking
                         {
                             if (
                                 l_Exception.Response is HttpWebResponse
-                                    l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
+                                l_HttpWebResponse) ///< If the request succeeded (internet OK) but you got an error code.
                             {
                                 if (l_HttpWebResponse.StatusCode == HttpStatusCode.TooManyRequests)
                                 {
@@ -278,7 +297,7 @@ namespace BSDiscordRanking
                 }
                 catch (Exception)
                 {
-                    m_PlayerScoreCollection = new ApiPlayerScoreCollection(){playerScores = new List<ApiPlayerScore>(), metadata = new ApiMetadata()};
+                    m_PlayerScoreCollection = new ApiPlayerScoreCollection { playerScores = new List<ApiPlayerScore>(), metadata = new ApiMetadata() };
                     Console.WriteLine($"Player {m_PlayerID} Created (Empty Format) => (Nothing to load/Wrong Format)");
                 }
             }
@@ -345,8 +364,8 @@ namespace BSDiscordRanking
 
                                     if (l_Result != null)
                                         foreach (ApiPlayerScore l_NewScore in l_Result.playerScores.Where(p_NewScore =>
-                                            m_PlayerScoreCollection.playerScores.RemoveAll(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id && p_X.score != p_NewScore.score) > 0
-                                            || m_PlayerScoreCollection.playerScores.All(p_X => p_X.leaderboard.id != p_NewScore.leaderboard.id)))
+                                                     m_PlayerScoreCollection.playerScores.RemoveAll(p_X => p_X.leaderboard.id == p_NewScore.leaderboard.id && p_X.score != p_NewScore.score) > 0
+                                                     || m_PlayerScoreCollection.playerScores.All(p_X => p_X.leaderboard.id != p_NewScore.leaderboard.id)))
                                         {
                                             m_PlayerScoreCollection.playerScores.Add(l_NewScore);
                                             l_NumberOfAddedScore++;
@@ -719,16 +738,16 @@ namespace BSDiscordRanking
                                                     }
 
                                                     foreach (InPlayerSong l_CachedPassedSong in m_PlayerPass.SongList
-                                                        .Where(p_CachedPassedSong => p_CachedPassedSong.DiffList != null && string.Equals(p_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase)))
+                                                                 .Where(p_CachedPassedSong => p_CachedPassedSong.DiffList != null && string.Equals(p_CachedPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase)))
                                                     {
                                                         l_MapStored = true;
                                                         foreach (InPlayerPassFormat l_CachedDifficulty in l_CachedPassedSong.DiffList)
                                                         {
                                                             if (l_TempPlayerPass.SongList != null)
                                                                 foreach (InPlayerPassFormat l_OldDiff in l_TempPlayerPass.SongList
-                                                                    .Where(p_OldPassedSong => p_OldPassedSong.hash == l_CachedPassedSong.hash)
-                                                                    .SelectMany(p_OldPassedSong => p_OldPassedSong.DiffList
-                                                                        .Where(p_OldDiff => p_OldDiff.Difficulty.characteristic == l_Difficulty.characteristic && p_OldDiff.Difficulty.name == l_Difficulty.name)))
+                                                                             .Where(p_OldPassedSong => p_OldPassedSong.hash == l_CachedPassedSong.hash)
+                                                                             .SelectMany(p_OldPassedSong => p_OldPassedSong.DiffList
+                                                                                 .Where(p_OldDiff => p_OldDiff.Difficulty.characteristic == l_Difficulty.characteristic && p_OldDiff.Difficulty.name == l_Difficulty.name)))
                                                                     if (!l_MinScoreRequirementFailed)
                                                                     {
                                                                         l_TempDiffExist = true;
@@ -849,10 +868,10 @@ namespace BSDiscordRanking
                                                         int l_OldRank = default(int);
                                                         if (l_TempPlayerPass.SongList != null)
                                                             foreach (InPlayerPassFormat l_OldDiff in l_TempPlayerPass.SongList
-                                                                .Where(p_OldPassedSong => string.Equals(p_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
-                                                                .SelectMany(p_OldPassedSong => p_OldPassedSong.DiffList
-                                                                    .Where(p_OldDiff => p_OldDiff.Difficulty.characteristic == l_Difficulty.characteristic && p_OldDiff.Difficulty.name == l_Difficulty.name)
-                                                                ))
+                                                                         .Where(p_OldPassedSong => string.Equals(p_OldPassedSong.hash, l_Song.hash, StringComparison.CurrentCultureIgnoreCase))
+                                                                         .SelectMany(p_OldPassedSong => p_OldPassedSong.DiffList
+                                                                             .Where(p_OldDiff => p_OldDiff.Difficulty.characteristic == l_Difficulty.characteristic && p_OldDiff.Difficulty.name == l_Difficulty.name)
+                                                                         ))
                                                                 if (!l_MinScoreRequirementFailed)
                                                                 {
                                                                     l_WasStored = true;
@@ -1645,7 +1664,7 @@ namespace BSDiscordRanking
                             break;
                         }
 
-                        case <=99:
+                        case <= 99:
                         {
                             l_Diamond = 1;
                             l_TrophyString = "<:diamond:874215133289795584>";

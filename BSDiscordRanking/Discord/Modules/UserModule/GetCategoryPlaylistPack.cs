@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using Discord.Commands;
@@ -23,8 +21,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             DeleteAllFolderAndFile(l_UserPath); /// Will attempt folder content deletion if there is.
             DeleteFile($"{l_UserPath}CategoryPlaylistPack.zip"); /// Will attempt archive deletion if it already exist.
             JsonDataBaseController.CreateDirectory(l_UserPath); /// Will attempt folder creation if it doesn't exist.
-            
-            
+
+
             foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
@@ -34,14 +32,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     int l_FindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_Category);
                     if (l_FindIndex < 0) l_AvailableCategories.Add(l_Category); /// Just so it can get the final category list.
-                    
-                    
+
+
                     l_Level.LoadLevel(); /// Reset the level.
                     l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, l_Category);
                     string l_FileName = RemoveSpecialCharacters(l_Category);
                     string l_Path = l_UserPath + l_FileName + "/";
                     string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
-                    
+
                     if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
                     {
                         JsonDataBaseController.CreateDirectory(l_Path); /// Will attempt folder creation if it doesn't exist.
@@ -55,11 +53,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 if (Directory.GetFiles(l_UserPath, "*", SearchOption.AllDirectories).Any())
                 {
                     ZipFile.CreateFromDirectory(l_UserPath, $"{ORIGINAL_PATH}{RemoveSpecialCharacters(Context.User.Username)}_CategoryPlaylistPack.zip");
-                    await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{RemoveSpecialCharacters(Context.User.Username)}_CategoryPlaylistPack.zip", $"> :white_check_mark: Here's the CategoryPlaylistPack, happy grinding!");
+                    await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{RemoveSpecialCharacters(Context.User.Username)}_CategoryPlaylistPack.zip", "> :white_check_mark: Here's the CategoryPlaylistPack, happy grinding!");
                     DeleteAllFolderAndFile(l_UserPath);
                     DeleteFile($"{ORIGINAL_PATH}{RemoveSpecialCharacters(Context.User.Username)}_CategoryPlaylistPack.zip");
-                    
-                    string l_Message = $"> Which mean a pack containing those category: (Put the folders inside your game's playlist folder)";
+
+                    string l_Message = "> Which mean a pack containing those category: (Put the folders inside your game's playlist folder)";
                     foreach (string l_Category in l_AvailableCategories)
                         if (l_Category != null)
                             if (l_Category != "")
@@ -68,7 +66,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     if (l_Message.Length <= 1980)
                         await ReplyAsync(l_Message);
                     else
-                        await ReplyAsync($"> Which mean a pack containing all available categories (Put the folders inside your game's playlist folder),\n+ there is too many categories in all levels to send all of them in one message.");
+                        await ReplyAsync("> Which mean a pack containing all available categories (Put the folders inside your game's playlist folder),\n+ there is too many categories in all levels to send all of them in one message.");
                 }
                 else
                 {

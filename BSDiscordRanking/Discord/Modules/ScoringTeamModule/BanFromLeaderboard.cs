@@ -1,7 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats.Controller;
 using Discord;
 using Discord.Commands;
 
@@ -41,16 +39,13 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 int l_Index = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
                 l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned = !l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned;
                 l_AccLeaderboardController.ReWriteLeaderboard();
-                if (l_Player.m_PlayerFull != null)
-                {
-                    await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s {ConfigController.GetConfig().AccPointsName} Ban preference has been changed from **{!l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}** to **{l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}**");
-                }
-                
+                if (l_Player.m_PlayerFull != null) await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s {ConfigController.GetConfig().AccPointsName} Ban preference has been changed from **{!l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}** to **{l_AccLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}**");
+
 
                 await ReplyAsync("", embed: l_EmbedBuilder.Build());
             }
         }
-        
+
         [Command("ldpassban")]
         [Alias("banldpass")]
         [Summary("Toggle a player ban from the acc leaderboard.")]
@@ -82,11 +77,8 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 int l_Index = l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
                 l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned = !l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned;
                 l_PassLeaderboardController.ReWriteLeaderboard();
-                if (l_Player.m_PlayerFull != null)
-                {
-                    await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s {ConfigController.GetConfig().PassPointsName} Ban preference has been changed from **{!l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}** to **{l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}**");
-                }
-                
+                if (l_Player.m_PlayerFull != null) await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s {ConfigController.GetConfig().PassPointsName} Ban preference has been changed from **{!l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}** to **{l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}**");
+
 
                 await ReplyAsync("", embed: l_EmbedBuilder.Build());
             }

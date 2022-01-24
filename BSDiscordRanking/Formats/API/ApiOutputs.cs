@@ -7,7 +7,7 @@ namespace BSDiscordRanking.Formats.API
         public List<ApiPlayer> players { get; set; }
         public Metadata metadata { get; set; }
     }
-    
+
     public class ApiPlayer
     {
         public string id { get; set; }
@@ -47,6 +47,7 @@ namespace BSDiscordRanking.Formats.API
         public List<ApiScore> scores { get; set; }
         public ApiMetadata metadata { get; set; }
     }
+
     public class ApiPlayerScoreCollection
     {
         public List<ApiPlayerScore> playerScores { get; set; }

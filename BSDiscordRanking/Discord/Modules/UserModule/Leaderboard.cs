@@ -18,14 +18,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             AccLeaderboardController l_AccLeaderboardController = new AccLeaderboardController();
             bool l_IsBanned = false;
             if (l_AccLeaderboardController.m_Leaderboard?.Leaderboard != null)
-            {
                 if (l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()) && p_X.IsBanned) >= 0)
-                {
                     l_IsBanned = true;
-                }
-            }
             LeaderboardBuilderFormat l_AccLeaderboardBuilderFormat = BuildLeaderboard(l_AccLeaderboardController.m_Leaderboard, l_ConfigFormat.AccPointsName, l_EmbedBuilder, p_Page);
-            
+
             if (l_IsBanned && l_AccLeaderboardBuilderFormat.PageExist)
             {
                 l_EmbedBuilder.WithTitle($"You are banned from the {l_ConfigFormat.AccPointsName} Leaderboard, your rank wont show, here is the leaderboard:");
@@ -53,12 +49,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             bool l_IsBanned = false;
             if (l_PassLeaderboardController.m_Leaderboard?.Leaderboard != null)
-            {
-                if (l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()) && p_X.IsBanned == true) >= 0)
-                {
+                if (l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == UserController.GetPlayer(Context.User.Id.ToString()) && p_X.IsBanned) >= 0)
                     l_IsBanned = true;
-                }
-            }
 
             LeaderboardBuilderFormat l_PassLeaderboardBuilderFormat = BuildLeaderboard(l_PassLeaderboardController.m_Leaderboard, l_ConfigFormat.PassPointsName, l_EmbedBuilder, p_Page);
 
@@ -96,7 +88,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 try
                 {
                     if (p_LeaderboardController.Leaderboard.Count <= l_Index) continue;
-                    
+
                     RankedPlayer l_RankedPlayer = p_LeaderboardController.Leaderboard[l_Index];
                     p_EmbedBuilder.AddField(
                         $"#{l_Index + 1} - {l_RankedPlayer.Name} : {l_RankedPlayer.Points} {p_PointsName}",

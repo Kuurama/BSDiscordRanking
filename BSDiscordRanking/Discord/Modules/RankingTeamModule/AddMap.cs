@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                 if (p_CustomPassText == "null")
                     p_CustomPassText = null;
-                
+
                 if (p_CustomCategoryInfo == "null")
                     p_CustomCategoryInfo = null;
 
@@ -86,10 +86,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                     if (Math.Abs(p_Weight - default(float)) > 0.01)
                                         l_EmbedBuilder.AddField("Weight:", p_Weight);
-                                    
+
                                     if (p_AdminPingOnPass)
                                         l_EmbedBuilder.AddField("Admin Confirmation Preference:", true);
-                                    
+
                                     l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
                                     l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                     l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");

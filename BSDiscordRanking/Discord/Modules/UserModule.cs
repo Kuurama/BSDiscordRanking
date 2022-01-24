@@ -48,7 +48,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     for (int l_I = l_TempFormat.songs.Count - 1; l_I >= 0; l_I--)
                         if (l_TempFormat.songs.Count > l_I)
                             if (string.Equals(l_TempFormat.songs[l_I].hash, l_PlayerPassSong.hash,
-                                StringComparison.CurrentCultureIgnoreCase))
+                                    StringComparison.CurrentCultureIgnoreCase))
                                 foreach (InPlayerPassFormat l_PlayerPassSongDifficulty in l_PlayerPassSong.DiffList)
                                     if (l_TempFormat.songs.Count > l_I)
                                         for (int l_Y = l_TempFormat.songs[l_I].difficulties.Count - 1; l_Y >= 0; l_Y--)
@@ -273,9 +273,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             if (l_Config.EnableAccBasedLeaderboard)
             {
                 l_PassLeaderboardController = new PassLeaderboardController();
+                l_IsPassLeaderboardBan = l_PassLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
                 l_PassLeaderboardController.m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
                 l_PassFindIndex = l_PassLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
-                l_IsPassLeaderboardBan = l_PassLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
             }
 
             int l_AccFindIndex = -1;
@@ -283,9 +283,9 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             if (l_Config.EnableAccBasedLeaderboard)
             {
                 l_AccLeaderboardController = new AccLeaderboardController();
+                l_IsAccLeaderboardBan = l_AccLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
                 l_AccLeaderboardController.m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
                 l_AccFindIndex = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID);
-                l_IsAccLeaderboardBan = l_AccLeaderboardController.m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_DiscordOrScoreSaberID && p_X.IsBanned);
             }
 
 
@@ -322,17 +322,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             if (l_Config.EnableAccBasedLeaderboard || l_Config.EnablePassBasedLeaderboard)
                 if (l_PassRankFieldValue != null && l_AccRankFieldValue != null)
-                {
                     l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}\n{l_AccRankFieldValue}", true);
-                }
                 else if (l_PassRankFieldValue != null)
-                {
                     l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_PassRankFieldValue}", true);
-                }
-                else if (l_AccRankFieldValue != null)
-                {
-                    l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_AccRankFieldValue}", true);
-                }
+                else if (l_AccRankFieldValue != null) l_EmbedBuilder.AddField("Leaderboard Rank", $"{l_AccRankFieldValue}", true);
 
             l_EmbedBuilder.AddField("\u200B", "\u200B", true);
             l_EmbedBuilder.AddField("Number of passes", ":clap: " + l_PlayerStats.TotalNumberOfPass, true);
@@ -419,8 +412,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             string l_ProgressText = "";
             for (int l_I = 0;
-                l_I < l_Progress;
-                l_I++)
+                 l_I < l_Progress;
+                 l_I++)
                 l_ProgressText += "▇";
 
             for (int l_I = 0; l_I < l_EmptyProgress; l_I++) l_ProgressText += "—";

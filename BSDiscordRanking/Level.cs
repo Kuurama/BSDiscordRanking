@@ -306,7 +306,7 @@ namespace BSDiscordRanking
                         try
                         {
                             if (p_Name == null) l_NameParameterIsNull = true;
-                            
+
                             StringBuilder l_SBMapName = new StringBuilder(p_Name ?? m_BeatSaver.name);
                             string l_NewMapName = p_Name ?? m_BeatSaver.name;
                             do /// Might want to implement Trim()
@@ -414,7 +414,7 @@ namespace BSDiscordRanking
                                                     l_AdminConfirmationOnPassEdit = true;
                                                 }
 
-                                                if ((l_LevelDifficulty.name != l_NewMapName) && !l_NameParameterIsNull)
+                                                if (l_LevelDifficulty.name != l_NewMapName && !l_NameParameterIsNull)
                                                 {
                                                     m_Level.songs[l_I].name = l_NewMapName;
                                                     l_NameEdit = true;

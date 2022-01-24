@@ -28,7 +28,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                     l_MaxScore = 115 + (p_NoteCount - 1) * 2 * 115;
                     break;
 
-                case <13:
+                case < 13:
                     l_MaxScore = 1035 + (p_NoteCount - 5) * 4 * 115;
                     break;
                 case 13:

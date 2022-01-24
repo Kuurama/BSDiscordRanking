@@ -63,12 +63,12 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                     l_EmbedBuilder.WithTitle("Sorry this map's BSRCode doesn't exist on BeatSaver (and isn't in any level).");
                     if (Context != null)
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                            component: new ComponentBuilder()
+                             components: new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
                                 .Build());
                     else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
                         await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                            component: new ComponentBuilder()
+                            components: new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                 .Build());
                 }
@@ -154,7 +154,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                     l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
                                                         .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
                                                 l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
-                                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(), component: l_ComponentBuilder.Build());
+                                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
                                             }
                                             else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
                                             {
@@ -182,7 +182,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 }
 
                                                 l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
-                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), component: l_ComponentBuilder.Build());
+                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
                                             }
                                         }
 
@@ -325,6 +325,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                             break;
                                                         }
                                             }
+
                                         break;
                                     }
                     }
@@ -334,12 +335,12 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         l_EmbedBuilder.WithTitle("Sorry this map's difficulty/characteristic isn't in any level.");
                         if (Context != null)
                             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                                component: new ComponentBuilder()
+                                components: new ComponentBuilder()
                                     .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
                                     .Build());
                         else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
                             await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                                component: new ComponentBuilder()
+                                components: new ComponentBuilder()
                                     .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                     .Build());
                     }
