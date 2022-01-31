@@ -20,11 +20,14 @@ namespace BSDiscordRanking.Controllers
         private int m_ErrorNumber;
         public MapLeaderboardFormat m_MapLeaderboard;
 
-        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default(int))
+        public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default(int), bool p_DoNotCreateLeaderboard = false)
         {
             m_LeaderboardID = p_LeaderboardID;
             m_Key = p_Key;
             LoadMapLeaderboard();
+            if (p_DoNotCreateLeaderboard) return;
+            
+
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
             if (m_MapLeaderboard.info != null)
             {
@@ -262,7 +265,7 @@ namespace BSDiscordRanking.Controllers
                                 info = null,
                                 scores = null
                             };
-                            Console.WriteLine("Map Leaderboard Created (Empty Format), contained null");
+                           //Console.WriteLine("Map Leaderboard Created (Empty Format), contained null");
                         }
                         else
                         {
@@ -286,7 +289,7 @@ namespace BSDiscordRanking.Controllers
                         info = null,
                         scores = null
                     };
-                    Console.WriteLine("Map Leaderboard Created (Empty Format)");
+                    //Console.WriteLine("Map Leaderboard Created (Empty Format)");
                 }
             }
             else

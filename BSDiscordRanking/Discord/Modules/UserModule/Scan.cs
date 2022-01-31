@@ -15,6 +15,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public async Task Scan_Scores()
         {
             Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            if (l_Player.m_PlayerStats.IsScanBanned)
+            {
+                await ReplyAsync($"> :x: Sorry, but you are Scan Banned.");
+                return;
+            }
+            
             int l_OldPlayerLevel = l_Player.GetPlayerLevel();
 
             if (!UserController.UserExist(Context.User.Id.ToString()))
@@ -28,9 +34,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     .WithTitle(l_Player.m_PlayerFull.name)
                     .WithUrl("https://scoresaber.com/u/" + l_Player.m_PlayerFull.id)
                     .WithThumbnailUrl(l_Player.m_PlayerFull.profilePicture);
-
+                
                 bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
                 l_Player.LoadPass(); /// Load the player's pass if there is.
+                
                 Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context);
                 if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
                 {
@@ -101,8 +108,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                 /// This will Update the leaderboard (the ManagePlayer, then depending on the Player's decision, ping them for snipe///////////////////////////
 
-                await PassLeaderboardController.SendSnipeMessage(Context, new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, l_Player.GetPlayerID(), l_Player.m_PlayerStats.PassPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
-                await AccLeaderboardController.SendSnipeMessage(Context, new AccLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, l_Player.GetPlayerID(), l_Player.m_PlayerStats.AccPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+                if (!l_Player.m_PlayerStats.IsMapLeaderboardBanned)
+                {
+                    await PassLeaderboardController.SendSnipeMessage(Context, new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, l_Player.GetPlayerID(), l_Player.m_PlayerStats.PassPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+                    await AccLeaderboardController.SendSnipeMessage(Context, new AccLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, l_Player.GetPlayerID(), l_Player.m_PlayerStats.AccPoints, l_NewPlayerLevel, l_TotalTrophy, false)); /// Manage the PassLeaderboard
+                }
 
                 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             }

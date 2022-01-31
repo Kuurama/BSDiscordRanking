@@ -26,7 +26,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
-                await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}editmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
+                await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}editmap [key] [ExpertPlus/Hard..] [Standard/Lawless..]`");
                 return;
             }
 

@@ -11,6 +11,8 @@ namespace BSDiscordRanking.Formats.Player
         public float AccPoints { get; set; }
 
         public bool IsFirstScan { get; set; }
+        public bool IsMapLeaderboardBanned { get; set; }
+        public bool IsScanBanned { get; set; }
     }
 
     public class Trophy

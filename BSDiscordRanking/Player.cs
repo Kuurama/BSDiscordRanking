@@ -648,7 +648,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public async Task<NumberOfPassTypeFormat> FetchPass(SocketCommandContext p_Context = null, bool p_IsBotRegistered = false)
+        public async Task<NumberOfPassTypeFormat> FetchPass(SocketCommandContext p_Context = null, bool p_IsBotRegistered = false, bool p_IsMapLeaderboardBanned = false)
         {
             if (m_PlayerID != null)
             {
@@ -973,15 +973,20 @@ namespace BSDiscordRanking
                                                             role = m_PlayerFull.role
                                                         };
                                                         l_Score.score.leaderboardPlayerInfo = l_LeaderboardPlayerInfo; /// Needed for map leaderboard.
+                                                        bool l_NeedNewAutoWeight = false;
 
-                                                        bool l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore
+                                                        if (!m_PlayerStats.IsMapLeaderboardBanned)
                                                         {
-                                                            customData = new LeaderboardCustomData
+                                                            l_NeedNewAutoWeight = l_MapLeaderboardController.ManagePlayerAndAutoWeightCheck(new MapPlayerScore
                                                             {
-                                                                isBotRegistered = p_IsBotRegistered
-                                                            },
-                                                            score = l_Score.score
-                                                        }, l_Difficulty.customData.AutoWeight);
+                                                                customData = new LeaderboardCustomData
+                                                                {
+                                                                    isBotRegistered = p_IsBotRegistered
+                                                                },
+                                                                score = l_Score.score
+                                                            }, l_Difficulty.customData.AutoWeight);
+                                                        }
+                                                        
 
                                                         if (l_NeedNewAutoWeight && l_Difficulty.customData.levelWorth != 0)
                                                         {
