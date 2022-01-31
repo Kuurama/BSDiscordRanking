@@ -232,7 +232,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
 
                     int l_NumberOfDifficulties = l_RemoveCategoriesFormat.LevelFormat.songs.SelectMany(p_Song => p_Song.difficulties).Count();
-
+                    
                     string l_PlayerTrophy = "";
 
                     // ReSharper disable once IntDivisionByZero
@@ -407,7 +407,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             IOrderedEnumerable<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_SortedMapsTuples = from l_Category in l_MapsTuples orderby l_Category.Item3 select l_Category;
 
-
+            
             string l_CurrentCategory = null;
             int l_TotalMessageLength = 1700;
             bool l_FirstEmbed = true;

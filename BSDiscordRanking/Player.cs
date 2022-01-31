@@ -1220,14 +1220,14 @@ namespace BSDiscordRanking
                             foreach (string l_Message in l_FetchPassFormat.adminConfirmationPass)
                             {
                                 EmbedBuilder l_Builder = new EmbedBuilder();
-                                l_Builder.WithTitle("Those scores have been submitted for Admin Confirmation:");
+                                l_Builder.WithTitle("Those scores will be analysed by the ScoringTeam (but still count):");
 
                                 l_IsFirstMessage = false;
                                 l_Builder.WithDescription(l_Message);
                                 l_Builder.WithColor(new Color(255, 0, 0));
                                 Embed l_Embed = l_Builder.Build();
                                 await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
-                                l_Builder.WithTitle($"{m_PlayerFull.name} - Those scores need Admin Confirmation:");
+                                l_Builder.WithTitle($"{m_PlayerFull.name} - ScoringTeam Check:");
                                 l_Builder.WithUrl("https://scoresaber.com/u/" + m_PlayerFull.id);
                                 l_Embed = l_Builder.Build();
                                 await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);

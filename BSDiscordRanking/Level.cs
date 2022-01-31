@@ -33,6 +33,7 @@ namespace BSDiscordRanking
         public int m_LevelID;
         public bool m_MapAdded;
         public bool m_MapRemoved;
+        public bool m_MapHashChanged;
         private string m_SyncURL;
 
         public Level(int p_LevelID)
@@ -275,7 +276,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_CustomCategoryInfo, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminConfirmationOnPass, string p_Name = null, int p_LeaderboardID = default(int))
+        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_CustomCategoryInfo, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminConfirmationOnPass, string p_Name = null, int p_LeaderboardID = default(int), bool p_UpdateMapHash = false)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -300,6 +301,7 @@ namespace BSDiscordRanking
                         bool l_CustomPassTextEdit = false;
                         bool l_WeightEdit = false;
                         bool l_NameEdit = false;
+                        bool l_HashEdit = false;
                         bool l_ForceManualWeightPreferenceEdit = false;
                         bool l_AdminConfirmationOnPassEdit = false;
                         bool l_NameParameterIsNull = false;
@@ -350,17 +352,17 @@ namespace BSDiscordRanking
                                     for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
                                     {
                                         foreach (Version l_BeatMapVersion in m_BeatSaver.versions)
-                                            if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase))
+                                            if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(m_Level.songs[l_I].key, m_BeatSaver.id, StringComparison.CurrentCultureIgnoreCase))
                                             {
                                                 l_SongAlreadyExist = true;
                                                 break;
                                             }
-
+                                        
                                         if (l_SongAlreadyExist)
                                             break;
                                     }
 
-                                    if (l_SongAlreadyExist)
+                                    if (l_SongAlreadyExist && p_UpdateMapHash)
                                     {
                                         foreach (Difficulty l_LevelDifficulty in m_Level.songs[l_I].difficulties)
                                             if (l_Difficulty.characteristic == l_LevelDifficulty.characteristic && l_Difficulty.name == l_LevelDifficulty.name)
@@ -420,14 +422,21 @@ namespace BSDiscordRanking
                                                     l_NameEdit = true;
                                                 }
 
+                                                if (p_UpdateMapHash)
+                                                {
+                                                    m_Level.songs[l_I].hash = m_BeatSaver.versions[0].hash;
+                                                    l_HashEdit = true;
+                                                    m_MapHashChanged = true;
+                                                }
+
                                                 break;
                                             }
 
-                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_CustomCategoryInfoEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_AdminConfirmationOnPassEdit || l_NameEdit)
+                                        if (l_ScoreRequirementEdit || l_CategoryEdit || l_CustomCategoryInfoEdit || l_InfoOnGGPEdit || l_CustomPassTextEdit || l_ForceManualWeightPreferenceEdit || l_WeightEdit || l_AdminConfirmationOnPassEdit || l_NameEdit || l_HashEdit)
                                         {
                                             ReWritePlaylist(false);
                                         }
-                                        else if (!l_DifficultyAlreadyExist)
+                                        else if (!l_DifficultyAlreadyExist && !l_HashEdit)
                                         {
                                             m_Level.songs[l_I].difficulties.Add(l_Difficulty);
                                             Console.WriteLine($"Map {l_SongFormat.name} - {p_SelectedDifficultyName} {p_SelectedCharacteristic} added in Level {m_LevelID}");
@@ -520,7 +529,7 @@ namespace BSDiscordRanking
                                 for (l_I = 0; l_I < m_Level.songs.Count; l_I++) /// check if the map already exist in the playlist.
                                 {
                                     foreach (Version l_BeatMapVersion in m_BeatSaver.versions)
-                                        if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(m_Level.songs[l_I].key, l_BeatMapVersion.key, StringComparison.CurrentCultureIgnoreCase))
+                                        if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(m_Level.songs[l_I].key, m_BeatSaver.id, StringComparison.CurrentCultureIgnoreCase))
                                         {
                                             l_SongAlreadyExist = true;
                                             break;

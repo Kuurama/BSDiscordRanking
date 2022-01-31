@@ -22,48 +22,378 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         private async Task EditMap(string p_BSRCode = null, string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", [Summary("DoNotDisplayOnHelp")] bool p_DisplayEditMap = true, [Summary("DoNotDisplayOnHelp")] bool p_ChangeLevel = false, [Summary("DoNotDisplayOnHelp")] int p_NewLevel = default(int), [Summary("DoNotDisplayOnHelp")] bool p_ChangeMinScoreRequirement = false, [Summary("DoNotDisplayOnHelp")] float p_NewMinPercentageRequirement = default(float), [Summary("DoNotDisplayOnHelp")] bool p_ChangeCategory = false,
             [Summary("DoNotDisplayOnHelp")] string p_NewCategory = null,
             [Summary("DoNotDisplayOnHelp")] bool p_ChangeInfoOnGGP = false, [Summary("DoNotDisplayOnHelp")] string p_NewInfoOnGGP = null, [Summary("DoNotDisplayOnHelp")] bool p_ChangeCustomPassText = false, [Summary("DoNotDisplayOnHelp")] string p_NewCustomPassText = null, [Summary("DoNotDisplayOnHelp")] bool p_ToggleManualWeight = false, [Summary("DoNotDisplayOnHelp")] bool p_ChangeWeight = false, [Summary("DoNotDisplayOnHelp")] float p_NewWeight = default(float),
-            [Summary("DoNotDisplayOnHelp")] bool p_ChangeName = false, [Summary("DoNotDisplayOnHelp")] string p_NewName = null, [Summary("DoNotDisplayOnHelp")] bool p_ToggleAdminConfirmationOnPass = false, [Summary("DoNotDisplayOnHelp")] string p_NewCustomCategoryInfo = null, [Summary("DoNotDisplayOnHelp")] bool p_ChangeCustomCategoryInfo = false, [Summary("DoNotDisplayOnHelp")] bool p_RemoveMap = false, [Summary("DoNotDisplayOnHelp")] ulong p_UserID = default(ulong), [Summary("DoNotDisplayOnHelp")] ulong p_ChannelID = default(ulong))
+            [Summary("DoNotDisplayOnHelp")] bool p_ChangeName = false, [Summary("DoNotDisplayOnHelp")] string p_NewName = null, [Summary("DoNotDisplayOnHelp")] bool p_ToggleAdminConfirmationOnPass = false, [Summary("DoNotDisplayOnHelp")] string p_NewCustomCategoryInfo = null, [Summary("DoNotDisplayOnHelp")] bool p_ChangeCustomCategoryInfo = false, [Summary("DoNotDisplayOnHelp")] bool p_UpdateHash = false, [Summary("DoNotDisplayOnHelp")] bool p_RemoveMap = false, [Summary("DoNotDisplayOnHelp")] ulong p_UserID = default(ulong), [Summary("DoNotDisplayOnHelp")] ulong p_ChannelID = default(ulong))
         {
             if (string.IsNullOrEmpty(p_BSRCode))
             {
                 await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}editmap [level] [key] [ExpertPlus/Hard..] (Standard/Lawless..)`");
+                return;
+            }
+
+            if (Context != null) Program.m_TempGlobalGuildID = Context.Guild.Id;
+
+            bool l_MapDeleted = false, l_MapHashChanged = false;
+            BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode);
+            if (l_Map is null)
+            {
+                l_MapDeleted = true;
+                Diff l_Diff = new Diff
+                {
+                    characteristic = p_Characteristic,
+                    difficulty = p_DifficultyName
+                };
+                Version l_Version = new Version
+                {
+                    hash = null,
+                    key = p_BSRCode,
+                    diffs = new List<Diff> { l_Diff }
+                };
+                l_Map = new BeatSaverFormat
+                {
+                    id = p_BSRCode,
+                    versions = new List<Version> { l_Version }
+                };
+            }
+
+
+            LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight, false, l_Map.id);
+            EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
+            if (l_MapDeleted && !l_MapExistCheck.MapExist)
+            {
+                l_MapDeleted = true;
+                l_EmbedBuilder.WithTitle("Sorry this map's BSRCode doesn't exist on BeatSaver (and isn't in any level).");
+                if (Context != null)
+                    await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                        components: new ComponentBuilder()
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
+                            .Build());
+                else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                    await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                        components: new ComponentBuilder()
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
+                            .Build());
             }
             else
             {
-                if (Context != null) Program.m_TempGlobalGuildID = Context.Guild.Id;
-
-                bool l_MapDeleted = false;
-                BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode);
-                if (l_Map is null)
+                ConfigFormat l_Config = ConfigController.GetConfig();
+                if (l_MapExistCheck.MapExist)
                 {
-                    l_MapDeleted = true;
-                    Diff l_Diff = new Diff
-                    {
-                        characteristic = p_Characteristic,
-                        difficulty = p_DifficultyName
-                    };
-                    Version l_Version = new Version
-                    {
-                        hash = null,
-                        key = p_BSRCode,
-                        diffs = new List<Diff> { l_Diff }
-                    };
-                    l_Map = new BeatSaverFormat
-                    {
-                        id = p_BSRCode,
-                        versions = new List<Version> { l_Version }
-                    };
+                    Level l_Level = new Level(l_MapExistCheck.Level);
+                    foreach (SongFormat l_LevelSong in l_Level.m_Level.songs)
+                        if (string.Equals(l_LevelSong.hash, l_Map.versions[^1].hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(l_LevelSong.key, l_Map.id, StringComparison.CurrentCultureIgnoreCase))
+                            foreach (Difficulty l_LevelDiff in l_LevelSong.difficulties)
+                                if (l_LevelDiff.characteristic == p_Characteristic && l_LevelDiff.name == p_DifficultyName)
+                                {
+                                    if (!string.Equals(l_Map.versions[^1].hash, l_LevelSong.hash, StringComparison.CurrentCultureIgnoreCase)) /// Mean the map Hash changed but not the id.
+                                        l_MapHashChanged = true;
+
+                                    l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
+                                    l_EmbedBuilder.AddField("BSRCode", p_BSRCode, true);
+                                    l_EmbedBuilder.AddField(l_LevelDiff.name, l_LevelDiff.characteristic, true);
+                                    l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
+
+                                    if (l_LevelDiff.customData.category != null) l_EmbedBuilder.AddField("Category", l_LevelDiff.customData.category, true);
+
+                                    if (l_LevelDiff.customData.customCategoryInfo != null) l_EmbedBuilder.AddField("CustomCategoryInfo", l_LevelDiff.customData.customCategoryInfo, true);
+
+                                    if (l_LevelDiff.customData.infoOnGGP != null) l_EmbedBuilder.AddField("InfoOnGGP", l_LevelDiff.customData.infoOnGGP, true);
+
+                                    if (l_LevelDiff.customData.minScoreRequirement > 0) l_EmbedBuilder.AddField("Min Score Requirement", $"{l_LevelDiff.customData.minScoreRequirement} ({(float)l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore * 100f:n2}%)", true);
+
+                                    if (l_LevelDiff.customData.customPassText != null) l_EmbedBuilder.AddField("CustomPassText", l_LevelDiff.customData.customPassText, true);
+
+                                    l_EmbedBuilder.AddField("Manual Weight", $"{l_LevelDiff.customData.forceManualWeight.ToString()} ({l_LevelDiff.customData.manualWeight})", true);
+
+                                    l_EmbedBuilder.AddField("Admin Confirmation", l_LevelDiff.customData.adminConfirmationOnPass.ToString(), true);
+
+                                    l_EmbedBuilder.WithTitle(p_NewName ?? l_LevelSong.name);
+
+                                    if (!l_MapDeleted && !l_MapHashChanged)
+                                    {
+                                        l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
+                                        l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_LevelSong.hash, Context).id}");
+                                    }
+                                    else if (l_MapDeleted)
+                                    {
+                                        l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} - :warning: This map has been deleted from beatsaver: The mapper must have deleted the map (key doesn't exist anymore), consider removing that map.");
+                                    }
+                                    else /// Map hash changed
+                                    {
+                                        l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} - :warning: Map hash changed: The mapper must have changed the currently uploaded map, consider removing it or updating the hash if the map still look fine enough for your ranking.");
+                                    }
+
+                                    EditMapFormat l_EditMapFormat = new EditMapFormat
+                                    {
+                                        BeatSaverFormat = l_Map,
+                                        Category = l_LevelDiff.customData.category,
+                                        CustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo,
+                                        CustomPassText = l_LevelDiff.customData.customPassText,
+                                        ForceManualWeight = l_LevelDiff.customData.forceManualWeight,
+                                        InfoOnGGP = l_LevelDiff.customData.infoOnGGP,
+                                        MinScoreRequirement = l_LevelDiff.customData.minScoreRequirement,
+                                        NumberOfNote = l_LevelDiff.customData.noteCount,
+                                        SelectedCharacteristic = l_LevelDiff.characteristic,
+                                        SelectedDifficultyName = l_LevelDiff.name,
+                                        Weighting = l_LevelDiff.customData.manualWeight,
+                                        LeaderboardID = l_LevelDiff.customData.leaderboardID,
+                                        adminConfirmationOnPass = l_LevelDiff.customData.adminConfirmationOnPass
+                                    };
+
+                                    if (p_DisplayEditMap)
+                                    {
+                                        if (Context != null)
+                                        {
+                                            ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
+
+                                            if (!l_MapDeleted && !l_MapHashChanged)
+                                                l_ComponentBuilder.WithButton(new ButtonBuilder("Change Name", $"NameChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change CustomCategoryInfo", $"CustomCategoryInfoChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Toggle Manual Weight Preference", $"ToggleManualWeight_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Toggle Admin Confirmation Preference", $"ToggleAdminConfirmation_{Context.User.Id}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
+                                            else if (l_MapDeleted)
+                                            {
+                                                l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
+                                            }
+                                            else /// Map hash changed
+                                            {
+                                                l_ComponentBuilder.WithButton(new ButtonBuilder("Update Hash", $"UpdateHash_{Context.User.Id}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
+                                            }
+
+
+                                            l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
+
+
+                                            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
+                                        }
+                                        else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                                        {
+                                            ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
+                                            if (!l_MapDeleted && !l_MapHashChanged)
+                                            {
+                                                l_ComponentBuilder.WithButton(new ButtonBuilder("Change Name", $"NameChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change CustomCategoryInfo", $"CustomCategoryInfoChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Toggle Manual Weight Preference", $"ToggleManualWeight_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Toggle Admin Confirmation Preference", $"ToggleAdminConfirmation_{p_UserID}", ButtonStyle.Secondary))
+                                                    .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));
+                                            }
+                                            else if (l_MapDeleted)
+                                            {
+                                                l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));
+                                            }
+                                            else /// Map hash changed
+                                            {
+                                                l_ComponentBuilder.WithButton(new ButtonBuilder("Update Hash", $"UpdateHash_{p_UserID}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
+                                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));
+                                            }
+
+                                            l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
+                                            await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
+                                        }
+                                    }
+
+                                    if (p_ChangeLevel)
+                                        if (!ChangeMapLevel(l_EditMapFormat, l_MapExistCheck.Level, p_NewLevel))
+                                        {
+                                            if (Context != null)
+                                                await Context.Channel.SendMessageAsync(":warning: An error occured while changing the map's level.");
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while changing the map's level.");
+                                        }
+
+                                    if (p_RemoveMap)
+                                    {
+                                        if (!RemoveMap(l_EditMapFormat, l_MapExistCheck.Level))
+                                        {
+                                            if (Context != null)
+                                                await Context.Channel.SendMessageAsync(":warning: An error occured while deleting the map.");
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while deleting the map.");
+                                        }
+                                        else
+                                        {
+                                            if (l_Level.m_Level.songs.Count == 0)
+                                            {
+                                                l_EmbedBuilder = new EmbedBuilder();
+                                                l_Level.DeleteLevel();
+                                                l_EmbedBuilder.WithTitle("Level Removed!");
+                                                l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
+                                                l_EmbedBuilder.AddField("Reason:", "All maps has been removed.");
+                                            }
+                                            else
+                                            {
+                                                l_EmbedBuilder.AddField("Map name:", l_MapExistCheck.Name);
+                                                l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
+                                                l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
+                                            }
+
+                                            if (!l_MapDeleted)
+                                            {
+                                                l_EmbedBuilder.WithTitle("Map removed!");
+                                                l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                                l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
+                                            }
+                                            else
+                                            {
+                                                l_EmbedBuilder.WithTitle("Map removed! (wasn't on BeatSaver anymore)");
+                                                l_EmbedBuilder.AddField("Old Link:", $"https://beatsaver.com/maps/{l_Map.id}");
+                                            }
+
+                                            l_EmbedBuilder.WithColor(Color.Red);
+                                            if (Context != null)
+                                            {
+                                                l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                            }
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                                            {
+                                                l_EmbedBuilder.WithFooter("Operated by " + p_UserID);
+                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                            }
+
+                                            return;
+                                        }
+                                    }
+                                    else if (p_UpdateHash)
+                                    {
+                                        if (!UpdateHash(l_EditMapFormat, l_MapExistCheck.Level))
+                                        {
+                                            if (Context != null)
+                                                await Context.Channel.SendMessageAsync(":warning: An error occured while updating the map hash.");
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while updating the map hash.");
+                                        }
+                                        else
+                                        {
+                                            l_EmbedBuilder.AddField("Map name:", l_MapExistCheck.Name);
+                                            l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
+                                            l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
+
+
+                                            l_EmbedBuilder.WithTitle("Map Hash Updated!");
+                                            l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
+
+                                            l_EmbedBuilder.WithColor(Color.Gold);
+                                            if (Context != null)
+                                            {
+                                                l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
+                                                await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                            }
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                                            {
+                                                l_EmbedBuilder.WithFooter("Operated by " + p_UserID);
+                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                            }
+
+                                            return;
+                                        }
+                                    }
+
+                                    if (p_ChangeName) ChangeName(l_EditMapFormat, l_MapExistCheck.Level, p_NewName);
+
+                                    if (!l_MapDeleted && (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeCustomCategoryInfo || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminConfirmationOnPass)) /// || p_ChangeCustomPassText But i choosed to not display it.
+                                        if (p_ChangeLevel || p_ToggleAdminConfirmationOnPass || p_ToggleManualWeight || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentCustomCategoryInfo || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentWeight)
+                                        {
+                                            int l_OldLevel = default(int);
+                                            if (p_ChangeLevel) l_OldLevel = l_MapExistCheck.Level;
+
+                                            if (!p_ChangeMinScoreRequirement) p_NewMinPercentageRequirement = 100f * l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore;
+
+                                            if (!p_ChangeCategory) p_NewCategory = l_LevelDiff.customData.category;
+
+                                            if (!p_ChangeCustomCategoryInfo) p_NewCustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo;
+
+                                            if (!p_ChangeInfoOnGGP) p_NewInfoOnGGP = l_LevelDiff.customData.infoOnGGP;
+
+                                            if (!p_ChangeCustomPassText) p_NewCustomPassText = l_LevelDiff.customData.customPassText;
+
+                                            if (p_ToggleManualWeight) l_EditMapFormat.ForceManualWeight = !l_EditMapFormat.ForceManualWeight;
+
+                                            if (!p_ChangeWeight) p_NewWeight = l_EditMapFormat.Weighting;
+
+                                            if (p_ToggleAdminConfirmationOnPass) l_EditMapFormat.adminConfirmationOnPass = !l_LevelDiff.customData.adminConfirmationOnPass;
+
+                                            l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_EditMapFormat.adminConfirmationOnPass);
+                                            if (!p_ChangeLevel) l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.noteCount, l_EditMapFormat.adminConfirmationOnPass);
+
+                                            EmbedBuilder l_MapChangeEmbedBuilder = new EmbedBuilder();
+                                            l_MapChangeEmbedBuilder.WithTitle("Maps infos changed on:");
+                                            l_MapChangeEmbedBuilder.WithDescription(l_MapExistCheck.Name);
+                                            l_MapChangeEmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
+                                            if (!p_ChangeLevel)
+                                                l_MapChangeEmbedBuilder.AddField("Level:", $"Lv.{l_MapExistCheck.Level}", true);
+                                            else
+                                                l_MapChangeEmbedBuilder.AddField("New Level:", $"Lv.{p_NewLevel} (Old: {l_OldLevel})");
+
+                                            if (l_MapExistCheck.DifferentMinScore)
+                                                l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount)} ({p_NewMinPercentageRequirement:n2}%)");
+
+                                            if (l_MapExistCheck.DifferentCategory)
+                                                l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory ?? "\u200B");
+
+                                            if (l_MapExistCheck.DifferentCustomCategoryInfo)
+                                                l_MapChangeEmbedBuilder.AddField("New CustomCategoryInfo:", p_NewCustomCategoryInfo ?? "\u200B");
+
+                                            if (l_MapExistCheck.DifferentInfoOnGGP)
+                                                l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP ?? "\u200B");
+
+                                            if (l_MapExistCheck.DifferentPassText)
+                                            {
+                                                if (l_Config.DisplayCustomPassTextInGetInfo)
+                                                    l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText ?? "\u200B");
+                                                else
+                                                    l_MapChangeEmbedBuilder.AddField("New secret CustomPassText added", "\u200B");
+                                            }
+
+                                            if (l_MapExistCheck.DifferentForceManualWeight)
+                                                l_MapChangeEmbedBuilder.AddField("New Manual Weight Preference:", l_EditMapFormat.ForceManualWeight);
+
+                                            if (l_MapExistCheck.DifferentAdminConfirmationOnPass)
+                                                l_MapChangeEmbedBuilder.AddField("New Admin Confirmation Preference:", l_EditMapFormat.adminConfirmationOnPass);
+
+                                            if (l_MapExistCheck.DifferentWeight)
+                                                l_MapChangeEmbedBuilder.AddField("New Manual Weight:", $"{p_NewWeight:n3}");
+
+                                            l_MapChangeEmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
+                                            if (p_UserID != default(ulong)) l_EmbedBuilder.WithFooter($"Operated by <@{p_UserID}>");
+                                            l_MapChangeEmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
+                                            l_MapChangeEmbedBuilder.WithColor(Color.Blue);
+
+                                            if (p_ChangeCategory && l_Config.DisplayCategoryEdit || p_ChangeCustomCategoryInfo && l_Config.DisplayCustomCategoryInfoEdit || p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit || p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ToggleAdminConfirmationOnPass)
+                                                foreach (SocketTextChannel l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
+                                                    if (l_TextChannel.Id == l_Config.LoggingChannel)
+                                                    {
+                                                        await l_TextChannel.SendMessageAsync("", false, l_MapChangeEmbedBuilder.Build());
+                                                        break;
+                                                    }
+                                        }
+
+                                    break;
+                                }
                 }
 
-                LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, 0, p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, false, p_NewWeight, false, l_Map.id);
-                EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                if (l_MapDeleted && !l_MapExistCheck.MapExist)
+                else
                 {
-                    l_MapDeleted = true;
-                    l_EmbedBuilder.WithTitle("Sorry this map's BSRCode doesn't exist on BeatSaver (and isn't in any level).");
+                    l_EmbedBuilder.WithTitle("Sorry this map's difficulty/characteristic isn't in any level.");
                     if (Context != null)
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                             components: new ComponentBuilder()
+                            components: new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
                                 .Build());
                     else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
@@ -71,279 +401,6 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             components: new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                 .Build());
-                }
-                else
-                {
-                    ConfigFormat l_Config = ConfigController.GetConfig();
-                    if (l_MapExistCheck.MapExist)
-                    {
-                        Level l_Level = new Level(l_MapExistCheck.Level);
-                        foreach (SongFormat l_LevelSong in l_Level.m_Level.songs)
-                            if (string.Equals(l_LevelSong.hash, l_Map.versions[^1].hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(l_LevelSong.key, l_Map.id, StringComparison.CurrentCultureIgnoreCase))
-                                foreach (Difficulty l_LevelDiff in l_LevelSong.difficulties)
-                                    if (l_LevelDiff.characteristic == p_Characteristic && l_LevelDiff.name == p_DifficultyName)
-                                    {
-                                        l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
-                                        l_EmbedBuilder.AddField("BSRCode", p_BSRCode, true);
-                                        l_EmbedBuilder.AddField(l_LevelDiff.name, l_LevelDiff.characteristic, true);
-                                        l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
-
-                                        if (l_LevelDiff.customData.category != null) l_EmbedBuilder.AddField("Category", l_LevelDiff.customData.category, true);
-
-                                        if (l_LevelDiff.customData.customCategoryInfo != null) l_EmbedBuilder.AddField("CustomCategoryInfo", l_LevelDiff.customData.customCategoryInfo, true);
-
-                                        if (l_LevelDiff.customData.infoOnGGP != null) l_EmbedBuilder.AddField("InfoOnGGP", l_LevelDiff.customData.infoOnGGP, true);
-
-                                        if (l_LevelDiff.customData.minScoreRequirement > 0) l_EmbedBuilder.AddField("Min Score Requirement", $"{l_LevelDiff.customData.minScoreRequirement} ({(float)l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore * 100f:n2}%)", true);
-
-                                        if (l_LevelDiff.customData.customPassText != null) l_EmbedBuilder.AddField("CustomPassText", l_LevelDiff.customData.customPassText, true);
-
-                                        l_EmbedBuilder.AddField("Manual Weight", $"{l_LevelDiff.customData.forceManualWeight.ToString()} ({l_LevelDiff.customData.manualWeight})", true);
-
-                                        l_EmbedBuilder.AddField("Admin Confirmation", l_LevelDiff.customData.adminConfirmationOnPass.ToString(), true);
-
-                                        l_EmbedBuilder.WithTitle(p_NewName ?? l_LevelSong.name);
-
-                                        if (!l_MapDeleted)
-                                        {
-                                            l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_LevelSong.hash.ToLower()}.jpg");
-                                            l_EmbedBuilder.WithUrl($"https://beatsaver.com/maps/{Level.FetchBeatMapByHash(l_LevelSong.hash, Context).id}");
-                                        }
-                                        else
-                                        {
-                                            l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} :warning: Map has been deleted from beatsaver");
-                                        }
-
-                                        EditMapFormat l_EditMapFormat = new EditMapFormat
-                                        {
-                                            BeatSaverFormat = l_Map,
-                                            Category = l_LevelDiff.customData.category,
-                                            CustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo,
-                                            CustomPassText = l_LevelDiff.customData.customPassText,
-                                            ForceManualWeight = l_LevelDiff.customData.forceManualWeight,
-                                            InfoOnGGP = l_LevelDiff.customData.infoOnGGP,
-                                            MinScoreRequirement = l_LevelDiff.customData.minScoreRequirement,
-                                            NumberOfNote = l_LevelDiff.customData.noteCount,
-                                            SelectedCharacteristic = l_LevelDiff.characteristic,
-                                            SelectedDifficultyName = l_LevelDiff.name,
-                                            Weighting = l_LevelDiff.customData.manualWeight,
-                                            LeaderboardID = l_LevelDiff.customData.leaderboardID,
-                                            adminConfirmationOnPass = l_LevelDiff.customData.adminConfirmationOnPass
-                                        };
-
-                                        if (p_DisplayEditMap)
-                                        {
-                                            if (Context != null)
-                                            {
-                                                ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
-
-                                                if (!l_MapDeleted)
-                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Change Name", $"NameChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change CustomCategoryInfo", $"CustomCategoryInfoChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Toggle Manual Weight Preference", $"ToggleManualWeight_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Toggle Admin Confirmation Preference", $"ToggleAdminConfirmation_{Context.User.Id}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
-                                                else
-                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{Context.User.Id}", ButtonStyle.Danger))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger));
-                                                l_EmbedBuilder.WithFooter($"DiscordID_{Context.User.Id}");
-                                                await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
-                                            }
-                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
-                                            {
-                                                ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
-                                                if (!l_MapDeleted)
-                                                {
-                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Change Name", $"NameChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Level", $"LevelIDChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change MinPercentageRequirement", $"MinPercentageRequirementChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Category", $"CategoryChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change CustomCategoryInfo", $"CustomCategoryInfoChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change InfoOnGGP", $"InfoOnGGPChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change CustomPassText", $"CustomPassTextChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Change Manual Weight", $"ManualWeightChange_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Toggle Manual Weight Preference", $"ToggleManualWeight_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Toggle Admin Confirmation Preference", $"ToggleAdminConfirmation_{p_UserID}", ButtonStyle.Secondary))
-                                                        .WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));
-                                                    ;
-                                                }
-                                                else
-                                                {
-                                                    l_ComponentBuilder.WithButton(new ButtonBuilder("Remove Map", $"RemoveMap_{p_UserID}", ButtonStyle.Danger))
-                                                        .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger));
-                                                }
-
-                                                l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
-                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
-                                            }
-                                        }
-
-                                        if (p_ChangeLevel)
-                                            if (!ChangeMapLevel(l_EditMapFormat, l_MapExistCheck.Level, p_NewLevel))
-                                            {
-                                                if (Context != null)
-                                                    await Context.Channel.SendMessageAsync(":warning: An error occured while changing the map's level.");
-                                                else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning:, An error occured while changing the map's level.");
-                                            }
-
-                                        if (p_RemoveMap)
-                                        {
-                                            if (!RemoveMap(l_EditMapFormat, l_MapExistCheck.Level))
-                                            {
-                                                if (Context != null)
-                                                    await Context.Channel.SendMessageAsync(":warning: An error occured while deleting the map.");
-                                                else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning:, An error occured while deleting the map.");
-                                            }
-                                            else
-                                            {
-                                                if (l_Level.m_Level.songs.Count == 0)
-                                                {
-                                                    l_EmbedBuilder = new EmbedBuilder();
-                                                    l_Level.DeleteLevel();
-                                                    l_EmbedBuilder.WithTitle("Level Removed!");
-                                                    l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
-                                                    l_EmbedBuilder.AddField("Reason:", "All maps has been removed.");
-                                                }
-                                                else
-                                                {
-                                                    l_EmbedBuilder.AddField("Map name:", l_MapExistCheck.Name);
-                                                    l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName);
-                                                    l_EmbedBuilder.AddField("Level:", l_MapExistCheck.Level);
-                                                }
-
-                                                if (!l_MapDeleted)
-                                                {
-                                                    l_EmbedBuilder.WithTitle("Map removed!");
-                                                    l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
-                                                    l_EmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
-                                                }
-                                                else
-                                                {
-                                                    l_EmbedBuilder.WithTitle("Map removed! (wasn't on BeatSaver anymore)");
-                                                    l_EmbedBuilder.AddField("Old Link:", $"https://beatsaver.com/maps/{l_Map.id}");
-                                                }
-
-                                                l_EmbedBuilder.WithColor(Color.Red);
-                                                if (Context != null)
-                                                {
-                                                    l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
-                                                    await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
-                                                }
-                                                else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
-                                                {
-                                                    l_EmbedBuilder.WithFooter("Operated by " + p_UserID);
-                                                    await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
-                                                }
-
-                                                return;
-                                            }
-                                        }
-
-                                        if (p_ChangeName) ChangeName(l_EditMapFormat, l_MapExistCheck.Level, p_NewName);
-
-                                        if (!l_MapDeleted && (p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeCategory || p_ChangeCustomCategoryInfo || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ChangeCustomPassText || p_ToggleAdminConfirmationOnPass)) /// || p_ChangeCustomPassText But i choosed to not display it.
-                                            if (p_ChangeLevel || p_ToggleAdminConfirmationOnPass || p_ToggleManualWeight || l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentCustomCategoryInfo || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentWeight)
-                                            {
-                                                int l_OldLevel = default(int);
-                                                if (p_ChangeLevel) l_OldLevel = l_MapExistCheck.Level;
-
-                                                if (!p_ChangeMinScoreRequirement) p_NewMinPercentageRequirement = 100f * l_LevelDiff.customData.minScoreRequirement / l_LevelDiff.customData.maxScore;
-
-                                                if (!p_ChangeCategory) p_NewCategory = l_LevelDiff.customData.category;
-
-                                                if (!p_ChangeCustomCategoryInfo) p_NewCustomCategoryInfo = l_LevelDiff.customData.customCategoryInfo;
-
-                                                if (!p_ChangeInfoOnGGP) p_NewInfoOnGGP = l_LevelDiff.customData.infoOnGGP;
-
-                                                if (!p_ChangeCustomPassText) p_NewCustomPassText = l_LevelDiff.customData.customPassText;
-
-                                                if (p_ToggleManualWeight) l_EditMapFormat.ForceManualWeight = !l_EditMapFormat.ForceManualWeight;
-
-                                                if (!p_ChangeWeight) p_NewWeight = l_EditMapFormat.Weighting;
-
-                                                if (p_ToggleAdminConfirmationOnPass) l_EditMapFormat.adminConfirmationOnPass = !l_LevelDiff.customData.adminConfirmationOnPass;
-
-                                                l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_EditMapFormat.adminConfirmationOnPass);
-                                                if (!p_ChangeLevel) l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.noteCount, l_EditMapFormat.adminConfirmationOnPass);
-
-                                                EmbedBuilder l_MapChangeEmbedBuilder = new EmbedBuilder();
-                                                l_MapChangeEmbedBuilder.WithTitle("Maps infos changed on:");
-                                                l_MapChangeEmbedBuilder.WithDescription(l_MapExistCheck.Name);
-                                                l_MapChangeEmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
-                                                if (!p_ChangeLevel)
-                                                    l_MapChangeEmbedBuilder.AddField("Level:", $"Lv.{l_MapExistCheck.Level}", true);
-                                                else
-                                                    l_MapChangeEmbedBuilder.AddField("New Level:", $"Lv.{p_NewLevel} (Old: {l_OldLevel})");
-
-                                                if (l_MapExistCheck.DifferentMinScore)
-                                                    l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{AdminModule.AdminModule.ScoreFromAcc(p_NewMinPercentageRequirement, l_LevelDiff.customData.noteCount)} ({p_NewMinPercentageRequirement:n2}%)");
-
-                                                if (l_MapExistCheck.DifferentCategory)
-                                                    l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory ?? "\u200B");
-
-                                                if (l_MapExistCheck.DifferentCustomCategoryInfo)
-                                                    l_MapChangeEmbedBuilder.AddField("New CustomCategoryInfo:", p_NewCustomCategoryInfo ?? "\u200B");
-
-                                                if (l_MapExistCheck.DifferentInfoOnGGP)
-                                                    l_MapChangeEmbedBuilder.AddField("New InfoOnGGP:", p_NewInfoOnGGP ?? "\u200B");
-
-                                                if (l_MapExistCheck.DifferentPassText)
-                                                {
-                                                    if (l_Config.DisplayCustomPassTextInGetInfo)
-                                                        l_MapChangeEmbedBuilder.AddField("New CustomPassText:", p_NewCustomPassText ?? "\u200B");
-                                                    else
-                                                        l_MapChangeEmbedBuilder.AddField("New secret CustomPassText added", "\u200B");
-                                                }
-
-                                                if (l_MapExistCheck.DifferentForceManualWeight)
-                                                    l_MapChangeEmbedBuilder.AddField("New Manual Weight Preference:", l_EditMapFormat.ForceManualWeight);
-
-                                                if (l_MapExistCheck.DifferentAdminConfirmationOnPass)
-                                                    l_MapChangeEmbedBuilder.AddField("New Admin Confirmation Preference:", l_EditMapFormat.adminConfirmationOnPass);
-
-                                                if (l_MapExistCheck.DifferentWeight)
-                                                    l_MapChangeEmbedBuilder.AddField("New Manual Weight:", $"{p_NewWeight:n3}");
-
-                                                l_MapChangeEmbedBuilder.AddField("Link:", $"https://beatsaver.com/maps/{l_Map.id}");
-                                                if (p_UserID != default(ulong)) l_EmbedBuilder.WithFooter($"Operated by <@{p_UserID}>");
-                                                l_MapChangeEmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
-                                                l_MapChangeEmbedBuilder.WithColor(Color.Blue);
-
-                                                if (p_ChangeCategory && l_Config.DisplayCategoryEdit || p_ChangeCustomCategoryInfo && l_Config.DisplayCustomCategoryInfoEdit || p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit || p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ToggleAdminConfirmationOnPass)
-                                                    foreach (SocketTextChannel l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
-                                                        if (l_TextChannel.Id == l_Config.LoggingChannel)
-                                                        {
-                                                            await l_TextChannel.SendMessageAsync("", false, l_MapChangeEmbedBuilder.Build());
-                                                            break;
-                                                        }
-                                            }
-
-                                        break;
-                                    }
-                    }
-
-                    else
-                    {
-                        l_EmbedBuilder.WithTitle("Sorry this map's difficulty/characteristic isn't in any level.");
-                        if (Context != null)
-                            await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                                components: new ComponentBuilder()
-                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
-                                    .Build());
-                        else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
-                            await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
-                                components: new ComponentBuilder()
-                                    .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
-                                    .Build());
-                    }
                 }
             }
         }
@@ -789,6 +846,17 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
                         break;
 
+                    case "UpdateHash":
+                        l_ComponentBuilder
+                            .WithButton(new ButtonBuilder("Yes", $"UpdateHashValidation_{l_UserID}", ButtonStyle.Danger))
+                            .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                            .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger));
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder
+                            .AddField("\u200B", "\u200B")
+                            .AddField("__UpdateHash__", ":x: Are you 100% sure you want to update the hash of this map?").Build());
+                        await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = l_ComponentBuilder.Build());
+                        break;
+
                     case "RemoveMapValidation":
                         l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
@@ -802,6 +870,26 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_RemoveMap: true);
 
                             await p_MessageComponent.Message.DeleteAsync();
+                        }
+
+                        break;
+
+                    case "UpdateHashValidation":
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
+
+                        if (l_LastUserMessage != null)
+                        {
+                            l_EditMapArgumentFormat = GetEditMapArguments(p_MessageComponent);
+                            int l_UpdateHashTitleFieldIndex = l_EmbedBuilder.Fields.FindIndex(p_X => p_X.Name.Contains("UpdateHash"));
+                            l_EmbedBuilder.Fields.RemoveAt(l_UpdateHashTitleFieldIndex); /// Removing the "UpdateHash" Field
+
+                            await EditMap(l_EditMapArgumentFormat.BSRCode, l_EditMapArgumentFormat.DifficultyName, l_EditMapArgumentFormat.DifficultyCharacteristic, false, p_UserID: l_UserID, p_ChannelID: l_ChannelID, p_UpdateHash: true);
+
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Embed = l_EmbedBuilder.AddField("__UpdateHash-Edit Done__", "\u200B").Build());
+                            await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder()
+                                .WithButton(new ButtonBuilder("Back", $"BackToEditMapMenu_{l_UserID}"))
+                                .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{l_UserID}", ButtonStyle.Danger)).Build());
                         }
 
                         break;
@@ -917,6 +1005,13 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             Level l_CurrentLevel = new Level(p_CurrentLevelID);
             l_CurrentLevel.RemoveMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic);
             return l_CurrentLevel.m_MapRemoved;
+        }
+        
+        private static bool UpdateHash(EditMapFormat p_EditMapFormat, int p_CurrentLevelID)
+        {
+            Level l_CurrentLevel = new Level(p_CurrentLevelID);
+            l_CurrentLevel.AddMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic, p_EditMapFormat.MinScoreRequirement, p_EditMapFormat.Category, p_EditMapFormat.CustomCategoryInfo, p_EditMapFormat.InfoOnGGP, p_EditMapFormat.CustomPassText, p_EditMapFormat.ForceManualWeight, p_EditMapFormat.Weighting, p_EditMapFormat.NumberOfNote, p_EditMapFormat.adminConfirmationOnPass, p_UpdateMapHash: true);
+            return l_CurrentLevel.m_MapHashChanged;
         }
 
         private static void ChangeName(EditMapFormat p_EditMapFormat, int p_LevelID, string p_NewName)
