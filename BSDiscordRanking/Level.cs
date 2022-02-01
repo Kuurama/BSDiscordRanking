@@ -354,6 +354,7 @@ namespace BSDiscordRanking
                                         foreach (Version l_BeatMapVersion in m_BeatSaver.versions)
                                             if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(m_Level.songs[l_I].key, m_BeatSaver.id, StringComparison.CurrentCultureIgnoreCase))
                                             {
+                                                
                                                 l_SongAlreadyExist = true;
                                                 break;
                                             }
@@ -362,7 +363,7 @@ namespace BSDiscordRanking
                                             break;
                                     }
 
-                                    if (l_SongAlreadyExist && p_UpdateMapHash)
+                                    if (l_SongAlreadyExist)
                                     {
                                         foreach (Difficulty l_LevelDifficulty in m_Level.songs[l_I].difficulties)
                                             if (l_Difficulty.characteristic == l_LevelDifficulty.characteristic && l_Difficulty.name == l_LevelDifficulty.name)
