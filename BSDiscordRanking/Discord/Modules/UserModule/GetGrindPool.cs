@@ -117,7 +117,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         });
                     }
 
-                    RemoveCategoriesFormat l_RemoveCategoriesFormat = new RemoveCategoriesFormat { LevelFormat = l_Level.m_Level, Categories = null };
+                    RemoveCategoriesFormat l_RemoveCategoriesFormat = new RemoveCategoriesFormat {LevelFormat = l_Level.m_Level, Categories = null};
 
                     if (p_Category != null)
                     {
@@ -141,7 +141,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     }
 
 
-                    foreach (var l_Song in l_RemoveCategoriesFormat.LevelFormat.songs.Select((p_Value, p_Index) => new { value = p_Value, index = p_Index }))
+                    foreach (var l_Song in l_RemoveCategoriesFormat.LevelFormat.songs.Select((p_Value, p_Index) => new {value = p_Value, index = p_Index}))
                     {
                         l_PlayerPassFormat.SongList.Add(new InPlayerSong
                         {
@@ -167,15 +167,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 });
                             bool l_AccWeightAlreadySet = false;
                             bool l_PassWeightAlreadySet = false;
+                            
                             if (l_SongDifficulty.customData.forceManualWeight)
                             {
-                                if (!l_Config.OnlyAutoWeightForAccLeaderboard)
+                                if (l_Config.AllowForceManualWeightForAccLeaderboard)
                                 {
                                     l_MaxAccPoints += 100f * l_Config.AccPointMultiplier * l_SongDifficulty.customData.manualWeight;
                                     l_AccWeightAlreadySet = true;
                                 }
 
-                                if (!l_Config.OnlyAutoWeightForPassLeaderboard)
+                                if (l_Config.AllowAutoWeightForPassLeaderboard)
                                 {
                                     l_MaxPassPoints += l_Config.PassPointMultiplier * l_SongDifficulty.customData.manualWeight;
                                     l_PassWeightAlreadySet = true;
@@ -184,24 +185,29 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                             if (l_SongDifficulty.customData.AutoWeight > 0 && l_Config.AutomaticWeightCalculation)
                             {
-                                if (!l_AccWeightAlreadySet && l_Config.OnlyAutoWeightForAccLeaderboard)
+                                if (!l_AccWeightAlreadySet && l_Config.AllowAutoWeightForAccLeaderboard)
                                 {
                                     l_MaxAccPoints += 100f * l_Config.AccPointMultiplier * l_SongDifficulty.customData.AutoWeight;
                                     l_AccWeightAlreadySet = true;
                                 }
 
-                                if (!l_PassWeightAlreadySet && l_Config.OnlyAutoWeightForPassLeaderboard)
+                                if (!l_PassWeightAlreadySet && l_Config.AllowAutoWeightForPassLeaderboard)
                                 {
                                     l_MaxPassPoints += l_Config.PassPointMultiplier * l_SongDifficulty.customData.AutoWeight;
                                     l_PassWeightAlreadySet = true;
                                 }
                             }
 
-                            if (l_Config.PerPlaylistWeighting)
+                            switch (l_Config.PerPlaylistWeighting)
                             {
-                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet) l_MaxAccPoints += 100f * l_Config.AccPointMultiplier * l_Level.m_Level.customData.weighting;
+                                case true:
+                                {
+                                    if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet) l_MaxAccPoints += 100f * l_Config.AccPointMultiplier * l_Level.m_Level.customData.weighting;
 
-                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet) l_MaxPassPoints += l_Config.PassPointMultiplier * l_Level.m_Level.customData.weighting;
+                                    if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet) l_MaxPassPoints += l_Config.PassPointMultiplier * l_Level.m_Level.customData.weighting;
+
+                                    break;
+                                }
                             }
                         }
 
@@ -210,7 +216,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 if (l_Song.value.hash == l_PlayerPass.hash)
                                     foreach (Difficulty l_SongDifficulty in l_Song.value.difficulties)
                                     foreach (InPlayerPassFormat l_PlayerPassDifficulty in l_PlayerPass.DiffList
-                                                 .Where(p_PlayerPassDifficulty => l_SongDifficulty.characteristic == p_PlayerPassDifficulty.Difficulty.characteristic && l_SongDifficulty.name == p_PlayerPassDifficulty.Difficulty.name))
+                                        .Where(p_PlayerPassDifficulty => l_SongDifficulty.characteristic == p_PlayerPassDifficulty.Difficulty.characteristic && l_SongDifficulty.name == p_PlayerPassDifficulty.Difficulty.name))
                                     {
                                         l_LevelIsPassed = true;
 
@@ -223,7 +229,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                             l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Difficulty.customData = l_PlayerPassDifficulty.Difficulty.customData;
                                             l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Score = l_PlayerPassDifficulty.Score;
                                             l_PlayerPassFormat.SongList[l_Song.index].DiffList[l_DiffIndex].Rank = l_PlayerPassDifficulty.Rank;
-                                            l_EarnedPoints += l_Level.m_Level.customData.weighting * 0.375f;
+                                            l_EarnedPoints += l_Level.m_Level.customData.weighting * l_Config.PassPointMultiplier;
                                         }
 
                                         break;
@@ -232,7 +238,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
 
                     int l_NumberOfDifficulties = l_RemoveCategoriesFormat.LevelFormat.songs.SelectMany(p_Song => p_Song.difficulties).Count();
-                    
+
                     string l_PlayerTrophy = "";
 
                     // ReSharper disable once IntDivisionByZero
@@ -244,33 +250,33 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 l_PlayerTrophy = "";
                                 break;
                             }
-                            case <= 25:
+                            case < 25:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Plastic = 1;
                                 l_PlayerTrophy = "<:big_plastic:916492151402164314>";
                                 break;
                             }
-                            case <= 50:
+                            case < 50:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Silver = 1;
                                 l_PlayerTrophy = "<:big_silver:916492243743932467>: ";
                                 break;
                             }
-                            case <= 75:
+                            case < 75:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Gold = 1;
                                 l_PlayerTrophy = "<:big_gold:916492277780709426>: ";
                                 break;
                             }
 
-                            case <= 99:
+                            case < 100:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Diamond = 1;
                                 l_PlayerTrophy = "<:big_diamond:916492304108355685>: ";
                                 break;
                             }
 
-                            case 100:
+                            case >= 100:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Ruby = 1;
                                 l_PlayerTrophy = "<:big_ruby:916803316925755473>";
@@ -321,7 +327,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     p_Player.ReWriteStats();
 
-                    List<string> l_Messages = new List<string> { "" }; /// Reset the Message between Passed and Unpassed maps
+                    List<string> l_Messages = new List<string> {""}; /// Reset the Message between Passed and Unpassed maps
 
                     if (l_NumberOfDifficulties - l_NumberOfPass > 0)
                     {
@@ -391,7 +397,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             int l_NumbedOfEmbed = 1;
             string l_LastMessage = null;
             List<Embed> l_EmbedBuiltList = new List<Embed>();
-            List<string> l_Messages = new List<string> { "" };
+            List<string> l_Messages = new List<string> {""};
 
             List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples = new List<Tuple<InPlayerSong, InPlayerPassFormat, string>>();
             foreach (InPlayerSong l_Map in p_PlayerPassFormat.SongList)
@@ -407,7 +413,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
             IOrderedEnumerable<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_SortedMapsTuples = from l_Category in l_MapsTuples orderby l_Category.Item3 select l_Category;
 
-            
+
             string l_CurrentCategory = null;
             int l_TotalMessageLength = 1700;
             bool l_FirstEmbed = true;
@@ -457,7 +463,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     string l_EmbedValue = $"{l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}";
                     if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
-                        l_EmbedValue += $" - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText}";
+                        l_EmbedValue += $" - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float) l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText}";
                     else
                         l_EmbedValue += l_CustomText;
 
@@ -485,8 +491,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else
                 {
-                    if (l_Messages[^1].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
-                            .Length > l_TotalMessageLength) /// Description/Field lenght limit
+                    if (l_Messages[^1].Length + $"{l_Map.name} - {l_Diff.Difficulty.name} - {l_Diff.Difficulty.characteristic}  - MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float) l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%) {l_CustomText} {l_ScoreOnMap} {l_RankOnMap}\n"
+                        .Length > l_TotalMessageLength) /// Description/Field lenght limit
                     {
                         p_EmbedBuilder.WithDescription(l_Messages[^1]);
                         l_Messages.Add(""); /// Initialize the next used index.
@@ -512,7 +518,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     if (l_Diff.Difficulty.customData.minScoreRequirement != 0)
 
-                        l_Messages[^1] += $" *`- MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float)l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%)`*";
+                        l_Messages[^1] += $" *`- MinScore: {l_Diff.Difficulty.customData.minScoreRequirement} ({Math.Round((float) l_Diff.Difficulty.customData.minScoreRequirement / l_Diff.Difficulty.customData.maxScore * 100f * 100f) / 100f}%)`*";
 
 
                     if (l_CustomText != "")

@@ -1069,29 +1069,29 @@ namespace BSDiscordRanking
                             {
                                 break;
                             }
-                            case <= 25:
+                            case < 25:
                             {
                                 l_Plastic = 1;
                                 break;
                             }
-                            case <= 50:
+                            case < 50:
                             {
                                 l_Silver = 1;
                                 break;
                             }
-                            case <= 75:
+                            case < 75:
                             {
                                 l_Gold = 1;
                                 break;
                             }
 
-                            case <= 99:
+                            case < 100:
                             {
                                 l_Diamond = 1;
                                 break;
                             }
 
-                            case 100:
+                            case >= 100:
                             {
                                 l_Ruby = 1;
                                 break;

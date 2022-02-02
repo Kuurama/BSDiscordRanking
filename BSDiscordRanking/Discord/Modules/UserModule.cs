@@ -172,10 +172,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     l_TrophyString = (p_NumberOfPass * 100 * p_Multiplier / p_TotalNumberOfMaps) switch
                     {
                         <= 0 => "",
-                        <= 25 => "<:plastic:874215132874571787>",
-                        <= 50 => "<:silver:874215133197500446>",
-                        <= 75 => "<:gold:874215133147197460>",
-                        <= 99 => "<:diamond:874215133289795584>",
+                        < 25 => "<:plastic:874215132874571787>",
+                        < 50 => "<:silver:874215133197500446>",
+                        < 75 => "<:gold:874215133147197460>",
+                        < 100 => "<:diamond:874215133289795584>",
                         >= 100 => "<:ruby:916807008362057818>"
                     };
                 }
@@ -186,10 +186,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 #pragma warning restore 8509
                     {
                         <= 0 => "",
-                        <= 25 => "<:big_plastic:916492151402164314>",
-                        <= 50 => "<:big_silver:916492243743932467>",
-                        <= 75 => "<:big_gold:916492277780709426>",
-                        <= 99 => "<:big_diamond:916492304108355685>",
+                        < 25 => "<:big_plastic:916492151402164314>",
+                        < 50 => "<:big_silver:916492243743932467>",
+                        < 75 => "<:big_gold:916492277780709426>",
+                        < 100 => "<:big_diamond:916492304108355685>",
                         >= 100 => "<:big_ruby:916803316925755473>"
                     };
                 }
