@@ -88,7 +88,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 if (l_FirsScan)
                     await ReplyAsync($"> Oh, it seems like {l_ScoreSaberOrDiscordName} didn't pass any maps from the pools.");
                 else
-                    await ReplyAsync($"> :x: Sorry but {l_ScoreSaberOrDiscordName} didn't pass/updated you score on any new maps.");
+                    await ReplyAsync($"> :x: Sorry but {l_ScoreSaberOrDiscordName} didn't pass/update new scores on any new maps.");
             }
 
             int l_NewPlayerLevel = l_Player.GetPlayerLevel();

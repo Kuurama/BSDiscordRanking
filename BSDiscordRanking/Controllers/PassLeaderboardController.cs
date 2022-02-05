@@ -38,6 +38,7 @@ namespace BSDiscordRanking.Controllers
                     SnipedByPlayers = new List<Sniped>()
                 };
 
+
                 for (int l_I = 0; l_I <= m_Leaderboard.Leaderboard.Count - 1; l_I++)
                 {
                     if (p_ScoreSaberID == m_Leaderboard.Leaderboard[l_I].ScoreSaberID)
@@ -77,12 +78,6 @@ namespace BSDiscordRanking.Controllers
                         NewRank = l_I + 1,
                         IsPingAllowed = m_Leaderboard.Leaderboard[l_I].IsPingAllowed
                     });
-                }
-
-                for (int l_I = l_Snipe.SnipedByPlayers.Count - 1; l_I >= 0; l_I--)
-                {
-                    l_Snipe.SnipedByPlayers[l_I].NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.SnipedByPlayers[l_I].ScoreSaberID) + 1;
-                    if (l_Snipe.SnipedByPlayers[l_I].OldRank >= l_Snipe.SnipedByPlayers[l_I].NewRank) l_Snipe.SnipedByPlayers.RemoveAt(l_I);
                 }
 
                 if (l_NewPlayer)
@@ -133,7 +128,22 @@ namespace BSDiscordRanking.Controllers
 
                 ReWriteLeaderboard();
 
-                l_Snipe.Player.NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.Player.ScoreSaberID) + 1;
+                if (m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_ScoreSaberID && p_X.IsBanned))
+                {
+                    l_Snipe.Player.NewRank = l_Snipe.Player.OldRank; /// Make banned user from leaderboard not trigger snipe message etc.
+                }
+                else
+                {
+                    m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned); /// Remove banned user after the rewrite just to get the player index.
+                    l_Snipe.Player.NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.Player.ScoreSaberID) + 1;
+                }
+
+                
+                for (int l_I = l_Snipe.SnipedByPlayers.Count - 1; l_I >= 0; l_I--)
+                {
+                    l_Snipe.SnipedByPlayers[l_I].NewRank = m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == l_Snipe.SnipedByPlayers[l_I].ScoreSaberID) + 1;
+                    if (l_Snipe.SnipedByPlayers[l_I].OldRank >= l_Snipe.SnipedByPlayers[l_I].NewRank) l_Snipe.SnipedByPlayers.RemoveAt(l_I);
+                }
 
                 return l_Snipe; /// Returns the sniped players only if it not the first time the player is being registered.
             }

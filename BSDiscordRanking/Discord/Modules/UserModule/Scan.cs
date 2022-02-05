@@ -51,7 +51,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
                 else
                 {
-                    l_EmbedBuilder.WithDescription(l_FirsScan ? $"> Oh <@{Context.User.Id.ToString()}>, Seems like you didn't pass any maps from the pools." : $"> :x: Sorry <@{Context.User.Id.ToString()}>, but you didn't pass/updated any new scores on maps.");
+                    l_EmbedBuilder.WithDescription(l_FirsScan ? $"> Oh <@{Context.User.Id.ToString()}>, Seems like you didn't pass any maps from the pools." : $"> :x: Sorry <@{Context.User.Id.ToString()}>, but you didn't pass/update any new scores on maps.");
                 }
 
                 Color l_Color = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, l_OldPlayerLevel);
