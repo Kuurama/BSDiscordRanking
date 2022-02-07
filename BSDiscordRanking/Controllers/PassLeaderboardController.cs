@@ -31,6 +31,7 @@ namespace BSDiscordRanking.Controllers
         {
             if (p_ScoreSaberID != null)
             {
+                int l_BannedCount = 0;
                 bool l_NewPlayer = true;
                 SnipeFormat l_Snipe = new SnipeFormat
                 {
@@ -68,7 +69,7 @@ namespace BSDiscordRanking.Controllers
                         break;
                     }
 
-
+                    if (m_Leaderboard.Leaderboard[l_I].IsBanned) l_BannedCount++; /// Banned player before the old player rank.
                     l_Snipe.SnipedByPlayers.Add(new Sniped
                     {
                         Name = m_Leaderboard.Leaderboard[l_I].Name,
@@ -127,6 +128,8 @@ namespace BSDiscordRanking.Controllers
                 }
 
                 ReWriteLeaderboard();
+
+                l_Snipe.Player.OldRank -= l_BannedCount;
 
                 if (m_Leaderboard.Leaderboard.Any(p_X => p_X.ScoreSaberID == p_ScoreSaberID && p_X.IsBanned))
                 {

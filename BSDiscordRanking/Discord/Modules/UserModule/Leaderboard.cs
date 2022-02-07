@@ -72,6 +72,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         private LeaderboardBuilderFormat BuildLeaderboard(LeaderboardControllerFormat p_LeaderboardController, string p_PointsName, EmbedBuilder p_EmbedBuilder, int p_Page)
         {
+            p_LeaderboardController.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
             if (p_Page == default(int))
                 try
                 {
@@ -81,9 +82,8 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     p_Page = 1;
                 }
-
             bool l_PageExist = false;
-            p_LeaderboardController.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
+            
             for (int l_Index = (p_Page - 1) * 10; l_Index < (p_Page - 1) * 10 + 10; l_Index++)
                 try
                 {
