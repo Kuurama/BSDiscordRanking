@@ -1395,7 +1395,6 @@ namespace BSDiscordRanking
                                 ReWritePass();
                             }
                         }
-
                         else
                         {
                             Console.WriteLine("Seems like you forgot to fetch the Player's Passes, Attempting to fetch..");

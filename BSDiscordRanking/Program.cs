@@ -1,4 +1,5 @@
-﻿using BSDiscordRanking.Controllers;
+﻿using BSDiscordRanking.API;
+using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord;
 
 namespace BSDiscordRanking
@@ -12,6 +13,7 @@ namespace BSDiscordRanking
             LevelController.GetLevelControllerCache();
             UserController.ReadDB();
             BotHandler.StartBot(ConfigController.ReadConfig());
+            //WebApp.Start();
         }
     }
 }
