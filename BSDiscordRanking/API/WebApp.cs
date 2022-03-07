@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,10 +18,7 @@ namespace BSDiscordRanking.API
         /// </summary>
         private static HttpListener s_Listener;
         /// <summary>
-        /// Page data
-        /// </summary>
-        private static string s_PageData;
-        /// <summary>
+        
         /// Cancellation token
         /// </summary>
         private static CancellationTokenSource s_CancellationToken;
@@ -34,12 +30,6 @@ namespace BSDiscordRanking.API
 
         internal static void Start()
         {
-            if (s_PageData == null)
-            {
-                using StreamReader l_Reader = new StreamReader("./API/DebugPageData.html");
-                s_PageData = l_Reader.ReadToEnd();
-            }
-
             if (s_Listener != null) return;
 
             s_CancellationToken = new CancellationTokenSource();
@@ -81,6 +71,8 @@ namespace BSDiscordRanking.API
         {
             try
             {
+                bool l_IsAuthorised = false;
+                string l_PageData = null;
                 HttpListenerRequest l_Request = p_Context.Request;
                 if (l_Request.Url == null) return;
            
@@ -97,19 +89,44 @@ namespace BSDiscordRanking.API
                 if (l_PlayerRegex.IsMatch(l_Request.Url.AbsolutePath))
                 {
                     string l_PlayerID = Regex.Replace(l_Request.Url.AbsolutePath, @"\/player\/", "");
-                    GetPlayerInfo(l_Response, l_PlayerID);
-                    return;
+                    l_PageData = GetPlayerInfo(l_Response, l_PlayerID);
+                    l_IsAuthorised = true;
                 }
+                byte[] l_Data;
                 
-                StringBuilder l_PageBuilder = new StringBuilder(s_PageData);
-
-                byte[] l_Data = Encoding.UTF8.GetBytes(l_PageBuilder.ToString());
-                l_Response.ContentType = "text/html";
-                l_Response.ContentEncoding = Encoding.UTF8;
-                l_Response.ContentLength64 = l_Data.LongLength;
-
-                l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
-                l_Response.OutputStream.Close();
+                switch (l_IsAuthorised)
+                {
+                    case true when l_PageData != null: /// There is data
+                    {
+                        StringBuilder l_PageBuilder = new StringBuilder(l_PageData);
+                        l_Data = Encoding.UTF8.GetBytes(l_PageBuilder.ToString());
+                        l_Response.ContentType = "application/json";
+                        l_Response.ContentEncoding = Encoding.UTF8;
+                        l_Response.ContentLength64 = l_Data.LongLength;
+                        l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                        l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
+                        l_Response.OutputStream.Close();
+                        break;
+                    }
+                    case true: /// There isn't any data
+                        l_Response.ContentType = "application/json";
+                        l_Response.ContentEncoding = Encoding.UTF8;
+                        l_Response.StatusCode = 404;
+                        l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Not Found\"}");
+                        l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                        l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
+                        l_Response.OutputStream.Close();
+                        break;
+                    default: /// The request is invalid as there isn't any triggered Regex.
+                        l_Response.ContentType = "application/json";
+                        l_Response.ContentEncoding = Encoding.UTF8;
+                        l_Response.StatusCode = 400;
+                        l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Not Found\"}");
+                        l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                        l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
+                        l_Response.OutputStream.Close();
+                        break;
+                }
             }
             catch (Exception l_Exception)
             {
@@ -117,7 +134,7 @@ namespace BSDiscordRanking.API
             }
         }
 
-        private static void GetPlayerInfo(HttpListenerResponse p_Response, string p_PlayerID)
+        private static string GetPlayerInfo(HttpListenerResponse p_Response, string p_PlayerID)
         {
             if (UserController.UserExist(p_PlayerID))
             {
@@ -125,7 +142,7 @@ namespace BSDiscordRanking.API
             }
             else if (!UserController.AccountExist(p_PlayerID) && !UserController.UserExist(p_PlayerID))
             {
-                return;
+                return null;
             }
 
             Player l_Player = new Player(p_PlayerID);
@@ -137,16 +154,8 @@ namespace BSDiscordRanking.API
                 PlayerFull = l_Player.m_PlayerFull,
                 PlayerStats = l_Player.m_PlayerStats
             };
-       
-            StringBuilder l_PageBuilder = new StringBuilder(JsonConvert.SerializeObject(l_PlayerApiOutput));
-            
-            byte[] l_Data = Encoding.UTF8.GetBytes(l_PageBuilder.ToString());
-            p_Response.ContentType = "text/html";
-            p_Response.ContentEncoding = Encoding.UTF8;
-            p_Response.ContentLength64 = l_Data.LongLength;
-            
-            p_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
-            p_Response.OutputStream.Close();
+
+            return JsonConvert.SerializeObject(l_PlayerApiOutput);
         }
     }
 }

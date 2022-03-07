@@ -10,10 +10,11 @@ namespace BSDiscordRanking
 
         private static void Main(string[] p_Args)
         {
-            LevelController.GetLevelControllerCache();
-            UserController.ReadDB();
-            BotHandler.StartBot(ConfigController.ReadConfig());
-            //WebApp.Start();
+            //LevelController.GetLevelControllerCache();
+            //UserController.ReadDB();
+            //BotHandler.StartBot(ConfigController.ReadConfig());
+            
+            WebApp.Start();
         }
     }
 }
