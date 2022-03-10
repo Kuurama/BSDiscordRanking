@@ -24,7 +24,7 @@ namespace BSDiscordRanking
         public const string EXTENSION = ".bplist";
 
         /// Keep the underscore at the beginning to avoid issue with the controller.
-        private const string PATH = @"./Levels/";
+        private const string PATH = @"./public/Levels/";
 
         private const int ERROR_LIMIT = 3;
         private BeatSaverFormat m_BeatSaver;

@@ -1,4 +1,5 @@
-﻿using BSDiscordRanking.API;
+﻿using System.Threading;
+using BSDiscordRanking.API;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord;
 
@@ -10,11 +11,11 @@ namespace BSDiscordRanking
 
         private static void Main(string[] p_Args)
         {
-            //LevelController.GetLevelControllerCache();
-            //UserController.ReadDB();
-            //BotHandler.StartBot(ConfigController.ReadConfig());
+            new Thread(WebApp.Start).Start(); /// Starts the API
             
-            WebApp.Start();
+            LevelController.GetLevelControllerCache();
+            UserController.ReadDB();
+            /// BotHandler.StartBot(ConfigController.ReadConfig()); /// Starts the Discord Bot (on the main thread)
         }
     }
 }

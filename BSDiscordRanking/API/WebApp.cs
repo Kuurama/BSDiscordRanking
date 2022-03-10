@@ -26,7 +26,7 @@ namespace BSDiscordRanking.API
         /// <summary>
         /// Port used
         /// </summary>
-        private const string PORT = "8080";
+        private const string PORT = "5000";
 
         internal static void Start()
         {
@@ -34,11 +34,12 @@ namespace BSDiscordRanking.API
 
             s_CancellationToken = new CancellationTokenSource();
             s_Listener          = new HttpListener();
-            s_Listener.Prefixes.Add($"http://localhost:{PORT}/");
+            s_Listener.Prefixes.Add($"http://127.0.0.1:{PORT}/");
 
             try
             {       
                 s_Listener.Start();
+                Console.WriteLine("Listener Started");
             }
             catch (HttpListenerException l_Exception)
             {
@@ -46,6 +47,8 @@ namespace BSDiscordRanking.API
                 return;
             }
 
+           
+            
             while (!s_CancellationToken.IsCancellationRequested)
             {
                 OnContext(s_Listener.GetContext());
@@ -75,7 +78,6 @@ namespace BSDiscordRanking.API
                 string l_PageData = null;
                 HttpListenerRequest l_Request = p_Context.Request;
                 if (l_Request.Url == null) return;
-           
                 
                 HttpListenerResponse l_Response = p_Context.Response;
 
@@ -92,41 +94,32 @@ namespace BSDiscordRanking.API
                     l_PageData = GetPlayerInfo(l_Response, l_PlayerID);
                     l_IsAuthorised = true;
                 }
+
+                l_Response.ContentType = "application/json";
+                l_Response.ContentEncoding = Encoding.UTF8;
+                
                 byte[] l_Data;
                 
-                switch (l_IsAuthorised)
+                if (l_IsAuthorised && l_PageData != null)
                 {
-                    case true when l_PageData != null: /// There is data
-                    {
-                        StringBuilder l_PageBuilder = new StringBuilder(l_PageData);
-                        l_Data = Encoding.UTF8.GetBytes(l_PageBuilder.ToString());
-                        l_Response.ContentType = "application/json";
-                        l_Response.ContentEncoding = Encoding.UTF8;
-                        l_Response.ContentLength64 = l_Data.LongLength;
-                        l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
-                        l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
-                        l_Response.OutputStream.Close();
-                        break;
-                    }
-                    case true: /// There isn't any data
-                        l_Response.ContentType = "application/json";
-                        l_Response.ContentEncoding = Encoding.UTF8;
-                        l_Response.StatusCode = 404;
-                        l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Not Found\"}");
-                        l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
-                        l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
-                        l_Response.OutputStream.Close();
-                        break;
-                    default: /// The request is invalid as there isn't any triggered Regex.
-                        l_Response.ContentType = "application/json";
-                        l_Response.ContentEncoding = Encoding.UTF8;
-                        l_Response.StatusCode = 400;
-                        l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Not Found\"}");
-                        l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
-                        l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
-                        l_Response.OutputStream.Close();
-                        break;
+                    StringBuilder l_PageBuilder = new StringBuilder(l_PageData);
+                    l_Data = Encoding.UTF8.GetBytes(l_PageBuilder.ToString());
                 }
+                else if (l_IsAuthorised)
+                {
+                    l_Response.StatusCode = 404;
+                    l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Not Found\"}");
+                }
+                else
+                {
+                    l_Response.StatusCode = 400;
+                    l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Bad Request\"}");
+                }
+                
+                l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
+                l_Response.ContentLength64 = l_Data.LongLength;
+                l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
+                l_Response.OutputStream.Close();
             }
             catch (Exception l_Exception)
             {
