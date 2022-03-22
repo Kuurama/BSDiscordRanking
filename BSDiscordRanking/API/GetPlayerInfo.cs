@@ -5,7 +5,6 @@ using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord.Modules.UserModule;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Player;
-using BSDiscordRanking.Utils;
 using Discord;
 using Newtonsoft.Json;
 
@@ -78,7 +77,8 @@ namespace BSDiscordRanking.API
                     l_ApiPlayerCategories[l_CategoryFindIndex].Trophy.Ruby += l_LevelCategory.Trophy.Ruby;
                 }
             }
-            
+            l_ApiPlayerCategories.RemoveAll(p_X => string.IsNullOrEmpty(p_X.Category)); /// Small HardCodding of the "OnlyRankingByCategory".
+
             int l_PassFindIndex = -1;
             PassLeaderboardController l_PassLeaderboardController = null;
             bool l_IsAccLeaderboardBan = false;

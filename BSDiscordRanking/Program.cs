@@ -1,7 +1,5 @@
 ﻿using System.Threading;
 using BSDiscordRanking.API;
-using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Discord;
 
 namespace BSDiscordRanking
 {
