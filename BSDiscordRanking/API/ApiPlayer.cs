@@ -13,7 +13,7 @@ namespace BSDiscordRanking.API
     internal static partial class WebApp
     {
         
-        [ApiAccessHandler("PlayerInfo",  @"\/player\/0*[1-9][0-9]*", @"\/player\/")]
+        [ApiAccessHandler("PlayerInfo",  @"\/player\/0*[1-9][0-9]*", @"\/player\/", 0)]
         public static string GetPlayerInfo(HttpListenerResponse p_Response, string p_PlayerID)
         {
             if (UserController.UserExist(p_PlayerID))

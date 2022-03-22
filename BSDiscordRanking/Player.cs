@@ -1557,6 +1557,7 @@ namespace BSDiscordRanking
                 {
                     using StreamReader l_SR = new StreamReader($@"{m_FolderPath}{p_PlayerID}/stats.json");
                     l_PlayerStats = JsonConvert.DeserializeObject<PlayerStatsFormat>(l_SR.ReadToEnd());
+                    l_SR.Close();
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {

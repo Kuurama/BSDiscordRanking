@@ -8,7 +8,7 @@ namespace BSDiscordRanking.API
 {
     internal static partial class WebApp
     {
-        [ApiAccessHandler("BothLeaderboards", @"\/leaderboards\/{0,1}", @"\/leaderboards\/", 1)]
+        [ApiAccessHandler("Leaderboards", @"\/leaderboards\/{0,1}", @"\/leaderboards\/", 0)]
         public static string GetLeaderboards(HttpListenerResponse p_Response, string p_LeaderboardType = null, string p_PageOrFull = null)
 
         {
