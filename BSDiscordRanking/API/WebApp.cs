@@ -1,43 +1,51 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats.API;
-using BSDiscordRanking.Formats.Player;
-using Newtonsoft.Json;
+using BSDiscordRanking.Formats.Controller;
+using BSDiscordRanking.Utils;
+using Discord.Interactions;
 
 
 namespace BSDiscordRanking.API
 {
-    internal static class WebApp
+    internal static partial class WebApp
     {
         /// <summary>
         /// Listener
         /// </summary>
         private static HttpListener s_Listener;
         /// <summary>
-        
         /// Cancellation token
         /// </summary>
         private static CancellationTokenSource s_CancellationToken;
+
+        /// <summary>
+        /// Server Config
+        /// </summary>
+        private static readonly ConfigFormat s_Config = ConfigController.GetConfig();
 
         /// <summary>
         /// Port used
         /// </summary>
         private const string PORT = "5000";
 
+        private static List<Tuple<Regex, string>> s_RegexTuples = new List<Tuple<Regex, string>>();
+
         internal static void Start()
         {
             if (s_Listener != null) return;
 
             s_CancellationToken = new CancellationTokenSource();
-            s_Listener          = new HttpListener();
+            s_Listener = new HttpListener();
             s_Listener.Prefixes.Add($"http://127.0.0.1:{PORT}/");
 
             try
-            {       
+            {
                 s_Listener.Start();
                 Console.WriteLine("Listener Started");
             }
@@ -47,13 +55,12 @@ namespace BSDiscordRanking.API
                 return;
             }
 
-           
-            
             while (!s_CancellationToken.IsCancellationRequested)
             {
                 OnContext(s_Listener.GetContext());
             }
         }
+
 
         /// <summary>
         /// Stop the webapp
@@ -61,7 +68,7 @@ namespace BSDiscordRanking.API
         internal static void Stop()
         {
             if (s_CancellationToken == null) return;
-            
+
             s_CancellationToken.Cancel();
             Console.WriteLine("Listener Stopped");
         }
@@ -78,7 +85,7 @@ namespace BSDiscordRanking.API
                 string l_PageData = null;
                 HttpListenerRequest l_Request = p_Context.Request;
                 if (l_Request.Url == null) return;
-                
+
                 HttpListenerResponse l_Response = p_Context.Response;
 
                 if (l_Request.HttpMethod == "POST" && l_Request.Url.AbsolutePath == "/submit") /// On POST request (Don't have any usage yet)
@@ -86,21 +93,36 @@ namespace BSDiscordRanking.API
                     Console.WriteLine("Post submitted");
                 }
 
-                Regex l_PlayerRegex = new Regex(@"\/player\/0*[1-9][0-9]*");
+                ApiAccessHandler l_ApiAccessInstance = ApiAccessHandler.s_Handlers.Where(p_X => p_X.Value.AccessRegex.IsMatch(l_Request.Url.AbsolutePath)).Select(p_X => p_X.Value).SingleOrDefault();
 
-                if (l_PlayerRegex.IsMatch(l_Request.Url.AbsolutePath))
+                if (l_ApiAccessInstance != null)
                 {
-                    string l_PlayerID = Regex.Replace(l_Request.Url.AbsolutePath, @"\/player\/", "");
-                    l_PageData = GetPlayerInfo(l_Response, l_PlayerID);
-                    l_IsAuthorised = true;
+                    string l_Result = "";
+                    string l_ErrorMessage = "";
+                    var l_Parameters = new List<string>(l_ApiAccessInstance.ParameterRegex.Split(l_Request.Url.LocalPath));
+                    if (l_Parameters.Count != 0)
+                    {
+                        l_Parameters.RemoveAt(0);
+                    }
+
+                    if (l_ApiAccessInstance.Call(l_Response, l_Parameters.ToArray(), out l_Result, out l_ErrorMessage))
+                    {
+                        l_PageData = l_Result;
+                        l_IsAuthorised = true;
+                        
+                    }
+                    else
+                    {
+                        Console.WriteLine(l_ErrorMessage);
+                    }
                 }
 
                 l_Response.ContentType = "application/json";
                 l_Response.ContentEncoding = Encoding.UTF8;
-                
+
                 byte[] l_Data;
-                
-                if (l_IsAuthorised && l_PageData != null)
+
+                if (l_IsAuthorised && !string.IsNullOrEmpty(l_PageData))
                 {
                     StringBuilder l_PageBuilder = new StringBuilder(l_PageData);
                     l_Data = Encoding.UTF8.GetBytes(l_PageBuilder.ToString());
@@ -115,7 +137,7 @@ namespace BSDiscordRanking.API
                     l_Response.StatusCode = 400;
                     l_Data = Encoding.UTF8.GetBytes("{ \"error\" : \"Bad Request\"}");
                 }
-                
+
                 l_Response.AppendHeader("Access-Control-Allow-Origin", "*");
                 l_Response.ContentLength64 = l_Data.LongLength;
                 l_Response.OutputStream.Write(l_Data, 0, l_Data.Length);
@@ -125,30 +147,6 @@ namespace BSDiscordRanking.API
             {
                 Console.WriteLine(l_Exception);
             }
-        }
-
-        private static string GetPlayerInfo(HttpListenerResponse p_Response, string p_PlayerID)
-        {
-            if (UserController.UserExist(p_PlayerID))
-            {
-                p_PlayerID = UserController.GetPlayer(p_PlayerID);
-            }
-            else if (!UserController.AccountExist(p_PlayerID) && !UserController.UserExist(p_PlayerID))
-            {
-                return null;
-            }
-
-            Player l_Player = new Player(p_PlayerID);
-            PlayerStatsFormat l_PlayerStats = l_Player.GetStats();
-            string l_PlayerFullJsonString = JsonConvert.SerializeObject(l_Player.m_PlayerFull);
-
-            PlayerApiOutput l_PlayerApiOutput = new PlayerApiOutput()
-            {
-                PlayerFull = l_Player.m_PlayerFull,
-                PlayerStats = l_Player.m_PlayerStats
-            };
-
-            return JsonConvert.SerializeObject(l_PlayerApiOutput);
         }
     }
 }

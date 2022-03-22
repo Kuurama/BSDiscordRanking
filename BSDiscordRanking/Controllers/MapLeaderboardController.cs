@@ -367,7 +367,7 @@ namespace BSDiscordRanking.Controllers
             return false;
         }
 
-        public static float RecalculateAutoWeight(int p_LeaderboardID, int p_DifficultlyMultiplier)
+        public static float RecalculateAutoWeight(int p_LeaderboardID, float p_DifficultlyMultiplier)
         {
             float l_SumOfPercentage = 0;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();

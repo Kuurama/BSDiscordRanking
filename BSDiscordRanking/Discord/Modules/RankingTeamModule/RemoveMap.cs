@@ -23,6 +23,31 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             }
             else
             {
+                p_Characteristic = UserModule.UserModule.FirstCharacterToUpper(p_Characteristic);
+                p_DifficultyName = UserModule.UserModule.FirstCharacterToUpper(p_DifficultyName);
+                
+                // ReSharper disable once StringLiteralTypo
+                if (p_DifficultyName == "Expertplus")
+                {
+                    p_DifficultyName = "ExpertPlus";
+                }
+                
+                switch (p_Characteristic)
+                {
+                    // ReSharper disable once StringLiteralTypo
+                    case "90degree" or "90degres" or "90degre":
+                        p_Characteristic = "90Degree";
+                        break;
+                    // ReSharper disable once StringLiteralTypo
+                    case "360degree" or "360degres" or "360degre":
+                        p_Characteristic = "360Degree";
+                        break;
+                    // ReSharper disable once StringLiteralTypo
+                    case "Noarrows" or "Noarrow":
+                        p_Characteristic = "NoArrows";
+                        break;
+                }
+                
                 if (p_DifficultyName is "Easy" or "Normal" or "Hard" or "Expert" or "ExpertPlus")
                 {
                     if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree")

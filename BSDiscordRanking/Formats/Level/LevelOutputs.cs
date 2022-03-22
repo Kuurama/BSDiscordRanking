@@ -39,7 +39,7 @@ namespace BSDiscordRanking.Formats.Level
         }
 
         public int level { get; set; }
-        public int autoWeightDifficultyMultiplier { get; set; }
+        public float autoWeightDifficultyMultiplier { get; set; }
         public float weighting { get; set; }
 
         public string customPassText

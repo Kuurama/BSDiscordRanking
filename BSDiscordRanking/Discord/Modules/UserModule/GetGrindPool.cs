@@ -300,7 +300,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         );
 
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false);
+                        GGPFormat l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, true) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, false);
                         int l_EmbedIndex = 0;
                         if (l_GGP.Embed != null)
                             foreach (Embed l_Embed in l_GGP.Embed)
@@ -344,7 +344,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             ? $"Unpassed maps in `{p_Category}` level {p_Level}"
                             : $"Unpassed maps in level {p_Level}");
 
-                        GGPFormat l_GGP = await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true);
+                        GGPFormat l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true, true) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true, false);
 
                         int l_EmbedIndex = 0;
                         if (l_GGP.Embed != null)
@@ -390,7 +390,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         }
 
 #pragma warning disable 1998
-        private static async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory)
+        private static async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory, bool p_DisplayCustomCategoryInfo)
 #pragma warning restore 1998
         {
             int l_Y = 0;
@@ -402,7 +402,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             List<Tuple<InPlayerSong, InPlayerPassFormat, string>> l_MapsTuples = new List<Tuple<InPlayerSong, InPlayerPassFormat, string>>();
             foreach (InPlayerSong l_Map in p_PlayerPassFormat.SongList)
             foreach (InPlayerPassFormat l_Diff in l_Map.DiffList)
-                if (l_Diff.Difficulty.customData.category != null && l_Diff.Difficulty.customData.customCategoryInfo != null)
+                if (l_Diff.Difficulty.customData.category != null && l_Diff.Difficulty.customData.customCategoryInfo != null && p_DisplayCustomCategoryInfo)
                     l_MapsTuples.Add(new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, $"{l_Diff.Difficulty.customData.category}/{l_Diff.Difficulty.customData.customCategoryInfo}")); /// Category + Info
                 else if (l_Diff.Difficulty.customData.category != null)
                     l_MapsTuples.Add(new Tuple<InPlayerSong, InPlayerPassFormat, string>(l_Map, l_Diff, $"{l_Diff.Difficulty.customData.category}")); /// Normal category, no info.

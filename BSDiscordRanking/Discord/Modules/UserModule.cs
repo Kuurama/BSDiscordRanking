@@ -176,7 +176,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         < 50 => "<:silver:874215133197500446>",
                         < 75 => "<:gold:874215133147197460>",
                         < 100 => "<:diamond:874215133289795584>",
-                        >= 100 => "<:ruby:916807008362057818>"
+                        >= 100 => "<:ruby:954043083887116368>"
                     };
                 }
                 else
@@ -424,6 +424,45 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         public static Color GetRoleColor(List<RoleFormat> p_RoleList, IEnumerable<SocketRole> p_Roles, int p_Level, ulong p_RoleID = default(ulong))
         {
             Color l_Color = Color.Default;
+            if (p_RoleList == null) return l_Color;
+            
+            if (p_Roles == null)
+            {
+                foreach (RoleFormat l_Role in p_RoleList)
+                    if (l_Role.LevelID == p_Level && p_Level != 0)
+                    {
+                        return l_Role.RoleColor;
+                    }
+            }
+            else
+            {
+                foreach (SocketRole l_UserRole in p_Roles)
+                    if (p_RoleID != default(ulong))
+                    {
+                        if (l_UserRole.Id == p_RoleID)
+                            return l_UserRole.Color;
+                    }
+                    else
+                    {
+                        foreach (RoleFormat l_Role in p_RoleList)
+                            if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
+                            {
+                                if (l_Role.RoleColor != l_UserRole.Color)
+                                {
+                                    l_Role.RoleColor = l_UserRole.Color;
+                                    RoleController.StaticWriteRolesDB(new RolesFormat(){Roles = p_RoleList});
+                                }
+                                return l_UserRole.Color;
+                            }
+                    }
+            }
+            
+            return l_Color;
+        }
+        
+        public static Color GetRoleColorFromDatabase(List<RoleFormat> p_RoleList, IEnumerable<SocketRole> p_Roles, int p_Level, ulong p_RoleID = default(ulong))
+        {
+            Color l_Color = Color.Default;
             foreach (SocketRole l_UserRole in p_Roles)
                 if (p_RoleID != default(ulong))
                 {
@@ -433,9 +472,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 else
                 {
                     foreach (RoleFormat l_Role in p_RoleList)
-                        if (p_RoleID == default(ulong))
-                            if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
-                                return l_UserRole.Color;
+                        if (l_UserRole.Id == l_Role.RoleID && l_Role.LevelID == p_Level && p_Level != 0)
+                        {
+                            if (l_Role.RoleColor != l_UserRole.Color)
+                            {
+                                l_Role.RoleColor = l_UserRole.Color;
+                            }
+                            return l_UserRole.Color;
+                        }
                 }
 
             return l_Color;

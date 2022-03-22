@@ -13,7 +13,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
         [Command("addmap")]
         [Alias("rankmap")]
         [Summary("Adds a map or updates it from a desired level. Not used fields can be wrote null or 0 depending on their types. (or even ignored if you don't need any of the next ones)")]
-        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, string p_CustomCategoryInfo = null, bool p_AdminPingOnPass = false, bool p_ForceManualWeight = false, float p_Weight = default(float))
+        public async Task AddMap(int p_Level = 0, string p_BSRCode = "", string p_DifficultyName = "ExpertPlus", string p_Characteristic = "Standard", float p_MinPercentageRequirement = 0f, string p_Category = null, string p_InfoOnGGP = null, string p_CustomPassText = null, string p_CustomCategoryInfo = null, bool p_AdminPingOnPass = false, bool p_ForceManualWeight = false, float p_Weight = default(float))
         {
             if (string.IsNullOrEmpty(p_BSRCode) || string.IsNullOrEmpty(p_Characteristic) ||
                 string.IsNullOrEmpty(p_DifficultyName))
@@ -37,6 +37,32 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                 p_CustomPassText = p_CustomPassText?.Replace("_", " ");
                 p_InfoOnGGP = p_InfoOnGGP?.Replace("_", " ");
                 p_Category = p_Category?.Replace("_", " ");
+
+
+                p_Characteristic = UserModule.UserModule.FirstCharacterToUpper(p_Characteristic);
+                p_DifficultyName = UserModule.UserModule.FirstCharacterToUpper(p_DifficultyName);
+                
+                // ReSharper disable once StringLiteralTypo
+                if (p_DifficultyName == "Expertplus")
+                {
+                    p_DifficultyName = "ExpertPlus";
+                }
+                
+                switch (p_Characteristic)
+                {
+                    // ReSharper disable once StringLiteralTypo
+                    case "90degree" or "90degres" or "90degre":
+                        p_Characteristic = "90Degree";
+                        break;
+                    // ReSharper disable once StringLiteralTypo
+                    case "360degree" or "360degres" or "360degre":
+                        p_Characteristic = "360Degree";
+                        break;
+                    // ReSharper disable once StringLiteralTypo
+                    case "Noarrows" or "Noarrow":
+                        p_Characteristic = "NoArrows";
+                        break;
+                }
 
                 if (p_Characteristic is "Lawless" or "Standard" or "90Degree" or "360Degree" or "NoArrows")
                 {

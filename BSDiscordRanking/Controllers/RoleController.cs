@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 using Discord.Rest;
+using Newtonsoft.Json;
 
 namespace BSDiscordRanking.Controllers
 {
@@ -15,16 +16,37 @@ namespace BSDiscordRanking.Controllers
     {
         public RolesFormat m_RoleController = ReadRolesDB();
 
-        private void WriteRolesDB()
+        public void WriteRolesDB()
         {
-            File.WriteAllText("./roles.json", JsonSerializer.Serialize(m_RoleController));
+            try
+            {
+                File.WriteAllText("./roles.json", JsonConvert.SerializeObject(m_RoleController));
+            }
+            catch (Exception l_Exception)
+            {
+                Console.WriteLine($"Error happened upon writing the roles.json: {l_Exception }");
+            }
+        }
+        
+        public static void StaticWriteRolesDB(RolesFormat p_RolesFormat)
+        {
+            try
+            {
+                File.WriteAllText("./roles.json", JsonConvert.SerializeObject(p_RolesFormat));
+            }
+            catch (Exception l_Exception)
+            {
+                Console.WriteLine($"Error happened upon writing the roles.json: {l_Exception }");
+            }
         }
 
         public static RolesFormat ReadRolesDB()
         {
             if (File.Exists("roles.json"))
             {
-                RolesFormat l_RolesFormat = JsonSerializer.Deserialize<RolesFormat>(new StreamReader("./roles.json").ReadToEnd());
+                StreamReader l_StreamReader = new StreamReader("./roles.json");
+                RolesFormat l_RolesFormat = JsonConvert.DeserializeObject<RolesFormat>(l_StreamReader.ReadToEnd());
+                l_StreamReader.Close();
                 if (l_RolesFormat != null) return l_RolesFormat;
             }
 

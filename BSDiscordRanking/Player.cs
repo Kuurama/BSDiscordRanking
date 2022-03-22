@@ -14,7 +14,6 @@ using BSDiscordRanking.Formats.Player;
 using Discord;
 using Discord.Commands;
 using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 
@@ -221,7 +220,7 @@ namespace BSDiscordRanking
                     {
                         try
                         {
-                            m_PlayerFull = JsonSerializer.Deserialize<ApiPlayer>(
+                            m_PlayerFull = JsonConvert.DeserializeObject<ApiPlayer>(
                                 l_WebClient.DownloadString(@$"https://scoresaber.com/api/player/{m_PlayerID}/full"));
                             m_HavePlayerInfo = true;
                         }
@@ -291,7 +290,7 @@ namespace BSDiscordRanking
                 {
                     using (StreamReader l_SR = new StreamReader(m_Path + "score.json"))
                     {
-                        m_PlayerScoreCollection = JsonSerializer.Deserialize<ApiPlayerScoreCollection>(l_SR.ReadToEnd());
+                        m_PlayerScoreCollection = JsonConvert.DeserializeObject<ApiPlayerScoreCollection>(l_SR.ReadToEnd());
                         Console.WriteLine($"Player {m_PlayerID} Successfully Loaded");
                     }
                 }
@@ -451,7 +450,7 @@ namespace BSDiscordRanking
                     {
                         if (m_PlayerScoreCollection != null)
                         {
-                            File.WriteAllText(m_Path + "score.json", JsonSerializer.Serialize(m_PlayerScoreCollection));
+                            File.WriteAllText(m_Path + "score.json", JsonConvert.SerializeObject(m_PlayerScoreCollection));
                             try
                             {
                                 Console.WriteLine(
@@ -521,7 +520,7 @@ namespace BSDiscordRanking
             {
                 try /// Work if ScoreSaber Global API is up => API maybe Changed, Contact an administrator
                 {
-                    ApiCheck l_ApiCheck = JsonSerializer.Deserialize<ApiCheck>(l_WebClient.DownloadString("https://scoresaber.com/api/"));
+                    ApiCheck l_ApiCheck = JsonConvert.DeserializeObject<ApiCheck>(l_WebClient.DownloadString("https://scoresaber.com/api/"));
                     if (ConfigFormat.SCORE_SABER_API_VERSION != l_ApiCheck.version) Console.WriteLine($"Api version changed from {ConfigFormat.SCORE_SABER_API_VERSION} to {l_ApiCheck.version}, error occured.");
 
                     return true;
@@ -1167,8 +1166,18 @@ namespace BSDiscordRanking
                     ReWriteStats();
                     ReWriteScore();
                     ReWritePass();
-
-                    Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, l_OldPlayerLevel);
+                    
+                    Color l_Color;
+                    
+                    if (p_Context != null)
+                    {
+                        l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, l_OldPlayerLevel);
+                    }
+                    else
+                    {
+                        l_Color = Color.Default;
+                    }
+                    
 
                     bool l_IsFirstMessage = true;
                     if (l_FetchPassFormat.newPass.Count > 0)
@@ -1188,7 +1197,11 @@ namespace BSDiscordRanking
                                 l_Builder.WithDescription(l_Message);
                                 l_Builder.WithColor(l_Color);
                                 Embed l_Embed = l_Builder.Build();
-                                await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+
+                                if (p_Context != null)
+                                {
+                                    await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                }
                             }
 
 
@@ -1203,7 +1216,11 @@ namespace BSDiscordRanking
                                 l_Builder.WithDescription(l_Message);
                                 l_Builder.WithColor(l_Color);
                                 Embed l_Embed = l_Builder.Build();
-                                await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+
+                                if (p_Context != null)
+                                {
+                                    await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                }
                             }
 
                     if (l_FetchPassFormat.removedPass.Count > 0 && !l_OldPlayerFirstScanStatus)
@@ -1217,7 +1234,10 @@ namespace BSDiscordRanking
                                 l_Builder.WithDescription(l_Message);
                                 l_Builder.WithColor(new Color(255, 0, 0));
                                 Embed l_Embed = l_Builder.Build();
-                                await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                if (p_Context != null)
+                                {
+                                    await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                }
                             }
 
                     if (l_FetchPassFormat.adminConfirmationPass.Count > 0)
@@ -1235,7 +1255,10 @@ namespace BSDiscordRanking
                                 l_Builder.WithTitle($"{m_PlayerFull.name} - ScoringTeam Check:");
                                 l_Builder.WithUrl("https://scoresaber.com/u/" + m_PlayerFull.id);
                                 l_Embed = l_Builder.Build();
-                                await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                if (p_Context != null)
+                                {
+                                    await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                }
                             }
 
                     if (l_FetchPassFormat.cheatedPass.Count > 0)
@@ -1249,14 +1272,22 @@ namespace BSDiscordRanking
                                 l_Builder.WithDescription(l_Message);
                                 l_Builder.WithColor(new Color(255, 0, 0));
                                 Embed l_Embed = l_Builder.Build();
-                                await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                if (p_Context != null)
+                                {
+                                    await p_Context.Channel.SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                }
                                 l_Builder.WithTitle($"{m_PlayerFull.name} - Those scores have been deleted (cheated scores/above 100% scores:");
                                 l_Builder.WithUrl("https://scoresaber.com/u/" + m_PlayerFull.id);
                                 l_Embed = l_Builder.Build();
-                                await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                if (p_Context != null)
+                                {
+                                    await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                }
                             }
-
-                    if (GetPlayerLevel() == 8 && l_AboveLVLFourteenPass) await p_Context.Channel.SendMessageAsync($"Ohh that's quite pog, but `{ConfigController.GetConfig().CommandPrefix[0]}lvl9` when <a:KekBoom:905995426786856971>");
+                    if (p_Context != null)
+                    {
+                        if (GetPlayerLevel() == 8 && l_AboveLVLFourteenPass) await p_Context.Channel.SendMessageAsync($"Ohh that's quite pog, but `{ConfigController.GetConfig().CommandPrefix[0]}lvl9` when <a:KekBoom:905995426786856971>");
+                    }
 
                     return new NumberOfPassTypeFormat
                     {
@@ -1267,7 +1298,10 @@ namespace BSDiscordRanking
                 catch (Exception l_Exception)
                 {
                     Console.WriteLine($"error : {l_Exception.Data}");
-                    await p_Context.Channel.SendMessageAsync($"Error : {l_Exception.Message}");
+                    if (p_Context != null)
+                    {
+                        await p_Context.Channel.SendMessageAsync($"Error : {l_Exception.Message}");
+                    }
                     return new NumberOfPassTypeFormat { newPass = 0, updatedPass = 0 };
                 }
             }
@@ -1288,7 +1322,7 @@ namespace BSDiscordRanking
                     {
                         using (StreamReader l_SR = new StreamReader($@"{$"{m_FolderPath}{p_PlayerID}/"}pass.json"))
                         {
-                            l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                            l_PlayerPass = JsonConvert.DeserializeObject<PlayerPassFormat>(l_SR.ReadToEnd());
                             if (l_PlayerPass == null) /// json contain "null"
                             {
                                 l_PlayerPass = new PlayerPassFormat
@@ -1359,7 +1393,7 @@ namespace BSDiscordRanking
                 try
                 {
                     using StreamReader l_SR = new StreamReader($"{m_FolderPath}{p_PlayerID}/pass.json");
-                    l_PlayerPass = JsonSerializer.Deserialize<PlayerPassFormat>(l_SR.ReadToEnd());
+                    l_PlayerPass = JsonConvert.DeserializeObject<PlayerPassFormat>(l_SR.ReadToEnd());
                     return l_PlayerPass;
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
@@ -1383,7 +1417,7 @@ namespace BSDiscordRanking
                     {
                         if (m_PlayerPass != null)
                         {
-                            File.WriteAllText($@"{m_Path}pass.json", JsonSerializer.Serialize(m_PlayerPass));
+                            File.WriteAllText($@"{m_Path}pass.json", JsonConvert.SerializeObject(m_PlayerPass));
                             try
                             {
                                 Console.WriteLine($"Pass's file of {m_PlayerFull.name} Updated, {m_PlayerPass.SongList.Count} song(s) are stored (song number <= number of scores : multiple diff)");
@@ -1469,7 +1503,7 @@ namespace BSDiscordRanking
                     {
                         if (m_PlayerStats != null)
                         {
-                            File.WriteAllText($@"{m_Path}stats.json", JsonSerializer.Serialize(m_PlayerStats));
+                            File.WriteAllText($@"{m_Path}stats.json", JsonConvert.SerializeObject(m_PlayerStats));
 
                             Console.WriteLine($"Stats's file of {m_PlayerFull.name} Updated");
                         }
@@ -1519,7 +1553,7 @@ namespace BSDiscordRanking
                 try
                 {
                     using StreamReader l_SR = new StreamReader($@"{m_FolderPath}{p_PlayerID}/stats.json");
-                    l_PlayerStats = JsonSerializer.Deserialize<PlayerStatsFormat>(l_SR.ReadToEnd());
+                    l_PlayerStats = JsonConvert.DeserializeObject<PlayerStatsFormat>(l_SR.ReadToEnd());
                 }
                 catch (Exception) /// file format is wrong / there isn't any file.
                 {
