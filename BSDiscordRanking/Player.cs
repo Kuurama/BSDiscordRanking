@@ -1062,41 +1062,44 @@ namespace BSDiscordRanking
 
                         // Here set the global level
                         int l_Plastic = 0, l_Silver = 0, l_Gold = 0, l_Diamond = 0, l_Ruby = 0;
-                        switch (l_PassesPerLevel * 100 / l_NumberOfDifficulties)
+                        if (l_NumberOfDifficulties != 0)
                         {
-                            case 0:
+                            switch (l_PassesPerLevel * 100 / l_NumberOfDifficulties)
                             {
-                                break;
-                            }
-                            case < 25:
-                            {
-                                l_Plastic = 1;
-                                break;
-                            }
-                            case < 50:
-                            {
-                                l_Silver = 1;
-                                break;
-                            }
-                            case < 75:
-                            {
-                                l_Gold = 1;
-                                break;
-                            }
+                                case 0:
+                                {
+                                    break;
+                                }
+                                case < 25:
+                                {
+                                    l_Plastic = 1;
+                                    break;
+                                }
+                                case < 50:
+                                {
+                                    l_Silver = 1;
+                                    break;
+                                }
+                                case < 75:
+                                {
+                                    l_Gold = 1;
+                                    break;
+                                }
 
-                            case < 100:
-                            {
-                                l_Diamond = 1;
-                                break;
-                            }
+                                case < 100:
+                                {
+                                    l_Diamond = 1;
+                                    break;
+                                }
 
-                            case >= 100:
-                            {
-                                l_Ruby = 1;
-                                break;
+                                case >= 100:
+                                {
+                                    l_Ruby = 1;
+                                    break;
+                                }
                             }
                         }
-
+                        
                         Trophy l_Trophy = new Trophy
                         {
                             Plastic = l_Plastic,

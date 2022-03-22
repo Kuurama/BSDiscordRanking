@@ -92,24 +92,36 @@ namespace BSDiscordRanking.API
                 {
                     Console.WriteLine("Post submitted");
                 }
+                List<Tuple<int, ApiAccessHandler>> l_TupleFoundHandlers = new List<Tuple<int, ApiAccessHandler>>();
+                foreach (KeyValuePair<string, ApiAccessHandler> l_Handler in ApiAccessHandler.s_Handlers)
+                {
+                    if (l_Handler.Value.AccessRegex.IsMatch(l_Request.Url.AbsolutePath))
+                    {
+                        l_TupleFoundHandlers.Add(new Tuple<int, ApiAccessHandler>(l_Handler.Value.Priority, l_Handler.Value));
+                    }
+                }
 
-                ApiAccessHandler l_ApiAccessInstance = ApiAccessHandler.s_Handlers.Where(p_X => p_X.Value.AccessRegex.IsMatch(l_Request.Url.AbsolutePath)).Select(p_X => p_X.Value).SingleOrDefault();
+                ApiAccessHandler l_ApiAccessInstance = l_TupleFoundHandlers.Max()?.Item2;
 
                 if (l_ApiAccessInstance != null)
                 {
                     string l_Result = "";
                     string l_ErrorMessage = "";
-                    var l_Parameters = new List<string>(l_ApiAccessInstance.ParameterRegex.Split(l_Request.Url.LocalPath));
-                    if (l_Parameters.Count != 0)
+                    string l_UrlAccessMatch = l_Request.Url.LocalPath;
+                    l_UrlAccessMatch = l_ApiAccessInstance?.ParameterRegex.Match(l_Request.Url.LocalPath).Value;
+                    List<string> l_Parameters = null;
+                    if (!string.IsNullOrEmpty(l_UrlAccessMatch))
                     {
-                        l_Parameters.RemoveAt(0);
-                    }
+                        string l_TruncatedRequestURL = l_Request.Url.LocalPath.Replace(l_UrlAccessMatch, "");
 
-                    if (l_ApiAccessInstance.Call(l_Response, l_Parameters.ToArray(), out l_Result, out l_ErrorMessage))
+                        l_Parameters = Regex.Split(l_TruncatedRequestURL, "(?<=^[^\"]*(?:\"[^\"]*\"[^\"]*)*)/(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)").ToList();
+                    }
+                    l_Parameters?.RemoveAll(p_X => p_X == "");
+
+                    if (l_ApiAccessInstance.Call(l_Response, l_Parameters?.ToArray(), out l_Result, out l_ErrorMessage))
                     {
                         l_PageData = l_Result;
                         l_IsAuthorised = true;
-                        
                     }
                     else
                     {
