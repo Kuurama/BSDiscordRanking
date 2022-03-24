@@ -174,6 +174,7 @@ namespace BSDiscordRanking.Controllers
                             {
                                 Type = m_LeaderboardType,
                                 Name = m_PointName,
+                                Page = "full",
                                 Leaderboard = new List<RankedPlayer>
                                 {
                                     new RankedPlayer
@@ -204,6 +205,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         Type = m_LeaderboardType,
                         Name = m_PointName,
+                        Page = "full",
                         Leaderboard = new List<RankedPlayer>
                         {
                             new RankedPlayer

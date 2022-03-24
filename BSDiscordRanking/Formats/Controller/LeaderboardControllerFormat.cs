@@ -7,6 +7,7 @@ namespace BSDiscordRanking.Formats.Controller
     {
         public string Type { get; set; }
         public string Name { get; set; }
+        public string Page { get; set; }
         public List<RankedPlayer> Leaderboard { get; set; }
     }
 

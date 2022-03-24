@@ -18,7 +18,7 @@ namespace BSDiscordRanking.API
                 case null:
                     return null;
                 case "acc":
-                    
+
                     l_LeaderboardController = new AccLeaderboardController();
                     break;
                 case "pass":
@@ -30,14 +30,14 @@ namespace BSDiscordRanking.API
 
             l_LeaderboardController.m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
 
-            
+
             if (int.TryParse(p_PageOrFull, out int l_Page))
             {
                 if (l_Page <= 0) return null;
-               
+
                 List<RankedPlayer> l_LeaderboardByPage = new List<RankedPlayer>();
                 bool l_PageExist = false;
-                
+
                 for (int l_Index = (l_Page - 1) * 10; l_Index < (l_Page - 1) * 10 + 10; l_Index++)
                     try
                     {
@@ -52,8 +52,9 @@ namespace BSDiscordRanking.API
                         // ignored
                     }
 
-                return l_PageExist ? JsonConvert.SerializeObject(new LeaderboardControllerFormat(){Type = l_LeaderboardController.m_Leaderboard.Type,Name = l_LeaderboardController.m_Leaderboard.Name, Leaderboard = l_LeaderboardByPage}
-                ) : null;
+                return l_PageExist
+                    ? JsonConvert.SerializeObject(new LeaderboardControllerFormat() { Type = l_LeaderboardController.m_Leaderboard.Type, Name = l_LeaderboardController.m_Leaderboard.Name, Page = p_PageOrFull, Leaderboard = l_LeaderboardByPage })
+                    : null;
             }
 
             return p_PageOrFull is "full" ? JsonConvert.SerializeObject(l_LeaderboardController.m_Leaderboard) : null;
