@@ -18,6 +18,12 @@ namespace BSDiscordRanking.Controllers
             m_LeaderboardType = LEADERBOARD_TYPE;
             m_PointName = s_PointName;
             LoadLeaderboard();
+            if (m_Leaderboard.Type != m_LeaderboardType || m_Leaderboard.Name != m_PointName)
+            {
+                m_Leaderboard.Type = m_LeaderboardType;
+                m_Leaderboard.Name = m_PointName;
+                ReWriteLeaderboard();
+            }
         }
 
         public static async Task SendSnipeMessage(SocketCommandContext p_Context, SnipeFormat p_Snipe)

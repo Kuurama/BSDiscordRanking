@@ -92,6 +92,7 @@ namespace BSDiscordRanking.API
                 {
                     Console.WriteLine("Post submitted");
                 }
+                
                 List<Tuple<int, ApiAccessHandler>> l_TupleFoundHandlers = new List<Tuple<int, ApiAccessHandler>>();
                 foreach (KeyValuePair<string, ApiAccessHandler> l_Handler in ApiAccessHandler.s_Handlers)
                 {

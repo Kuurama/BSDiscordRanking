@@ -18,6 +18,7 @@ namespace BSDiscordRanking.API
                 case null:
                     return null;
                 case "acc":
+                    
                     l_LeaderboardController = new AccLeaderboardController();
                     break;
                 case "pass":
@@ -51,7 +52,8 @@ namespace BSDiscordRanking.API
                         // ignored
                     }
 
-                return l_PageExist ? JsonConvert.SerializeObject(l_LeaderboardByPage) : null;
+                return l_PageExist ? JsonConvert.SerializeObject(new LeaderboardControllerFormat(){Type = l_LeaderboardController.m_Leaderboard.Type,Name = l_LeaderboardController.m_Leaderboard.Name, Leaderboard = l_LeaderboardByPage}
+                ) : null;
             }
 
             return p_PageOrFull is "full" ? JsonConvert.SerializeObject(l_LeaderboardController.m_Leaderboard) : null;

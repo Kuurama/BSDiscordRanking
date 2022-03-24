@@ -20,11 +20,6 @@ namespace BSDiscordRanking.Controllers
         private int m_ErrorNumber;
         public LeaderboardControllerFormat m_Leaderboard;
 
-        protected PlayerLeaderboardController()
-        {
-            LoadLeaderboard();
-        }
-
         public SnipeFormat ManagePlayer(string p_Name, string p_ScoreSaberID, float p_Points, int p_Level, Trophy p_Trophy, bool p_PingToggle)
         {
             if (p_ScoreSaberID != null)
@@ -177,6 +172,8 @@ namespace BSDiscordRanking.Controllers
                         {
                             m_Leaderboard = new LeaderboardControllerFormat
                             {
+                                Type = m_LeaderboardType,
+                                Name = m_PointName,
                                 Leaderboard = new List<RankedPlayer>
                                 {
                                     new RankedPlayer
@@ -205,6 +202,8 @@ namespace BSDiscordRanking.Controllers
                 {
                     m_Leaderboard = new LeaderboardControllerFormat
                     {
+                        Type = m_LeaderboardType,
+                        Name = m_PointName,
                         Leaderboard = new List<RankedPlayer>
                         {
                             new RankedPlayer

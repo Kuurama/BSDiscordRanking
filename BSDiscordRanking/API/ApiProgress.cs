@@ -57,8 +57,8 @@ namespace BSDiscordRanking.API
                             l_ApiLevelPassed.Add(new ApiLevelPassed()
                             {
                                 LevelID = l_PlayerLevelStats.LevelID,
-                                NumberOfPass = l_PlayerLevelStats.NumberOfPass,
-                                TotalNumberOfMaps = l_PlayerLevelStats.TotalNumberOfMaps
+                                NumberOfPass = l_Category.NumberOfPass,
+                                TotalNumberOfMaps = l_Category.TotalNumberOfMaps
                             });
                         }
                     }
