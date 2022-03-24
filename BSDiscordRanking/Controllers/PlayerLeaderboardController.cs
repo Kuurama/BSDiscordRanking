@@ -16,6 +16,7 @@ namespace BSDiscordRanking.Controllers
         protected string m_Filename = @"Leaderboard";
         protected string m_LeaderboardType = "sample";
         protected string m_PointName = "Points";
+        private const int COUNT_PER_PAGE = 10;
         private const int ERROR_LIMIT = 3;
         private int m_ErrorNumber;
         public LeaderboardControllerFormat m_Leaderboard;
@@ -175,6 +176,8 @@ namespace BSDiscordRanking.Controllers
                                 Type = m_LeaderboardType,
                                 Name = m_PointName,
                                 Page = "full",
+                                MaxPage = 1,
+                                CountPerPage = COUNT_PER_PAGE,
                                 Leaderboard = new List<RankedPlayer>
                                 {
                                     new RankedPlayer
@@ -194,7 +197,6 @@ namespace BSDiscordRanking.Controllers
                             }
 
                             if (m_Leaderboard.Leaderboard is { Count: >= 2 }) m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.ScoreSaberID == null);
-
                             Console.WriteLine($"{m_LeaderboardType}Leaderboard Loaded and Sorted");
                         }
                     }
@@ -206,6 +208,8 @@ namespace BSDiscordRanking.Controllers
                         Type = m_LeaderboardType,
                         Name = m_PointName,
                         Page = "full",
+                        MaxPage = 1,
+                        CountPerPage = COUNT_PER_PAGE,
                         Leaderboard = new List<RankedPlayer>
                         {
                             new RankedPlayer
@@ -239,6 +243,13 @@ namespace BSDiscordRanking.Controllers
                         if (m_Leaderboard.Leaderboard.Count > 0)
                         {
                             m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
+                            m_Leaderboard.MaxPage = m_Leaderboard.Leaderboard.Count / 10;
+                            if (m_Leaderboard.MaxPage == 0)
+                            {
+                                m_Leaderboard.MaxPage = 1;
+                            }
+                            m_Leaderboard.CountPerPage = COUNT_PER_PAGE;
+
                             File.WriteAllText($"{PATH}{m_Filename}.json", JsonSerializer.Serialize(m_Leaderboard));
                             Console.WriteLine($"{m_Filename}.json Updated and sorted ({m_Leaderboard.Leaderboard.Count} player in the leaderboard)");
                         }
