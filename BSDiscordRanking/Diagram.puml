@@ -195,6 +195,7 @@ package Formats{
     package ApiFormat{
     Class ApiOutputs
     Class BeatSaverFormat
+    Class PlayerApiOutputs
     }
     package ControllerFormat{
     Class ConfigFormat
@@ -214,6 +215,26 @@ package Formats{
     Class UserFormat
 }
 
+package Api{
+Class ApiAccessAttribute{}
+    Class WebApp{
+        Start()
+        Stop()
+        OnContext(HttpListenerContext)
+        
+        Partial Class WebApp(
+        
+           GetPlayerInfo()
+           GetProgress()
+           GetLeaderboards()
+           ScanPlayer()
+           GetPlaylist()
+           GetPlayerPlaylist()
+        
+        )
+    }
+}
+
 PlayerLeaderboard <-- AccLeaderboardController
 PlayerLeaderboard <-- PassLeaderboardController
 
@@ -225,8 +246,13 @@ ScoringTeamModule  ... "0..*" Player
 UserModule  ... "0..1" Player
 
 RankingTeamModule . "0..*" Level
-UserModule . "0..*" Level
+UserModule .. "0..*" Level
 Player . "0..*" Level
+
+WebApp . "0..1" Player
+WebApp .. "0..1" PassLeaderboardController
+WebApp .. "0..1" AccLeaderboardController
+WebApp .. "0..1" Level
 
 UserModule *- "0..*" MapLeaderboardController
 ScoringTeamModule *-  "0..*" MapLeaderboardController

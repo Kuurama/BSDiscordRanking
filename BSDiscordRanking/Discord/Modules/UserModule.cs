@@ -255,14 +255,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             int l_Rubys = 0;
 
             if (l_Player.m_PlayerStats.Levels is not null)
-                foreach (PassedLevel l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
+                foreach (CategoryPassed l_Category in l_Player.m_PlayerStats.Levels.SelectMany(p_PlayerStatsLevel => p_PlayerStatsLevel.Categories))
                 {
-                    l_PlayerStatsLevel.Trophy ??= new Trophy();
-                    l_Plastics += l_PlayerStatsLevel.Trophy.Plastic;
-                    l_Silvers += l_PlayerStatsLevel.Trophy.Silver;
-                    l_Golds += l_PlayerStatsLevel.Trophy.Gold;
-                    l_Diamonds += l_PlayerStatsLevel.Trophy.Diamond;
-                    l_Rubys += l_PlayerStatsLevel.Trophy.Ruby;
+                    l_Category.Trophy ??= new Trophy();
+                    l_Plastics += l_Category.Trophy.Plastic;
+                    l_Silvers += l_Category.Trophy.Silver;
+                    l_Golds += l_Category.Trophy.Gold;
+                    l_Diamonds += l_Category.Trophy.Diamond;
+                    l_Rubys += l_Category.Trophy.Ruby;
                 }
 
 
