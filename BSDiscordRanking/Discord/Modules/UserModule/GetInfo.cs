@@ -65,7 +65,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_EmbedBuilder.AddField(":warning: This map has been deleted from beatsaver", $"The mapper must have deleted the map (key doesn't exist anymore), consider removing that map: (key is {l_Map.key}).");
                         }
 
-
                         foreach (Difficulty l_MapDifficulty in l_SongFormat.difficulties)
                         {
                             if (l_EmbedBuilder.Fields.Count > 15)
@@ -84,6 +83,19 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             l_NewDiff = true;
                             l_EmbedBuilder.AddField(l_MapDifficulty.name, l_MapDifficulty.characteristic, true);
                             l_EmbedBuilder.AddField("Level", $"Lv.{l_MapLevelID}", true);
+                            List<MapPlayerScore> l_MapLeaderboard = new MapLeaderboardController(l_MapDifficulty.customData.leaderboardID).m_MapLeaderboard.scores;
+
+                            if (l_MapLeaderboard != null)
+                            {
+                                l_MapLeaderboard.RemoveAll(p_X => p_X.customData.isBanned || !p_X.customData.isBotRegistered || p_X.score.baseScore < l_MapDifficulty.customData.minScoreRequirement || p_X.score.modifiers.Contains("NF") || p_X.score.modifiers.Contains("NA") || p_X.score.modifiers.Contains("SS") || p_X.score.modifiers.Contains("NB"));
+                            
+                                l_EmbedBuilder.AddField("Pass Count", l_MapLeaderboard.Count, true);
+                            }
+                            else
+                            {
+                                l_EmbedBuilder.AddField("Pass Count", 0, true);
+                            }
+
                             if (l_MapDifficulty.customData.category != null) l_EmbedBuilder.AddField("Category", l_MapDifficulty.customData.category, true);
 
                             if (l_MapDifficulty.customData.customCategoryInfo != null) l_EmbedBuilder.AddField("CustomCategoryInfo", l_MapDifficulty.customData.customCategoryInfo, true);

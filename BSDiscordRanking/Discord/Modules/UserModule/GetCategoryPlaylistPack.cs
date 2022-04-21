@@ -11,7 +11,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     public partial class UserModule : ModuleBase<SocketCommandContext>
     {
         [Command("getcategoryplaylistpack")]
-        [Alias("gcplp")]
+        [Alias("gcplp","getplaylistcategorypack","gpcp","gcpp")]
         [Summary("Sends the desired Level's playlist file. Use `all` instead of the level id to get the whole level folder. It can also sort by Category if you type it.")]
         public async Task GetCategoryPlaylistPack()
         {

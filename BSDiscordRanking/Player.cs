@@ -647,7 +647,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public async Task<NumberOfPassTypeFormat> FetchPass(SocketCommandContext p_Context = null, bool p_IsBotRegistered = false, bool p_IsMapLeaderboardBanned = false)
+        public async Task<NumberOfPassTypeFormat> FetchPass(SocketCommandContext p_Context = null, bool p_IsBotRegistered = true, bool p_IsMapLeaderboardBanned = false)
         {
             if (m_PlayerID != null)
             {
@@ -983,7 +983,7 @@ namespace BSDiscordRanking
                                                                     isBotRegistered = p_IsBotRegistered
                                                                 },
                                                                 score = l_Score.score
-                                                            }, l_Difficulty.customData.AutoWeight);
+                                                            }, l_Difficulty.customData.AutoWeight, p_IsBotRegistered);
                                                         }
                                                         
 

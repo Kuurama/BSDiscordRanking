@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
-using BSDiscordRanking.Formats;
 using BSDiscordRanking.Formats.API;
 using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using Discord;
 using Discord.Commands;
 
-namespace BSDiscordRanking.Discord.Modules.AdminModule
+namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 {
     [PermissionHandler.RequirePermissionAttribute(PERMISSION)]
-    public partial class AdminModule : ModuleBase<SocketCommandContext>
+    public partial class RankingTeamModule : ModuleBase<SocketCommandContext>
     {
         [Command("checkallmaps")]
         [Summary("Check and show all deleted maps, or all maps in which their hash changed inside the ranking.")]

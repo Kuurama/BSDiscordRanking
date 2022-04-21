@@ -299,7 +299,7 @@ namespace BSDiscordRanking.Controllers
             }
         }
 
-        public bool ManagePlayerAndAutoWeightCheck(MapPlayerScore p_PlayerScore, float p_CustomDataAutoWeight)
+        public bool ManagePlayerAndAutoWeightCheck(MapPlayerScore p_PlayerScore, float p_CustomDataAutoWeight, bool p_IsBotRegistered)
         {
             /// This function Adds a player score to a map leaderboard, then return true if the autoweight need to be changed.
             if (p_PlayerScore != null)
@@ -310,7 +310,6 @@ namespace BSDiscordRanking.Controllers
                     ReWriteMapLeaderboard();
                     return true;
                 }
-
 
                 if (p_PlayerScore.score.baseScore > m_MapLeaderboard.info.maxScore)
                 {
@@ -344,7 +343,6 @@ namespace BSDiscordRanking.Controllers
                         m_MapLeaderboard.scores[l_I] = p_PlayerScore;
                         break;
                     }
-
 
                 if (l_NewPlayer) m_MapLeaderboard.scores.Add(p_PlayerScore);
 

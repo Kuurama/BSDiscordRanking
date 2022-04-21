@@ -70,7 +70,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             int l_OldPlayerLevel = l_Player.GetPlayerLevel(); /// By doing so, as a result => loadstats() inside too.
 
             bool l_FirsScan = l_Player.FetchScores(Context); /// FetchScore Return true if it's the first scan.
-            Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context);
+            Task<Player.NumberOfPassTypeFormat> l_FetchPass = l_Player.FetchPass(Context, p_IsBotRegistered: l_IsDiscordLinked);
             if (l_FetchPass.Result.newPass >= 1 || l_FetchPass.Result.updatedPass >= 1)
             {
                 if (l_IsDiscordLinked)
