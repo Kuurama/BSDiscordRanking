@@ -42,12 +42,25 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                 p_Characteristic = UserModule.UserModule.FirstCharacterToUpper(p_Characteristic);
                 p_DifficultyName = UserModule.UserModule.FirstCharacterToUpper(p_DifficultyName);
                 
-                // ReSharper disable once StringLiteralTypo
-                if (p_DifficultyName == "Expertplus")
+                switch (p_DifficultyName.ToLower())
                 {
-                    p_DifficultyName = "ExpertPlus";
+                    case "expertplus":
+                        p_DifficultyName = "ExpertPlus";
+                        break;
+                    case "expert":
+                        p_DifficultyName = "Expert";
+                        break;
+                    case "hard":
+                        p_DifficultyName = "Hard";
+                        break;
+                    case "normal":
+                        p_DifficultyName = "Normal";
+                        break;
+                    case "easy":
+                        p_DifficultyName = "Easy";
+                        break;
                 }
-                
+
                 switch (p_Characteristic)
                 {
                     // ReSharper disable once StringLiteralTypo
@@ -59,7 +72,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         p_Characteristic = "360Degree";
                         break;
                     // ReSharper disable once StringLiteralTypo
-                    case "Noarrows" or "Noarrow":
+                    case "Noarrows" or "Noarrow" or "noarrows" or "noarrow":
                         p_Characteristic = "NoArrows";
                         break;
                 }

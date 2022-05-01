@@ -56,7 +56,7 @@ namespace BSDiscordRanking.Controllers
 
         public static ConfigFormat GetConfig()
         {
-            if (m_ConfigFormat != DefaultConfig)
+            if (JsonConvert.SerializeObject(m_ConfigFormat) != JsonConvert.SerializeObject(DefaultConfig))
                 return m_ConfigFormat;
             return ReadConfig();
         }

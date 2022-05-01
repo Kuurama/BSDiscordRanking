@@ -31,7 +31,6 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             /// Else => is a correct score saber ID
 
             Player l_Player = new Player(p_DiscordOrScoreSaberID);
-            l_Player.LoadStats();
             if (l_Player.m_PlayerStats.IsFirstScan)
             {
                 await ReplyAsync("> :x: Sorry, but this ScoreSaber account isn't registered on the bot yet, !scan it first.");

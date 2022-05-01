@@ -1631,7 +1631,6 @@ namespace BSDiscordRanking
                         }
                     },
                     TotalNumberOfPass = new int(),
-                    PassPoints = new int(),
                     IsFirstScan = true
                 };
             }
@@ -1639,7 +1638,7 @@ namespace BSDiscordRanking
             return l_PlayerStats;
         }
 
-        public void LoadStats()
+        private void LoadStats()
         {
             m_PlayerStats = GetStaticStats(m_PlayerID);
         }

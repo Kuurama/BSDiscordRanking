@@ -90,7 +90,8 @@ namespace BSDiscordRanking.API
 
                 if (l_Request.HttpMethod == "POST" && l_Request.Url.AbsolutePath == "/submit") /// On POST request (Don't have any usage yet)
                 {
-                    Console.WriteLine("Post submitted");
+                    l_Response.Close();
+                    return;
                 }
                 
                 List<Tuple<int, ApiAccessHandler>> l_TupleFoundHandlers = new List<Tuple<int, ApiAccessHandler>>();
@@ -106,10 +107,7 @@ namespace BSDiscordRanking.API
 
                 if (l_ApiAccessInstance != null)
                 {
-                    string l_Result = "";
-                    string l_ErrorMessage = "";
-                    string l_UrlAccessMatch = l_Request.Url.LocalPath;
-                    l_UrlAccessMatch = l_ApiAccessInstance?.ParameterRegex.Match(l_Request.Url.LocalPath).Value;
+                    string l_UrlAccessMatch = l_ApiAccessInstance?.ParameterRegex.Match(l_Request.Url.LocalPath).Value;
                     List<string> l_Parameters = null;
                     if (!string.IsNullOrEmpty(l_UrlAccessMatch))
                     {
@@ -119,7 +117,7 @@ namespace BSDiscordRanking.API
                     }
                     l_Parameters?.RemoveAll(p_X => p_X == "");
 
-                    if (l_ApiAccessInstance.Call(l_Response, l_Parameters?.ToArray(), out l_Result, out l_ErrorMessage))
+                    if (l_ApiAccessInstance.Call(l_Response, l_Parameters?.ToArray(), out string l_Result, out string l_ErrorMessage))
                     {
                         l_PageData = l_Result;
                         l_IsAuthorised = true;

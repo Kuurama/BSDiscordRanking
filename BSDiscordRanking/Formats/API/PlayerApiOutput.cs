@@ -27,20 +27,4 @@ namespace BSDiscordRanking.Formats.API
         public Trophy Trophy { get; set; }
         public List<CustomApiPlayerCategory> Categories { get; set; }
     }
-
-    public class CustomApiPlayerCategory
-    {
-        private string m_Category;
-        public string Category
-        {
-            get => m_Category;
-            set => m_Category = string.IsNullOrEmpty(value) ? null : value;
-        }
-        
-        public int Level { get; set; }
-        public int MaxLevel { get; set; }
-        public int NumberOfPass { get; set; }
-        public int TotalNumberOfMaps { get; set; }
-        public Trophy Trophy { get; set; }
-    }
 }

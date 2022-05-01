@@ -12,8 +12,7 @@ namespace BSDiscordRanking.API
 {
     internal static partial class WebApp
     {
-        
-        [ApiAccessHandler("PlayerInfo",  @"\/player\/0*[1-9][0-9]*", @"\/player\/", 0)]
+        [ApiAccessHandler("PlayerInfo", @"\/player/data\/0*[1-9][0-9]*", @"\/player/data\/", 0)]
         public static string GetPlayerInfo(HttpListenerResponse p_Response, string p_PlayerID)
         {
             if (UserController.UserExist(p_PlayerID))
@@ -26,28 +25,37 @@ namespace BSDiscordRanking.API
             }
 
             Player l_Player = new Player(p_PlayerID);
-            int l_PlayerLevel = l_Player.GetPlayerLevel();
 
-            Trophy l_TotalTrophy = new Trophy
+            int l_PlayerLevel = l_Player.GetPlayerLevel();
+            Trophy l_TotalTrophy = GetTotalTrophy(l_Player.m_PlayerStats.Levels);
+            List<RankData> l_RankData = GetRankData(p_PlayerID, l_Player.m_PlayerStats);
+            List<CustomApiPlayerCategory> l_ApiPlayerCategories = GetPlayerCategoriesInfo(l_Player);
+            Color l_PlayerColor = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_PlayerLevel);
+
+            PlayerApiReworkOutput l_ApiReworkOutput = new PlayerApiReworkOutput()
             {
-                Plastic = 0,
-                Silver = 0,
-                Gold = 0,
-                Diamond = 0,
-                Ruby = 0
+                Id = p_PlayerID,
+                Name = l_Player.m_PlayerFull.name,
+                Country = l_Player.m_PlayerFull.country,
+                ProfilePicture = l_Player.m_PlayerFull.profilePicture,
+                ProfileColor = l_PlayerColor,
+                Badges = l_Player.m_PlayerFull.badges, // ScoreSaber Badges for now.
+                Trophy = l_TotalTrophy,
+                Level = l_PlayerLevel,
+                IsMapLeaderboardBanned = l_Player.m_PlayerStats.IsMapLeaderboardBanned,
+                IsScanBanned = l_Player.m_PlayerStats.IsScanBanned,
+                RankData = l_RankData,
+                CategoryData = l_ApiPlayerCategories
             };
-            foreach (PassedLevel l_PlayerStatsLevel in l_Player.m_PlayerStats.Levels)
-            {
-                l_PlayerStatsLevel.Trophy ??= new Trophy();
-                l_TotalTrophy.Plastic += l_PlayerStatsLevel.Trophy.Plastic;
-                l_TotalTrophy.Silver += l_PlayerStatsLevel.Trophy.Silver;
-                l_TotalTrophy.Gold += l_PlayerStatsLevel.Trophy.Gold;
-                l_TotalTrophy.Diamond += l_PlayerStatsLevel.Trophy.Diamond;
-                l_TotalTrophy.Ruby += l_PlayerStatsLevel.Trophy.Ruby;
-            }
+
+            return JsonConvert.SerializeObject(l_ApiReworkOutput);
+        }
+
+        private static List<CustomApiPlayerCategory> GetPlayerCategoriesInfo(Player p_Player)
+        {
             List<CustomApiPlayerCategory> l_ApiPlayerCategories = new List<CustomApiPlayerCategory>();
 
-            foreach (CategoryPassed l_LevelCategory in from l_Level in l_Player.m_PlayerStats.Levels
+            foreach (CategoryPassed l_LevelCategory in from l_Level in p_Player.m_PlayerStats.Levels
                      where l_Level.Categories != null
                      from l_LevelCategory
                          in l_Level.Categories
@@ -59,8 +67,8 @@ namespace BSDiscordRanking.API
                     l_ApiPlayerCategories.Add(new CustomApiPlayerCategory
                     {
                         Category = l_LevelCategory.Category,
-                        Level = l_Player.GetPlayerLevel(false, l_LevelCategory.Category),
-                        MaxLevel = l_Player.GetPlayerLevel(false, l_LevelCategory.Category, true),
+                        Level = p_Player.GetPlayerLevel(false, l_LevelCategory.Category),
+                        MaxLevel = p_Player.GetPlayerLevel(false, l_LevelCategory.Category, true),
                         NumberOfPass = l_LevelCategory.NumberOfPass,
                         TotalNumberOfMaps = l_LevelCategory.TotalNumberOfMaps,
                         Trophy = l_LevelCategory.Trophy
@@ -78,7 +86,37 @@ namespace BSDiscordRanking.API
                 }
             }
             l_ApiPlayerCategories.RemoveAll(p_X => string.IsNullOrEmpty(p_X.Category)); /// Small HardCodding of the "OnlyRankingByCategory".
+            return l_ApiPlayerCategories;
+        }
 
+        private static Trophy GetTotalTrophy(List<PassedLevel> p_PassedLevels)
+        {
+            Trophy l_TotalTrophy = new Trophy
+            {
+                Plastic = 0,
+                Silver = 0,
+                Gold = 0,
+                Diamond = 0,
+                Ruby = 0
+            };
+            if (p_PassedLevels is null) return l_TotalTrophy;
+            
+            foreach (CategoryPassed l_Category in p_PassedLevels.SelectMany(p_PlayerStatsLevel => p_PlayerStatsLevel.Categories))
+            {
+                l_Category.Trophy ??= new Trophy();
+                l_TotalTrophy.Plastic += l_Category.Trophy.Plastic;
+                l_TotalTrophy.Silver += l_Category.Trophy.Silver;
+                l_TotalTrophy.Gold += l_Category.Trophy.Gold;
+                l_TotalTrophy.Diamond += l_Category.Trophy.Diamond;
+                l_TotalTrophy.Ruby += l_Category.Trophy.Ruby;
+            }
+            return l_TotalTrophy;
+        }
+
+        private static List<RankData> GetRankData(string p_PlayerID, PlayerStatsFormat p_PlayerStats)
+        {
+            List<RankData> l_RankData = new List<RankData>();
+            
             int l_PassFindIndex = -1;
             PassLeaderboardController l_PassLeaderboardController = null;
             bool l_IsAccLeaderboardBan = false;
@@ -101,57 +139,54 @@ namespace BSDiscordRanking.API
                 l_AccFindIndex = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_PlayerID);
             }
             
-            Color l_PlayerColor = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_PlayerLevel);
-
-            int l_PassRank = 0, l_AccRank = 0;
-
             if (s_Config.EnablePassBasedLeaderboard && l_PassLeaderboardController is not null && !l_IsPassLeaderboardBan)
             {
                 if (l_PassFindIndex == -1)
-                    l_PassRank = 0;
-
+                {
+                    l_RankData.Add(new RankData()
+                    {
+                        PointsType = "pass",
+                        PointsName = s_Config.PassPointsName,
+                        Points = 0,
+                        Rank = 0
+                    });
+                }
                 else
-                    l_PassRank = l_PassFindIndex + 1;
-            }
-            else if (l_IsPassLeaderboardBan)
-            {
-                l_PassRank = -1;
+                {
+                    l_RankData.Add(new RankData()
+                    {
+                        PointsType = "pass",
+                        PointsName = s_Config.PassPointsName,
+                        Points = p_PlayerStats.PassPoints,
+                        Rank = l_PassFindIndex + 1
+                    });
+                }
             }
 
             if (s_Config.EnableAccBasedLeaderboard && l_AccLeaderboardController is not null && !l_IsAccLeaderboardBan)
             {
                 if (l_AccFindIndex == -1)
-                    l_AccRank = 0;
-
-                else
-                    l_AccRank = l_AccFindIndex + 1;
-            }
-            else if (l_IsAccLeaderboardBan)
-            {
-                l_AccRank = -1;
-            }
-
-
-            l_Player.m_PlayerStats.Levels = null; /// Because those are useless info to send.
-
-            PlayerApiOutput l_PlayerApiOutput = new PlayerApiOutput()
-            {
-                PlayerFull = l_Player.m_PlayerFull,
-                PlayerStats = l_Player.m_PlayerStats,
-                CustomData = new CustomApiPlayer()
                 {
-                    PassPointsName = s_Config.PassPointsName,
-                    AccPointsName = s_Config.AccPointsName,
-                    Level = l_PlayerLevel,
-                    ProfileColor = l_PlayerColor,
-                    PassRank = l_PassRank,
-                    AccRank = l_AccRank,
-                    Trophy = l_TotalTrophy,
-                    Categories = l_ApiPlayerCategories
+                    l_RankData.Add(new RankData()
+                    {
+                        PointsType = "acc",
+                        PointsName = s_Config.AccPointsName,
+                        Points = 0,
+                        Rank = 0
+                    });
                 }
-            };
-
-            return JsonConvert.SerializeObject(l_PlayerApiOutput);
+                else
+                {
+                    l_RankData.Add(new RankData()
+                    {
+                        PointsType = "acc",
+                        PointsName = s_Config.AccPointsName,
+                        Points = p_PlayerStats.AccPoints,
+                        Rank = l_AccFindIndex + 1
+                    });
+                }
+            }
+            return l_RankData;
         }
     }
 }

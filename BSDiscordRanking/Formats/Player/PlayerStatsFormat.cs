@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using BSDiscordRanking.Formats.API;
 
 namespace BSDiscordRanking.Formats.Player
 {
@@ -9,7 +10,7 @@ namespace BSDiscordRanking.Formats.Player
 
         public float PassPoints { get; set; }
         public float AccPoints { get; set; }
-
+        public List<ApiBadge> Badges { get; set; }
         public bool IsFirstScan { get; set; }
         public bool IsMapLeaderboardBanned { get; set; }
         public bool IsScanBanned { get; set; }

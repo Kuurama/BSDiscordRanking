@@ -18,7 +18,6 @@ namespace BSDiscordRanking.API
                 case null:
                     return null;
                 case "acc":
-
                     l_LeaderboardController = new AccLeaderboardController();
                     break;
                 case "pass":
