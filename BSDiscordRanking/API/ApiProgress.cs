@@ -10,7 +10,7 @@ namespace BSDiscordRanking.API
 {
     internal static partial class WebApp
     {
-        [ApiAccessHandler("Progress", @"\/progress\/{0,1}", @"\/progress\/", 0)]
+        [ApiAccessHandler("Progress", @"\/player/progress\/{0,1}", @"\/player/progress\/", 0)]
         public static string GetProgress(HttpListenerResponse p_Response, string p_PlayerID, string p_Category = null)
         {
             if (UserController.UserExist(p_PlayerID))
