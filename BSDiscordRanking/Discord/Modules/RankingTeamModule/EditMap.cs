@@ -32,6 +32,44 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
             if (Context != null) Program.m_TempGlobalGuildID = Context.Guild.Id;
 
+            p_Characteristic = UserModule.UserModule.FirstCharacterToUpper(p_Characteristic);
+            p_DifficultyName = UserModule.UserModule.FirstCharacterToUpper(p_DifficultyName);
+
+            switch (p_DifficultyName.ToLower())
+            {
+                case "expertplus":
+                    p_DifficultyName = "ExpertPlus";
+                    break;
+                case "expert":
+                    p_DifficultyName = "Expert";
+                    break;
+                case "hard":
+                    p_DifficultyName = "Hard";
+                    break;
+                case "normal":
+                    p_DifficultyName = "Normal";
+                    break;
+                case "easy":
+                    p_DifficultyName = "Easy";
+                    break;
+            }
+
+            switch (p_Characteristic)
+            {
+                // ReSharper disable once StringLiteralTypo
+                case "90degree" or "90degres" or "90degre":
+                    p_Characteristic = "90Degree";
+                    break;
+                // ReSharper disable once StringLiteralTypo
+                case "360degree" or "360degres" or "360degre":
+                    p_Characteristic = "360Degree";
+                    break;
+                // ReSharper disable once StringLiteralTypo
+                case "Noarrows" or "Noarrow" or "noarrows" or "noarrow":
+                    p_Characteristic = "NoArrows";
+                    break;
+            }
+
             bool l_MapDeleted = false, l_MapHashChanged = false;
             BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode);
             if (l_Map is null)
@@ -106,6 +144,17 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                     l_EmbedBuilder.AddField("Admin Confirmation", l_LevelDiff.customData.adminConfirmationOnPass.ToString(), true);
 
+                                    if ((p_NewName ?? l_LevelSong.name).Length > 255)
+                                    {
+                                        if (string.IsNullOrEmpty(p_NewName))
+                                        {
+                                            l_LevelSong.name = l_LevelSong.name.Substring(0, 252) + "...";
+                                        }
+                                        else
+                                        {
+                                            p_NewName =  p_NewName.Substring(0, 252) + "...";
+                                        }
+                                    }
                                     l_EmbedBuilder.WithTitle(p_NewName ?? l_LevelSong.name);
 
                                     if (!l_MapDeleted && !l_MapHashChanged)
@@ -115,11 +164,38 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                     }
                                     else if (l_MapDeleted)
                                     {
-                                        l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} - :warning: This map has been deleted from beatsaver: The mapper must have deleted the map (key doesn't exist anymore), consider removing that map.");
+                                        string l_Comment = $"- :warning: This map has been deleted from beatsaver: The mapper must have deleted the map (key doesn't exist anymore), consider removing that map.";
+                                        int l_TotalLength = (p_NewName ?? l_LevelSong.name).Length + l_Comment.Length;
+                                        if (l_TotalLength > 255)
+                                        {
+                                            if (string.IsNullOrEmpty(p_NewName))
+                                            {
+                                                l_LevelSong.name = l_LevelSong.name.Substring(0, 252 - l_Comment.Length) + "...";
+                                            }
+                                            else
+                                            {
+                                                p_NewName =  p_NewName.Substring(0, 252- l_Comment.Length) + "...";
+                                            }
+                                        }
+                                        l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name}  {l_Comment}");
                                     }
                                     else /// Map hash changed
                                     {
-                                        l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} - :warning: Map hash changed: The mapper must have changed the currently uploaded map, consider removing it or updating the hash if the map still look fine enough for your ranking.");
+                                        string l_Comment = $"- :warning: Map hash changed: The mapper must have changed the currently uploaded map, consider removing it or updating the hash if the map still look fine enough for your ranking.";
+                                        int l_TotalLength = (p_NewName ?? l_LevelSong.name).Length + l_Comment.Length;
+                                        if (l_TotalLength > 255)
+                                        {
+                                            if (string.IsNullOrEmpty(p_NewName))
+                                            {
+                                                l_LevelSong.name = l_LevelSong.name.Substring(0, 252 - l_Comment.Length) + "...";
+                                            }
+                                            else
+                                            {
+                                                p_NewName =  p_NewName.Substring(0, 252 - l_Comment.Length) + "...";
+                                            }
+                                        }
+                                        Console.WriteLine($"{p_NewName ?? l_LevelSong.name} {l_Comment}".Length);
+                                        l_EmbedBuilder.WithTitle($"{p_NewName ?? l_LevelSong.name} {l_Comment}");
                                     }
 
                                     EditMapFormat l_EditMapFormat = new EditMapFormat
@@ -390,7 +466,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                 else
                 {
-                    l_EmbedBuilder.WithTitle("Sorry this map's difficulty/characteristic isn't in any level.");
+                    l_EmbedBuilder.WithTitle($"Sorry this map's difficulty/characteristic => {p_DifficultyName}/{p_Characteristic} isn't in any level, maybe you meant searching for another difficulty?");
                     if (Context != null)
                         await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(),
                             components: new ComponentBuilder()
@@ -1006,7 +1082,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
             l_CurrentLevel.RemoveMap(p_EditMapFormat.BeatSaverFormat, p_EditMapFormat.SelectedDifficultyName, p_EditMapFormat.SelectedCharacteristic);
             return l_CurrentLevel.m_MapRemoved;
         }
-        
+
         private static bool UpdateHash(EditMapFormat p_EditMapFormat, int p_CurrentLevelID)
         {
             Level l_CurrentLevel = new Level(p_CurrentLevelID);

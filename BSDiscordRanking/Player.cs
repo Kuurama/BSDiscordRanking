@@ -485,7 +485,6 @@ namespace BSDiscordRanking
                 }
             }
         }
-
         private void ClearScore()
         {
             /// <summary>
@@ -985,7 +984,6 @@ namespace BSDiscordRanking
                                                                 score = l_Score.score
                                                             }, l_Difficulty.customData.AutoWeight, p_IsBotRegistered);
                                                         }
-                                                        
 
                                                         if (l_NeedNewAutoWeight && l_Difficulty.customData.levelWorth != 0)
                                                         {
@@ -1023,17 +1021,13 @@ namespace BSDiscordRanking
                                                                 l_PassWeightAlreadySet = true;
                                                             }
                                                         }
-
-                                                        switch (l_Config.PerPlaylistWeighting)
+                                                        
+                                                        if (l_Config.PerPlaylistWeighting)
                                                         {
-                                                            case true:
-                                                            {
-                                                                if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet) l_TotalAccPoints += (float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                            if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet) l_TotalAccPoints += (float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
 
-                                                                if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet) l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
+                                                            if (!l_Config.OnlyAutoWeightForPassLeaderboard && !l_PassWeightAlreadySet) l_TotalPassPoints += l_Config.PassPointMultiplier * l_Level.value.m_Level.customData.weighting;
 
-                                                                break;
-                                                            }
                                                         }
                                                     }
                                                 }
