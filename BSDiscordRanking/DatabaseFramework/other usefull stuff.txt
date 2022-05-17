@@ -1,0 +1,44 @@
+/// Create the character
+            var l_Character = DBCharacter.Instantiate(RealmServer.CharDB);
+            l_Character.AccountID   = Account.ID;
+            l_Character.Name        = l_Name;
+            l_Character.Faction     = p_Request.Faction;
+            l_Character.Class       = p_Request.Class;
+            l_Character.BaseFaceID  = p_Request.FaceID;
+            l_Character.Level       = RealmConfig.Instance.CharacterConfig.StartLevel;
+            l_Character.Money       = RealmConfig.Instance.CharacterConfig.StartMoney;
+            l_Character.CreateTime  = (uint)Common.Helper.Time.UnixTimeNow();
+            l_Character.MapID       = l_ClassTemplate.StartMap;
+            l_Character.ZoneID      = l_ClassTemplate.StartZone;
+            l_Character.X           = l_ClassTemplate.StartX;
+            l_Character.Y           = l_ClassTemplate.StartY;
+            l_Character.Z           = l_ClassTemplate.StartZ;
+            l_Character.O           = l_ClassTemplate.StartO;
+
+            /// Insert the character
+            l_Character.Insert();
+
+
+/////////////////////////////////////////
+
+RealmServer.WorldDB = new Common.Database.Instance(
+                    Common.Configuration.Get<string>("WorldDatabase", "Host"),
+                    Common.Configuration.Get<int>   ("WorldDatabase", "Port"),
+                    Common.Configuration.Get<string>("WorldDatabase", "User"),
+                    Common.Configuration.Get<string>("WorldDatabase", "Pass"),
+                    Common.Configuration.Get<string>("WorldDatabase", "Name"),
+                    Common.Configuration.Get<string>("WorldDatabase", "Char"),
+                    Common.Configuration.Get<int>   ("WorldDatabase", "Pool", 1)
+                );
+
+
+////////////////////////////////////////
+
+[WorldDatabase]
+Host=127.0.0.1
+Port=3306
+User=root
+Pass=
+Name=pteureborn_world
+Char=utf8
+Pool=10 /// Pool étant le nombre de connection autorisé en simultané.
