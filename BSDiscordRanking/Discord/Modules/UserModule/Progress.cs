@@ -154,14 +154,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             if (l_PlayerStats.TotalNumberOfMaps > 0)
                             {
                                 if (l_Messages[l_MessagesIndex].Length +
-                                    $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps, 10)} {Math.Round(l_PlayerStats.NumberOfPass / (float)l_PlayerStats.TotalNumberOfMaps * 100.0f)}% ({l_PlayerStats.NumberOfPass}/{l_PlayerStats.TotalNumberOfMaps})  {GetTrophyString(false, l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps)}\n"
+                                    $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps, 10)} {Math.Round(l_PlayerStats.NumberOfPass / (float)l_PlayerStats.TotalNumberOfMaps * 100.0f)}% {GetTrophyString(false, l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps)} ({l_PlayerStats.NumberOfPass}/{l_PlayerStats.TotalNumberOfMaps})\n"
                                         .Length > 900)
                                     l_MessagesIndex++;
 
                                 if (l_Messages.Count < l_MessagesIndex + 1) l_Messages.Add(""); /// Initialize the next used index.
 
                                 l_Messages[l_MessagesIndex] +=
-                                    $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps, 10)} {Math.Round(l_PlayerStats.NumberOfPass / (float)l_PlayerStats.TotalNumberOfMaps * 100.0f)}% ({l_PlayerStats.NumberOfPass}/{l_PlayerStats.TotalNumberOfMaps})  {GetTrophyString(false, l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps)}" +
+                                    $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps, 10)} {Math.Round(l_PlayerStats.NumberOfPass / (float)l_PlayerStats.TotalNumberOfMaps * 100.0f)}% {GetTrophyString(false, l_PlayerStats.NumberOfPass, l_PlayerStats.TotalNumberOfMaps)} ({l_PlayerStats.NumberOfPass}/{l_PlayerStats.TotalNumberOfMaps})" +
                                     Environment.NewLine;
                             }
                         }
@@ -173,11 +173,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 if (l_AvailableCategories.FindIndex(p_Y => p_Y == l_Category.Category) < 0) l_AvailableCategories.Add(l_Category.Category);
                                 if (l_Category.Category == p_Category && l_Category.TotalNumberOfMaps > 0)
                                 {
-                                    if (l_Messages[l_MessagesIndex].Length + $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_Category.NumberOfPass, l_Category.TotalNumberOfMaps, 10)} {Math.Round(l_Category.NumberOfPass / (float)l_Category.TotalNumberOfMaps * 100.0f)}% ({l_Category.NumberOfPass}/{l_Category.TotalNumberOfMaps})  {GetTrophyString(false, l_Category.NumberOfPass, l_Category.TotalNumberOfMaps)}\n".Length > 900) l_MessagesIndex++;
+                                    if (l_Messages[l_MessagesIndex].Length + $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_Category.NumberOfPass, l_Category.TotalNumberOfMaps, 10)} {Math.Round(l_Category.NumberOfPass / (float)l_Category.TotalNumberOfMaps * 100.0f)}% {GetTrophyString(false, l_Category.NumberOfPass, l_Category.TotalNumberOfMaps)} ({l_Category.NumberOfPass}/{l_Category.TotalNumberOfMaps})\n".Length > 900) l_MessagesIndex++;
 
                                     if (l_Messages.Count < l_MessagesIndex + 1) l_Messages.Add(""); /// Initialize the next used index.
 
-                                    l_Messages[l_MessagesIndex] += $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_Category.NumberOfPass, l_Category.TotalNumberOfMaps, 10)} {Math.Round(l_Category.NumberOfPass / (float)l_Category.TotalNumberOfMaps * 100.0f)}% ({l_Category.NumberOfPass}/{l_Category.TotalNumberOfMaps})  {GetTrophyString(false, l_Category.NumberOfPass, l_Category.TotalNumberOfMaps)}" + Environment.NewLine;
+                                    l_Messages[l_MessagesIndex] += $"Level {l_PlayerStats.LevelID}: {GenerateProgressBar(l_Category.NumberOfPass, l_Category.TotalNumberOfMaps, 10)} {Math.Round(l_Category.NumberOfPass / (float)l_Category.TotalNumberOfMaps * 100.0f)}% {GetTrophyString(false, l_Category.NumberOfPass, l_Category.TotalNumberOfMaps)} ({l_Category.NumberOfPass}/{l_Category.TotalNumberOfMaps})" + Environment.NewLine;
                                 }
                             }
                         }

@@ -167,7 +167,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 });
                             bool l_AccWeightAlreadySet = false;
                             bool l_PassWeightAlreadySet = false;
-                            
+
                             if (l_SongDifficulty.customData.forceManualWeight)
                             {
                                 if (l_Config.AllowForceManualWeightForAccLeaderboard)
@@ -259,20 +259,20 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             case < 50:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Silver = 1;
-                                l_PlayerTrophy = "<:big_silver:916492243743932467>: ";
+                                l_PlayerTrophy = "<:big_silver:916492243743932467>";
                                 break;
                             }
                             case < 75:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Gold = 1;
-                                l_PlayerTrophy = "<:big_gold:916492277780709426>: ";
+                                l_PlayerTrophy = "<:big_gold:916492277780709426>";
                                 break;
                             }
 
                             case < 100:
                             {
                                 p_Player.m_PlayerStats.Levels[l_LevelIndex].Trophy.Diamond = 1;
-                                l_PlayerTrophy = "<:big_diamond:916492304108355685>: ";
+                                l_PlayerTrophy = "<:big_diamond:916492304108355685>";
                                 break;
                             }
 
@@ -284,10 +284,20 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             }
                         }
 
+                    ///Color l_CurrentLevelColor = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, p_Level);
+                    Color l_CurrentLevelColor = GetRoleColor(RoleController.ReadRolesDB().Roles, Context.Guild.Roles, p_Level);
                     if (l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
-                        l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+
+                        if (l_NumberOfPass == l_NumberOfDifficulties)
+                        {
+                            l_EmbedBuilder.WithColor(l_CurrentLevelColor);
+                        }
+                        else
+                        {
+                            l_EmbedBuilder.WithColor(new Color(0, 255, 0));
+                        }
                         if (!l_AlreadyHaveThumbnail)
                         {
                             l_EmbedBuilder.WithThumbnailUrl(p_Player.m_PlayerFull.profilePicture);
@@ -295,12 +305,20 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
 
                         l_EmbedBuilder.WithTitle(p_Category != null
-                            ? $"Passed maps in `{p_Category}` level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}"
-                            : $"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName} earned: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}"
+                            ? $"Passed maps in `{p_Category}` level {p_Level} ({ConfigController.GetConfig().PassPointsName}: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}"
+                            : $"Passed maps in level {p_Level} ({ConfigController.GetConfig().PassPointsName}: {l_EarnedPoints}/{l_MaxPassPoints:n2}) {l_PlayerTrophy}"
                         );
 
+                        GGPFormat l_GGP = null;
+                        if (l_NumberOfPass == l_NumberOfDifficulties)
+                        {
+                            l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, true, l_CurrentLevelColor) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, false, l_CurrentLevelColor);
+                        }
+                        else
+                        {
+                            l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, true, new Color(0, 255, 0)) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, false, new Color(0, 255, 0));
+                        }
 
-                        GGPFormat l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, true) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, true, false, false);
                         int l_EmbedIndex = 0;
                         if (l_GGP.Embed != null)
                             foreach (Embed l_Embed in l_GGP.Embed)
@@ -329,11 +347,14 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     List<string> l_Messages = new List<string> {""}; /// Reset the Message between Passed and Unpassed maps
 
+
                     if (l_NumberOfDifficulties - l_NumberOfPass > 0)
                     {
                         EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
 
-                        l_EmbedBuilder.WithColor(new Color(255, 0, 0));
+                        /// making the color of the unpassed embed in ggp the same as the level color
+                        // l_EmbedBuilder.WithColor(new Color(255, 0, 0));
+                        l_EmbedBuilder.WithColor(l_CurrentLevelColor);
                         if (!l_AlreadyHaveThumbnail && p_Player.m_PlayerFull != null)
                         {
                             l_EmbedBuilder.WithThumbnailUrl(p_Player.m_PlayerFull.profilePicture);
@@ -344,7 +365,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             ? $"Unpassed maps in `{p_Category}` level {p_Level}"
                             : $"Unpassed maps in level {p_Level}");
 
-                        GGPFormat l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true, true) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true, false);
+                        GGPFormat l_GGP = p_Category != null ? await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true, true, l_CurrentLevelColor) : await BuildGGP(l_PlayerPassFormat, l_EmbedBuilder, p_FullEmbeddedGGP, false, true, false, l_CurrentLevelColor);
 
                         int l_EmbedIndex = 0;
                         if (l_GGP.Embed != null)
@@ -390,7 +411,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         }
 
 #pragma warning disable 1998
-        private static async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory, bool p_DisplayCustomCategoryInfo)
+        private static async Task<GGPFormat> BuildGGP(PlayerPassFormat p_PlayerPassFormat, EmbedBuilder p_EmbedBuilder, bool p_FullEmbeddedGGP, bool p_OnlySendPasses, bool p_DisplayCategory, bool p_DisplayCustomCategoryInfo, Color p_Color)
 #pragma warning restore 1998
         {
             int l_Y = 0;
@@ -439,7 +460,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         p_EmbedBuilder.WithDescription(l_LastMessage);
                         l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
-                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        p_EmbedBuilder.WithColor(p_Color);
                         l_LastMessage = "";
                         l_Messages[^1] = l_Messages[^1].Insert(0, $"**{l_Category} maps:**\n\n");
                         l_CurrentCategory = l_Category;
@@ -485,7 +506,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
 
-                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        p_EmbedBuilder.WithColor(p_Color);
                         l_NumbedOfEmbed++;
                     }
                 }
@@ -498,7 +519,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_Messages.Add(""); /// Initialize the next used index.
                         l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
-                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        p_EmbedBuilder.WithColor(p_Color);
                     }
                     else if (p_EmbedBuilder.Fields.Count >= 22)
                     {
@@ -506,7 +527,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         l_Messages.Add(""); /// Initialize the next used index.
                         l_EmbedBuiltList.Add(p_EmbedBuilder.Build());
                         p_EmbedBuilder = new EmbedBuilder();
-                        p_EmbedBuilder.WithColor(l_Diff.Score != 0 ? new Color(0, 255, 0) : new Color(255, 0, 0));
+                        p_EmbedBuilder.WithColor(p_Color);
                     }
 
                     l_Messages[^1] += $"***`{l_Map.name.Replace("`", @"\`").Replace("*", @"\*")}`***";

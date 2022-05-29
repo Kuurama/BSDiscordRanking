@@ -254,16 +254,28 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             int l_Diamonds = 0;
             int l_Rubys = 0;
 
+
             if (l_Player.m_PlayerStats.Levels is not null)
-                foreach (CategoryPassed l_Category in l_Player.m_PlayerStats.Levels.SelectMany(p_PlayerStatsLevel => p_PlayerStatsLevel.Categories))
-                {
-                    l_Category.Trophy ??= new Trophy();
-                    l_Plastics += l_Category.Trophy.Plastic;
-                    l_Silvers += l_Category.Trophy.Silver;
-                    l_Golds += l_Category.Trophy.Gold;
-                    l_Diamonds += l_Category.Trophy.Diamond;
-                    l_Rubys += l_Category.Trophy.Ruby;
-                }
+                if (l_Config.EnableLevelByCategory)
+                    foreach (CategoryPassed l_Category in l_Player.m_PlayerStats.Levels.SelectMany(p_PlayerStatsLevel => p_PlayerStatsLevel.Categories))
+                    {
+                        l_Category.Trophy ??= new Trophy();
+                        l_Plastics += l_Category.Trophy.Plastic;
+                        l_Silvers += l_Category.Trophy.Silver;
+                        l_Golds += l_Category.Trophy.Gold;
+                        l_Diamonds += l_Category.Trophy.Diamond;
+                        l_Rubys += l_Category.Trophy.Ruby;
+                    }
+                else
+                    foreach (PassedLevel l_PassedLevel in l_Player.m_PlayerStats.Levels)
+                    {
+                        l_PassedLevel.Trophy ??= new Trophy();
+                        l_Plastics += l_PassedLevel.Trophy.Plastic;
+                        l_Silvers += l_PassedLevel.Trophy.Silver;
+                        l_Golds += l_PassedLevel.Trophy.Gold;
+                        l_Diamonds += l_PassedLevel.Trophy.Diamond;
+                        l_Rubys += l_PassedLevel.Trophy.Ruby;
+                    }
 
 
             int l_PassFindIndex = -1;
@@ -425,7 +437,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         {
             Color l_Color = Color.Default;
             if (p_RoleList == null) return l_Color;
-            
+
             if (p_Roles == null)
             {
                 foreach (RoleFormat l_Role in p_RoleList)
@@ -450,16 +462,16 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 if (l_Role.RoleColor != l_UserRole.Color)
                                 {
                                     l_Role.RoleColor = l_UserRole.Color;
-                                    RoleController.StaticWriteRolesDB(new RolesFormat(){Roles = p_RoleList});
+                                    RoleController.StaticWriteRolesDB(new RolesFormat() { Roles = p_RoleList });
                                 }
                                 return l_UserRole.Color;
                             }
                     }
             }
-            
+
             return l_Color;
         }
-        
+
         public static Color GetRoleColorFromDatabase(List<RoleFormat> p_RoleList, IEnumerable<SocketRole> p_Roles, int p_Level, ulong p_RoleID = default(ulong))
         {
             Color l_Color = Color.Default;

@@ -41,7 +41,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                 p_Characteristic = UserModule.UserModule.FirstCharacterToUpper(p_Characteristic);
                 p_DifficultyName = UserModule.UserModule.FirstCharacterToUpper(p_DifficultyName);
-                
+
                 switch (p_DifficultyName.ToLower())
                 {
                     case "expertplus":
@@ -83,6 +83,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                     {
                         Level l_Level = new Level(p_Level);
                         BeatSaverFormat l_Map = Level.FetchBeatMap(p_BSRCode, Context);
+                        if (l_Map is null)
+                        {
+                            return;
+                        }
                         int l_NumberOfNote = 0;
                         bool l_DiffExist = false;
                         foreach (Diff l_Diff in l_Map.versions[^1].diffs)
@@ -107,7 +111,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                     l_EmbedBuilder.AddField("Level:", p_Level, true);
 
                                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
-                                    
+
                                     if (Math.Abs(p_MinPercentageRequirement - default(float)) > 0.01)
                                         l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})");
 
@@ -147,7 +151,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 l_EmbedBuilder.WithDescription(l_Map.name);
                                 l_EmbedBuilder.AddField("Difficulty:", p_Characteristic + " - " + p_DifficultyName, true);
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
-                                
+
                                 if (l_MapExistCheck.DifferentMinScore)
                                     l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({AdminModule.AdminModule.ScoreFromAcc(p_MinPercentageRequirement, l_NumberOfNote)})");
 
@@ -174,8 +178,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 l_EmbedBuilder.WithThumbnailUrl($"https://cdn.beatsaver.com/{l_Map.versions[^1].hash.ToLower()}.jpg");
                                 l_EmbedBuilder.WithColor(Color.Blue);
                                 await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
-                                
-                                
+
+
                             }
                             else
                             {

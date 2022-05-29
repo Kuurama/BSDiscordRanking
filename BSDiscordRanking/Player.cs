@@ -508,11 +508,11 @@ namespace BSDiscordRanking
             /// This Method Check if the Score Saber's API return "hey",
             ///
             /// It return True is the Global API is UP, and false if it's Down
-            /// 
+            ///
             /// It is usefull as we can tell if score saber changed it's API => that Method is called
             /// When there is a request error from the checkScore method, if score saber API is up => API thingy we use changed,
             /// if it's down => internet is prob dead (or API total shutdown).
-            /// 
+            ///
             /// </summary>
 
             using (WebClient l_WebClient = new WebClient())
@@ -701,7 +701,7 @@ namespace BSDiscordRanking
                         foreach (SongFormat l_Song in l_Level.value.m_Level.songs)
                         {
                             foreach (ApiPlayerScore l_Score in m_PlayerScoreCollection.playerScores)
-                                if (!l_Score.score.modifiers.Contains("NF") && !l_Score.score.modifiers.Contains("NA") && !l_Score.score.modifiers.Contains("SS") && !l_Score.score.modifiers.Contains("NB"))
+                                if (l_Score.score.baseScore > 0 && !l_Score.score.modifiers.Contains("NF") && !l_Score.score.modifiers.Contains("NA") && !l_Score.score.modifiers.Contains("SS") && !l_Score.score.modifiers.Contains("NB"))
                                 {
                                     bool l_ScoreDeleted = false;
                                     if (string.Equals(l_Song.hash, l_Score.leaderboard.songHash, StringComparison.CurrentCultureIgnoreCase))
@@ -1093,7 +1093,7 @@ namespace BSDiscordRanking
                                 }
                             }
                         }
-                        
+
                         Trophy l_Trophy = new Trophy
                         {
                             Plastic = l_Plastic,
@@ -1163,9 +1163,9 @@ namespace BSDiscordRanking
                     ReWriteStats();
                     ReWriteScore();
                     ReWritePass();
-                    
+
                     Color l_Color;
-                    
+
                     if (p_Context != null)
                     {
                         l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, l_OldPlayerLevel);
@@ -1174,7 +1174,7 @@ namespace BSDiscordRanking
                     {
                         l_Color = Color.Default;
                     }
-                    
+
 
                     bool l_IsFirstMessage = true;
                     if (l_FetchPassFormat.newPass.Count > 0)
