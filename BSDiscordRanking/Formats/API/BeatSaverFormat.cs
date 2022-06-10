@@ -49,7 +49,6 @@ namespace BSDiscordRanking.Formats.API
         public string hash { get; set; }
         public string key { get; set; }
 
-        /// This field seems to not exist on newest uploaded maps
         public string state { get; set; }
 
         public string createdAt { get; set; }
@@ -78,6 +77,7 @@ namespace BSDiscordRanking.Formats.API
         public bool cinema { get; set; }
         public float seconds { get; set; }
         public ParitySummary paritySummary { get; set; }
+        public int maxScore { get; set; }
     }
 
     public class ParitySummary

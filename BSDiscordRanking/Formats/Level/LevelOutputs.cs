@@ -86,7 +86,6 @@ namespace BSDiscordRanking.Formats.Level
             set => m_CustomCategoryInfo = string.IsNullOrEmpty(value) ? null : value;
         }
 
-        public int noteCount { get; set; }
         public int maxScore { get; set; }
         public bool forceManualWeight { get; set; }
         public bool adminConfirmationOnPass { get; set; }

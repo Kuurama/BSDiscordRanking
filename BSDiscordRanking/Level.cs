@@ -276,7 +276,7 @@ namespace BSDiscordRanking
             }
         }
 
-        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_CustomCategoryInfo, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_NumberOfNote, bool p_AdminConfirmationOnPass, string p_Name = null, int p_LeaderboardID = default(int), bool p_UpdateMapHash = false)
+        public void AddMap(BeatSaverFormat p_BeatSaverMap, string p_SelectedDifficultyName, string p_SelectedCharacteristic, int p_MinScoreRequirement, string p_Category, string p_CustomCategoryInfo, string p_InfoOnGGP, string p_CustomPassText, bool p_ForceManualWeight, float p_Weighting, int p_MaxScore, bool p_AdminConfirmationOnPass, string p_Name = null, int p_LeaderboardID = default(int), bool p_UpdateMapHash = false)
         {
             /// <summary>
             /// This Method Add a Map to m_Level.songs (the Playlist), then Call the ReWritePlaylist(false) Method to update the file.
@@ -337,8 +337,7 @@ namespace BSDiscordRanking
                                     customPassText = p_CustomPassText,
                                     infoOnGGP = p_InfoOnGGP,
                                     forceManualWeight = p_ForceManualWeight,
-                                    noteCount = p_NumberOfNote,
-                                    maxScore = AdminModule.ScoreFromAcc(100f, p_NumberOfNote),
+                                    maxScore = p_MaxScore,
                                     adminConfirmationOnPass = p_AdminConfirmationOnPass
                                 }
                             };
@@ -354,11 +353,11 @@ namespace BSDiscordRanking
                                         foreach (Version l_BeatMapVersion in m_BeatSaver.versions)
                                             if (string.Equals(m_Level.songs[l_I].hash, l_BeatMapVersion.hash, StringComparison.CurrentCultureIgnoreCase) || string.Equals(m_Level.songs[l_I].key, m_BeatSaver.id, StringComparison.CurrentCultureIgnoreCase))
                                             {
-                                                
+
                                                 l_SongAlreadyExist = true;
                                                 break;
                                             }
-                                        
+
                                         if (l_SongAlreadyExist)
                                             break;
                                     }
@@ -479,7 +478,7 @@ namespace BSDiscordRanking
                     m_ErrorNumber++;
                     LoadLevel();
                     Console.WriteLine($"Trying to AddMap {p_BeatSaverMap.id}");
-                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_NumberOfNote, p_AdminConfirmationOnPass);
+                    AddMap(p_BeatSaverMap, p_SelectedDifficultyName, p_SelectedCharacteristic, p_MinScoreRequirement, p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weighting, p_MaxScore, p_AdminConfirmationOnPass);
                 }
             }
             else
@@ -602,7 +601,7 @@ namespace BSDiscordRanking
 
         private void ResetRetryNumber() ///< Concidering the instance is pretty much created for each command, this is useless in most case.
         {
-            /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.    
+            /// This Method Reset m_ErrorNumber to 0, because if that number exceed m_ErrorLimit, all the "dangerous" method will be locked.
             m_ErrorNumber = 0;
             Console.WriteLine("RetryNumber set to 0");
         }
