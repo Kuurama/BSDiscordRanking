@@ -24,6 +24,12 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 }
                 else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
                 {
+                    if (UserController.IsLinkBanned(p_DiscordOrScoreSaberID))
+                    {
+                        UserController.RemovePlayer(p_DiscordOrScoreSaberID);
+                        await ReplyAsync($"> :white_check_mark: This DiscordID link request had been reset to none!");
+                        return;
+                    }
                     await ReplyAsync("> :x: Sorry but this account isn't registered on the bot/wrong ScoreSaber ID, and as a result, can't be unlinked");
                     return;
                 }

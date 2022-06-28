@@ -59,10 +59,22 @@ namespace BSDiscordRanking.Controllers
             return true;
         }
 
-        public static void AddPlayer(string p_DisID, string p_ScoID)
+        public static void AddPlayer(string p_DisID, string p_ScoID, ELinkState p_LinkState = ELinkState.None)
         {
-            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = p_ScoID, PendingScoreSaberID = String.Empty, LinkState = ELinkState.None });
+            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = p_ScoID, PendingScoreSaberID = String.Empty, LinkState = p_LinkState });
             Console.WriteLine($"Player {p_DisID} was added with ScoreSaberID: {p_ScoID}");
+            GenerateDB();
+        }
+
+        public static ELinkState GetLinkState(string p_DisID)
+        {
+            return m_Users.Find(p_X => p_X.DiscordID == p_DisID)?.LinkState ?? ELinkState.None;
+        }
+
+        public static void AddLinkBannedPlayer(string p_DisID)
+        {
+            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = String.Empty, PendingScoreSaberID = String.Empty, LinkState = ELinkState.Banned });
+            Console.WriteLine($"DiscordID {p_DisID} was link banned.");
             GenerateDB();
         }
 
@@ -73,10 +85,56 @@ namespace BSDiscordRanking.Controllers
                 return false;
 
             l_User.ScoreSaberID = l_User.PendingScoreSaberID;
+            l_User.PendingScoreSaberID = null;
             l_User.LinkState = ELinkState.Verified;
             Console.WriteLine($"Player {p_DisID} was verified with ScoreSaberID: {l_User.ScoreSaberID}");
             GenerateDB();
             return true;
+        }
+
+
+        public static bool DenyVerifyPlayer(string p_DisID)
+        {
+            UserFormat l_User = m_Users.Find(p_X => p_X.DiscordID == p_DisID);
+            if (l_User == null)
+                return false;
+
+            l_User.PendingScoreSaberID = null;
+            l_User.LinkState = ELinkState.Denied;
+            Console.WriteLine($"Player {p_DisID} was denied with ScoreSaberID: {l_User.PendingScoreSaberID}");
+            GenerateDB();
+            return true;
+        }
+
+        public static bool BanVerifyPlayer(string p_DisID)
+        {
+            UserFormat l_User = m_Users.Find(p_X => p_X.DiscordID == p_DisID);
+            if (l_User == null)
+                return false;
+
+            l_User.PendingScoreSaberID = null;
+            l_User.LinkState = ELinkState.Banned;
+            Console.WriteLine($"Player {p_DisID} was link banned with ScoreSaberID: {l_User.PendingScoreSaberID}");
+            GenerateDB();
+            return true;
+        }
+
+        public static bool IsLinkDenied(string p_DisID)
+        {
+            UserFormat l_User = m_Users.Find(p_X => p_X.DiscordID == p_DisID);
+            if (l_User == null)
+                return false;
+
+            return l_User.LinkState == ELinkState.Denied;
+        }
+
+        public static bool IsLinkBanned(string p_DisID)
+        {
+            UserFormat l_User = m_Users.Find(p_X => p_X.DiscordID == p_DisID);
+            if (l_User == null)
+                return false;
+
+            return l_User.LinkState == ELinkState.Banned;
         }
 
         public static string GetPendingScoreSaberID(string p_DiscordID)
@@ -268,6 +326,11 @@ namespace BSDiscordRanking.Controllers
         {
             public bool Completed { get; set; }
             public bool RoleWasAlreadyGiven { get; set; }
+        }
+
+        public static bool IsPendingVerification(string p_DisID)
+        {
+            return (from l_User in m_Users where p_DisID == l_User.DiscordID select l_User.LinkState == ELinkState.Unverified).FirstOrDefault();
         }
     }
 }

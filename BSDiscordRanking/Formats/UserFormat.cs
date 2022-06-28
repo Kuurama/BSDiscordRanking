@@ -13,6 +13,7 @@
         None,
         Unverified,
         Verified,
+        Denied,
         Banned
     }
 }

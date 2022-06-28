@@ -9,7 +9,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Sends tips.")]
         public async Task SendTipsLVL9()
         {
-            await Context.Channel.SendMessageAsync("Here.. (take it, but it's secret) : ||http://prntscr.com/soylt9||");
+            await Context.Channel.SendMessageAsync("Here.. (take it, but it's secret) : ||https://youtu.be/JlqR_A2vGi8||");
         }
     }
 }

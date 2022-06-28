@@ -143,5 +143,36 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 if (l_Player.m_PlayerFull != null) await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s TotalBan preference has been changed from **{!l_Player.m_PlayerStats.IsScanBanned}** to **{l_Player.m_PlayerStats.IsScanBanned}**");
             }
         }
+
+        [Command("linkban")]
+        [Alias("banlink")]
+        [Summary("Prevent a discordID to link (act as a toggle).")]
+        public async Task LinkBan(string p_DiscordID = null)
+        {
+            if (ConfigController.m_ConfigFormat.EnableLinkVerificationSystem == false)
+            {
+                await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}scanban [DiscordOrScoreSaberID]`");
+                return;
+            }
+            if (string.IsNullOrEmpty(p_DiscordID))
+            {
+                await ReplyAsync($"> :x: Seems like you didn't used the command correctly, use: `{BotHandler.m_Prefix}scanban [DiscordOrScoreSaberID]`");
+                return;
+            }
+
+            if (UserController.IsLinkBanned(p_DiscordID))
+            {
+                UserController.RemovePlayer(p_DiscordID);
+                await ReplyAsync($"> {p_DiscordID}'s LinkBan has been changed from **true** to **false**");
+                return;
+            }
+
+            if (UserController.BanVerifyPlayer(p_DiscordID) == false)
+            {
+                UserController.AddLinkBannedPlayer(p_DiscordID);
+            }
+
+            await ReplyAsync($"> {p_DiscordID}'s LinkBan has been changed from **false** to **true**");
+        }
     }
 }

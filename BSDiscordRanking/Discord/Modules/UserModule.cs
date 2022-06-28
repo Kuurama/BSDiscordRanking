@@ -239,7 +239,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
             {
                 await ReplyAsync(p_IsSomeoneElse
-                    ? "> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID."
+                    ? "> :x: Sorry, this Discord User don't have any ScoreSaber account linked/isn't a correct ScoreSaberID."
                     : $"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
                 return;
             }

@@ -53,7 +53,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             }
             else if (!UserController.UserExist(p_DiscordOrScoreSaberID))
             {
-                await ReplyAsync("> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID.");
+                await ReplyAsync("> :x: Sorry, this Discord User don't have any ScoreSaber account linked/isn't a correct ScoreSaberID.");
                 return;
             }
 

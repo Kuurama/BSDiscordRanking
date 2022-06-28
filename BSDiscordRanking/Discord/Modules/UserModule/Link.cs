@@ -29,9 +29,25 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         if (ConfigController.m_ConfigFormat.LinkVerificationChannel != 0)
                         {
-                            UserController.AddPlayerNeedVerification(Context.User.Id.ToString(), p_ScoreSaberLink);
-                            LinkVerificationController.SendVerificationEmbed(Context, l_PlayerFull);
-                            await ReplyAsync($"> Your link request had been *submitted for verification*, you will be *notified* once approved or denied.");
+                            if (UserController.IsLinkBanned(Context.User.Id.ToString()))
+                            {
+                                await ReplyAsync("> :x: Sorry, but you are Banned from Linking through the bot.\nYou can still make an appeal to the moderators if needed, they will have to manually link your DiscordID to your ScoreSaberID.");
+                                return;
+                            }
+
+                            if (!UserController.IsPendingVerification(Context.User.Id.ToString()))
+                            {
+                                bool l_IsLinkDenied = UserController.IsLinkDenied(Context.User.Id.ToString());
+                                /// Make sure player don't duplicate.
+                                UserController.RemovePlayer(Context.User.Id.ToString());
+                                UserController.AddPlayerNeedVerification(Context.User.Id.ToString(), p_ScoreSaberLink);
+                                LinkVerificationController.SendVerificationEmbed(Context, l_PlayerFull, l_IsLinkDenied);
+                                await ReplyAsync($"> Your link request had been *submitted for verification*, you will be *notified* once approved or denied.");
+                            }
+                            else
+                            {
+                                await ReplyAsync("> :x: Sorry, but you are already pending verification.");
+                            }
                         }
                         else
                         {

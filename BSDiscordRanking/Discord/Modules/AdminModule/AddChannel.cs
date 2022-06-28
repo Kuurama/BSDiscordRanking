@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         public async Task AddChannel()
         {
             ConfigController.m_ConfigFormat.AuthorizedChannels ??= new List<ulong>();
-            if (ConfigController.m_ConfigFormat.AuthorizedChannels.Any(l_Channel => Context.Message.Channel.Id == l_Channel))
+            if (ConfigController.m_ConfigFormat.AuthorizedChannels.Any(p_Channel => Context.Message.Channel.Id == p_Channel))
             {
                 await ReplyAsync("> :x: Sorry, this channel can already be used for user commands");
                 return;
