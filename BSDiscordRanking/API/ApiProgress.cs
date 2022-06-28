@@ -17,7 +17,7 @@ namespace BSDiscordRanking.API
             {
                 p_PlayerID = UserController.GetPlayer(p_PlayerID);
             }
-            else if (!UserController.AccountExist(p_PlayerID) && !UserController.UserExist(p_PlayerID))
+            else if (!UserController.AccountExist(p_PlayerID, out _) && !UserController.UserExist(p_PlayerID))
             {
                 return null;
             }
@@ -36,7 +36,7 @@ namespace BSDiscordRanking.API
                         {
                             l_AvailableCategories.Add(l_Category.Category);
                         }
-                        
+
                         l_ApiLevelPassed.Add(new ApiLevelPassed()
                         {
                             LevelID = l_PlayerLevelStats.LevelID,
@@ -47,7 +47,7 @@ namespace BSDiscordRanking.API
                 }
                 else
                 {
-                    
+
                     p_Category = UserModule.FirstCharacterToUpper(p_Category);
                     foreach (CategoryPassed l_Category in l_PlayerLevelStats.Categories)
                     {

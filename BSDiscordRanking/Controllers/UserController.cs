@@ -20,7 +20,7 @@ namespace BSDiscordRanking.Controllers
     {
         public static List<UserFormat> m_Users = new List<UserFormat>();
 
-        public static bool AccountExist(string p_ScoreSaberID)
+        public static bool AccountExist(string p_ScoreSaberID, out ApiPlayer p_PlayerFull)
         {
             try
             {
@@ -28,13 +28,18 @@ namespace BSDiscordRanking.Controllers
                 ApiPlayer l_PlayerFull = JsonSerializer.Deserialize<ApiPlayer>
                     (l_WebClient.DownloadString(@$"https://scoresaber.com/api/player/{p_ScoreSaberID}/full"));
                 // ReSharper disable once PossibleNullReferenceException
-                if (l_PlayerFull != null && !string.IsNullOrEmpty(l_PlayerFull.name)) return true;
+                if (l_PlayerFull != null && !string.IsNullOrEmpty(l_PlayerFull.name))
+                {
+                    p_PlayerFull = l_PlayerFull;
+                    return true;
+                }
             }
             catch
             {
                 // ignored
             }
 
+            p_PlayerFull = null;
             return false;
         }
 
@@ -56,23 +61,45 @@ namespace BSDiscordRanking.Controllers
 
         public static void AddPlayer(string p_DisID, string p_ScoID)
         {
-            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = p_ScoID });
-            Console.WriteLine($"Player {p_DisID} was added with scoresaber: {p_ScoID}");
+            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = p_ScoID, PendingScoreSaberID = String.Empty, LinkState = ELinkState.None });
+            Console.WriteLine($"Player {p_DisID} was added with ScoreSaberID: {p_ScoID}");
+            GenerateDB();
+        }
+
+        public static bool AcceptVerifyPlayer(string p_DisID)
+        {
+            UserFormat l_User = m_Users.Find(p_X => p_X.DiscordID == p_DisID);
+            if (l_User == null)
+                return false;
+
+            l_User.ScoreSaberID = l_User.PendingScoreSaberID;
+            l_User.LinkState = ELinkState.Verified;
+            Console.WriteLine($"Player {p_DisID} was verified with ScoreSaberID: {l_User.ScoreSaberID}");
+            GenerateDB();
+            return true;
+        }
+
+        public static string GetPendingScoreSaberID(string p_DiscordID)
+        {
+            foreach (UserFormat l_User in m_Users)
+                if (l_User.DiscordID == p_DiscordID)
+                    return l_User.PendingScoreSaberID;
+
+            return String.Empty;
+        }
+
+        public static void AddPlayerNeedVerification(string p_DisID, string p_ScoID)
+        {
+            m_Users.Add(new UserFormat { DiscordID = p_DisID, ScoreSaberID = String.Empty, PendingScoreSaberID = p_ScoID, LinkState = ELinkState.Unverified });
+            Console.WriteLine($"Player {p_DisID} was added to verification with ScoreSaberID: {p_ScoID}");
             GenerateDB();
         }
 
         public static bool RemovePlayer(string p_DisID)
         {
-            foreach (UserFormat l_User in m_Users)
-                if (p_DisID == l_User.DiscordID)
-                {
-                    m_Users.Remove(l_User);
-                    Console.WriteLine($"Player {l_User.DiscordID} was removed");
-                    GenerateDB();
-                    return true;
-                }
-
-            return false;
+            int l_Count = m_Users.Count;
+            m_Users.RemoveAll(p_X => p_X.DiscordID == p_DisID);
+            return l_Count != m_Users.Count;
         }
 
         public static async Task<UpdatePlayerRoleFormat> UpdatePlayerLevel(SocketCommandContext p_Context, ulong p_DiscordID, int p_Level)
@@ -225,11 +252,7 @@ namespace BSDiscordRanking.Controllers
 
         public static string GetPlayer(string p_DisID)
         {
-            foreach (UserFormat l_User in m_Users)
-                if (p_DisID == l_User.DiscordID)
-                    return l_User.ScoreSaberID;
-
-            return null;
+            return (from l_User in m_Users where p_DisID == l_User.DiscordID select l_User.ScoreSaberID).FirstOrDefault();
         }
 
         public static string GetDiscordID(string p_ScoreSaberID)

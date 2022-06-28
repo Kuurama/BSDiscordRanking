@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         [Summary("Set a specific Level to someone + change his stats/roles and leaderboard's level.")]
         public async Task SetLevelRole(string p_DiscordOrScoreSaberID, int p_Level)
         {
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             string l_DiscordID = null;
             if (UserController.UserExist(p_DiscordOrScoreSaberID))

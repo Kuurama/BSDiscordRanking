@@ -25,7 +25,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
             {
                 ConfigFormat l_Config = ConfigController.GetConfig();
                 bool l_ScoreRemoved = false;
-                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
                 if (UserController.UserExist(p_DiscordOrScoreSaberID))
                 {

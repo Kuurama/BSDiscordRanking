@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 return;
             }
 
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
@@ -54,7 +54,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 return;
             }
 
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
@@ -77,7 +77,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 if (l_Player.m_PlayerFull != null) await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s {ConfigController.GetConfig().PassPointsName} Ban preference has been changed from **{!l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}** to **{l_PassLeaderboardController.m_Leaderboard.Leaderboard[l_Index].IsBanned}**");
             }
         }
-        
+
         [Command("ldmapban")]
         [Alias("banldmap", "banmapld")]
         [Summary("Toggle a player ban from the acc leaderboard.")]
@@ -89,7 +89,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 return;
             }
 
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
@@ -110,7 +110,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 if (l_Player.m_PlayerFull != null) await ReplyAsync($"> {l_Player.m_PlayerFull.name}'s MapLeaderboard Ban preference has been changed from **{!l_Player.m_PlayerStats.IsMapLeaderboardBanned}** to **{l_Player.m_PlayerStats.IsMapLeaderboardBanned}**");
             }
         }
-        
+
         [Command("scanban")]
         [Alias("banscan")]
         [Summary("Toggle a player scan ban (prevent from scanning on the bot).")]
@@ -122,7 +122,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                 return;
             }
 
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {

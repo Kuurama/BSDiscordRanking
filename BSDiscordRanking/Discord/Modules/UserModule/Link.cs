@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
+using BSDiscordRanking.Formats.API;
 using Discord.Commands;
 using static System.String;
 
@@ -22,14 +23,28 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             else if (!IsNullOrEmpty(p_ScoreSaberLink))
             {
                 p_ScoreSaberLink = Regex.Match(p_ScoreSaberLink, @"\d+").Value;
-                if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) &&
-                    UserController.AccountExist(p_ScoreSaberLink) && !UserController.SSIsAlreadyLinked(p_ScoreSaberLink))
+                if (IsNullOrEmpty(UserController.GetPlayer(Context.User.Id.ToString())) && UserController.AccountExist(p_ScoreSaberLink, out ApiPlayer l_PlayerFull) && !UserController.SSIsAlreadyLinked(p_ScoreSaberLink))
                 {
-                    UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberLink);
-                    await ReplyAsync(
-                        $"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
+                    if (ConfigController.m_ConfigFormat.EnableLinkVerificationSystem)
+                    {
+                        if (ConfigController.m_ConfigFormat.LinkVerificationChannel != 0)
+                        {
+                            UserController.AddPlayerNeedVerification(Context.User.Id.ToString(), p_ScoreSaberLink);
+                            LinkVerificationController.SendVerificationEmbed(Context, l_PlayerFull);
+                            await ReplyAsync($"> Your link request had been *submitted for verification*, you will be *notified* once approved or denied.");
+                        }
+                        else
+                        {
+                            await ReplyAsync("> :x: Sorry, but the link verification channel isn't set. Please set a Link verification channel before attempting to link.");
+                        }
+                    }
+                    else
+                    {
+                        UserController.AddPlayer(Context.User.Id.ToString(), p_ScoreSaberLink);
+                        await ReplyAsync($"> :white_check_mark: Your account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
+                    }
                 }
-                else if (!UserController.AccountExist(p_ScoreSaberLink))
+                else if (!UserController.AccountExist(p_ScoreSaberLink, out _))
                 {
                     await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
                 }

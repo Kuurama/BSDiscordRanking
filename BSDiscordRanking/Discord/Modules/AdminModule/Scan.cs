@@ -20,7 +20,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             string l_DiscordID = "";
             SocketGuildUser l_User = null;
 
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
@@ -63,7 +63,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 await ReplyAsync($"> :x: Sorry, but this use is Scan Banned.");
                 return;
             }
-            
+
             if (!l_IsDiscordLinked) l_ScoreSaberOrDiscordName = l_Player.m_PlayerFull.name;
 
             l_Player.LoadPass();

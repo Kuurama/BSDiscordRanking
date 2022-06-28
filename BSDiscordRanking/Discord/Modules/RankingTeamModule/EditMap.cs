@@ -483,6 +483,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
         public async Task EditMapButtonHandler(SocketMessageComponent p_MessageComponent)
         {
+            Embed l_MessageEmbed = p_MessageComponent.Message.Embeds.FirstOrDefault();
+            if (l_MessageEmbed is null) return;
+            if (l_MessageEmbed.Title.Contains("Link Verification") == true) return;
+
             ulong l_UserID = p_MessageComponent.User.Id;
             ulong l_ChannelID = p_MessageComponent.Message.Channel.Id;
             string[] l_SplicedCustomID = p_MessageComponent.Data.CustomId.Split("_"); /// I choosed to use the button custom ID because adding buttons at a different place or command and making the DiscordID built in footer (or else) of an Embed wouldn't be good (as it would always need an Embed and a Footer).

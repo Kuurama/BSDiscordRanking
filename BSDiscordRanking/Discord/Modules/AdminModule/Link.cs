@@ -22,14 +22,13 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
             else if (!string.IsNullOrEmpty(p_ScoreSaberID))
             {
                 p_ScoreSaberID = Regex.Match(p_ScoreSaberID, @"\d+").Value;
-                if (string.IsNullOrEmpty(UserController.GetPlayer(p_DiscordID)) &&
-                    UserController.AccountExist(p_ScoreSaberID) && !UserController.SSIsAlreadyLinked(p_ScoreSaberID))
+                if (string.IsNullOrEmpty(UserController.GetPlayer(p_DiscordID)) && UserController.AccountExist(p_ScoreSaberID, out _) && !UserController.SSIsAlreadyLinked(p_ScoreSaberID))
                 {
                     UserController.AddPlayer(p_DiscordID, p_ScoreSaberID);
                     await ReplyAsync(
                         $"> :white_check_mark: <@{p_DiscordID}> 's account has been successfully linked.\nLittle tip: use `{BotHandler.m_Prefix}scan` to scan your latest passes!");
                 }
-                else if (!UserController.AccountExist(p_ScoreSaberID))
+                else if (!UserController.AccountExist(p_ScoreSaberID, out _))
                 {
                     await ReplyAsync("> :x: Sorry, but please enter a correct ScoreSaber Link/ID.");
                 }

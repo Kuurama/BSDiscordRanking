@@ -13,7 +13,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
         {
             if (!string.IsNullOrEmpty(p_DiscordOrScoreSaberID))
             {
-                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
                 if (l_IsScoreSaberAccount)
                 {

@@ -32,6 +32,24 @@ namespace BSDiscordRanking.Discord.Modules
             return l_Ints;
         }
 
+        public static List<int> GetUserPermLevel(SocketGuildUser p_User)
+        {
+            List<int> l_Ints = new List<int> { 0 };
+            if (p_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().RankingTeamRoleID) != null)
+                l_Ints.Add(1);
+            if (p_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().ScoringTeamRoleID) != null)
+                l_Ints.Add(2);
+
+            if (p_User.Roles.ToList().Find(p_X => p_X.Id == ConfigController.GetConfig().BotAdminRoleID) != null)
+            {
+                if (l_Ints.FindIndex(p_X => p_X == 1) < 0) l_Ints.Add(1);
+                if (l_Ints.FindIndex(p_X => p_X == 2) < 0) l_Ints.Add(2);
+                l_Ints.Add(3);
+            }
+
+            return l_Ints;
+        }
+
         /// <summary>
         ///     Check if user has the correct permission level. 1 = RankingTeam, 2 = ScoringTeam, 3 = Admin
         /// </summary>

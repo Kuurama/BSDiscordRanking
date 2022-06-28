@@ -19,7 +19,7 @@ namespace BSDiscordRanking.API
             {
                 p_PlayerID = UserController.GetPlayer(p_PlayerID);
             }
-            else if (!UserController.AccountExist(p_PlayerID) && !UserController.UserExist(p_PlayerID))
+            else if (!UserController.AccountExist(p_PlayerID, out _) && !UserController.UserExist(p_PlayerID))
             {
                 return null;
             }
@@ -100,7 +100,7 @@ namespace BSDiscordRanking.API
                 Ruby = 0
             };
             if (p_PassedLevels is null) return l_TotalTrophy;
-            
+
             foreach (CategoryPassed l_Category in p_PassedLevels.SelectMany(p_PlayerStatsLevel => p_PlayerStatsLevel.Categories))
             {
                 l_Category.Trophy ??= new Trophy();
@@ -116,7 +116,7 @@ namespace BSDiscordRanking.API
         private static List<RankData> GetRankData(string p_PlayerID, PlayerStatsFormat p_PlayerStats)
         {
             List<RankData> l_RankData = new List<RankData>();
-            
+
             int l_PassFindIndex = -1;
             PassLeaderboardController l_PassLeaderboardController = null;
             bool l_IsAccLeaderboardBan = false;
@@ -138,7 +138,7 @@ namespace BSDiscordRanking.API
                 l_AccLeaderboardController.m_Leaderboard.Leaderboard.RemoveAll(p_X => p_X.IsBanned);
                 l_AccFindIndex = l_AccLeaderboardController.m_Leaderboard.Leaderboard.FindIndex(p_X => p_X.ScoreSaberID == p_PlayerID);
             }
-            
+
             if (s_Config.EnablePassBasedLeaderboard && l_PassLeaderboardController is not null && !l_IsPassLeaderboardBan)
             {
                 if (l_PassFindIndex == -1)

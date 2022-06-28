@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Net.Http;
+using System.Threading;
 using BSDiscordRanking.API;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord;

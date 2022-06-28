@@ -215,7 +215,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         private async Task SendProfile(string p_DiscordOrScoreSaberID, bool p_IsSomeoneElse)
         {
             ConfigFormat l_Config = ConfigController.GetConfig();
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
@@ -240,7 +240,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 await ReplyAsync(p_IsSomeoneElse
                     ? "> :x: Sorry, this Discord User doesn't have any ScoreSaber account linked/isn't a correct ScoreSaberID."
-                    : $"> :x: Sorry, you doesn't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
+                    : $"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
                 return;
             }
 
@@ -504,7 +504,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             string l_DiscordID = "";
             SocketGuildUser l_User = null;
 
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {

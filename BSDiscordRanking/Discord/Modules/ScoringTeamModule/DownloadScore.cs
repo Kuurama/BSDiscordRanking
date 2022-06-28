@@ -25,8 +25,8 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
             if (int.TryParse(p_LeaderboardID, out int l_LeaderboardID))
             {
                 ConfigFormat l_Config = ConfigController.GetConfig();
-                bool l_ScoreRedownloaded = false;
-                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+                bool l_ScoreReDownloaded = false;
+                bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
                 if (UserController.UserExist(p_DiscordOrScoreSaberID))
                 {
@@ -97,7 +97,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                             l_EmbedBuilder.AddField($"{l_Player.m_PlayerFull.name}'s score", $"(#{l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score.rank}) - {l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score.baseScore} => (#{l_DownloadedPlayerScore.rank}) - {l_DownloadedPlayerScore.baseScore}.");
                             l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].score = l_DownloadedPlayerScore;
                             l_Player.m_PlayerScoreCollection.playerScores[l_ScoreIndex].leaderboard = l_ApiLeaderboardInfo;
-                            l_ScoreRedownloaded = true;
+                            l_ScoreReDownloaded = true;
                             l_Player.ReWriteScore();
                         }
                         else
@@ -108,7 +108,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                         }
                     }
 
-                    if (l_ScoreRedownloaded)
+                    if (l_ScoreReDownloaded)
                     {
                         l_EmbedBuilder.WithTitle("The score have been ReDownloaded and Replaced.");
                         l_EmbedBuilder.WithUrl($"https://scoresaber.com/leaderboard/{l_LeaderboardID}");

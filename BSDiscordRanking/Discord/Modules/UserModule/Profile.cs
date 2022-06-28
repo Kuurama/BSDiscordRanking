@@ -7,7 +7,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         [Command("profile")]
         [Alias("stats")]
-        [Summary("Sends your profile's informations (Level, Passes, Trophies etc).")]
+        [Summary("Sends your profile's information (Level, Passes, Trophies etc).")]
         public async Task Profile()
         {
             await SendProfile(Context.User.Id.ToString(), false);
@@ -15,7 +15,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
         [Command("profile")]
         [Alias("stats")]
-        [Summary("Sends someone else profile's informations (Level, Passes, Trophies etc).")]
+        [Summary("Sends someone else profile's information (Level, Passes, Trophies etc).")]
         public async Task Profile(string p_DiscordOrScoreSaberID)
         {
             await SendProfile(p_DiscordOrScoreSaberID, true);

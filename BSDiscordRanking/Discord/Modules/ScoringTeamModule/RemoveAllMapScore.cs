@@ -23,7 +23,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
             await ReplyAsync("> The task is being performed..");
             ConfigFormat l_Config = ConfigController.GetConfig();
             int l_ScoreRemoved = 0;
-            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID);
+            bool l_IsScoreSaberAccount = UserController.AccountExist(p_DiscordOrScoreSaberID, out _);
 
             if (UserController.UserExist(p_DiscordOrScoreSaberID))
             {
@@ -62,7 +62,7 @@ namespace BSDiscordRanking.Discord.Modules.ScoringTeamModule
                             }
                         }
                     }
-                    
+
                     l_Player.ReWriteScore();
                 }
 

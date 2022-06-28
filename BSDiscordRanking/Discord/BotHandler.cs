@@ -35,6 +35,7 @@ namespace BSDiscordRanking.Discord
             ////////////// EditMap Interaction Implementation //////////////
             RankingTeamModule l_RankingTeamModule = new RankingTeamModule();
             m_Client.ButtonExecuted += l_RankingTeamModule.EditMapButtonHandler;
+            m_Client.ButtonExecuted += LinkVerificationController.LinkVerificationButtonHandler;
             m_Client.InteractionCreated += l_RankingTeamModule.EditMapInteraction;
             ////////////////////////////////////////////////////////////////
 
