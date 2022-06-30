@@ -125,7 +125,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                     if (!string.Equals(l_Map.versions[^1].hash, l_LevelSong.hash, StringComparison.CurrentCultureIgnoreCase)) /// Mean the map Hash changed but not the id.
                                         l_MapHashChanged = true;
 
-                                    l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, (int)(p_NewMinPercentageRequirement * l_LevelDiff.customData.maxScore), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
+                                    l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, (int)(l_LevelDiff.customData.maxScore * p_NewMinPercentageRequirement/100f), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_LevelDiff.customData.forceManualWeight, p_NewWeight, l_LevelDiff.customData.adminConfirmationOnPass, l_Map.id); /// So i can check for New Score Requirement, etc.
                                     l_EmbedBuilder.AddField("BSRCode", p_BSRCode, true);
                                     l_EmbedBuilder.AddField(l_LevelDiff.name, l_LevelDiff.characteristic, true);
                                     l_EmbedBuilder.AddField("Level", $"Lv.{l_MapExistCheck.Level}", true);
@@ -405,8 +405,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                             if (p_ToggleAdminConfirmationOnPass) l_EditMapFormat.adminConfirmationOnPass = !l_LevelDiff.customData.adminConfirmationOnPass;
 
-                                            l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, (int)(p_NewMinPercentageRequirement * l_LevelDiff.customData.maxScore), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_EditMapFormat.adminConfirmationOnPass);
-                                            if (!p_ChangeLevel) l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, (int)(p_NewMinPercentageRequirement * l_LevelDiff.customData.maxScore), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.maxScore, l_EditMapFormat.adminConfirmationOnPass);
+                                            l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, (int)(l_LevelDiff.customData.maxScore * p_NewMinPercentageRequirement/100f), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_EditMapFormat.adminConfirmationOnPass);
+                                            if (!p_ChangeLevel) l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, (int)(l_LevelDiff.customData.maxScore * p_NewMinPercentageRequirement/100f), p_NewCategory, p_NewCustomCategoryInfo, p_NewInfoOnGGP, p_NewCustomPassText, l_EditMapFormat.ForceManualWeight, p_NewWeight, l_LevelDiff.customData.maxScore, l_EditMapFormat.adminConfirmationOnPass);
 
                                             EmbedBuilder l_MapChangeEmbedBuilder = new EmbedBuilder();
                                             l_MapChangeEmbedBuilder.WithTitle("Maps infos changed on:");
@@ -418,7 +418,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 l_MapChangeEmbedBuilder.AddField("New Level:", $"Lv.{p_NewLevel} (Old: {l_OldLevel})");
 
                                             if (l_MapExistCheck.DifferentMinScore)
-                                                l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{(int)(p_NewMinPercentageRequirement * l_LevelDiff.customData.maxScore)} ({p_NewMinPercentageRequirement:n2}%)");
+                                                l_MapChangeEmbedBuilder.AddField("New ScoreRequirement:", $"{(int)(l_LevelDiff.customData.maxScore * p_NewMinPercentageRequirement/100f)} ({p_NewMinPercentageRequirement:n2}%)");
 
                                             if (l_MapExistCheck.DifferentCategory)
                                                 l_MapChangeEmbedBuilder.AddField("New Category:", p_NewCategory ?? "\u200B");

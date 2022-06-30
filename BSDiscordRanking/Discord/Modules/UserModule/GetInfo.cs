@@ -88,7 +88,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             if (l_MapLeaderboard != null)
                             {
                                 l_MapLeaderboard.RemoveAll(p_X => p_X.customData.isBanned || !p_X.customData.isBotRegistered || p_X.score.baseScore < l_MapDifficulty.customData.minScoreRequirement || p_X.score.modifiers.Contains("NF") || p_X.score.modifiers.Contains("NA") || p_X.score.modifiers.Contains("SS") || p_X.score.modifiers.Contains("NB"));
-                            
+
                                 l_EmbedBuilder.AddField("Pass Count", l_MapLeaderboard.Count, true);
                             }
                             else
@@ -102,7 +102,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                             if (l_MapDifficulty.customData.infoOnGGP != null) l_EmbedBuilder.AddField("InfoOnGGP", l_MapDifficulty.customData.infoOnGGP, true);
 
-                            if (l_MapDifficulty.customData.minScoreRequirement > 0) l_EmbedBuilder.AddField("Min Score Requirement", $"{l_MapDifficulty.customData.minScoreRequirement} ({Math.Round((float)l_MapDifficulty.customData.minScoreRequirement / l_MapDifficulty.customData.maxScore * 100f * 100f) / 100f}%)", true);
+                            if (l_MapDifficulty.customData.minScoreRequirement > 0) l_EmbedBuilder.AddField("Min Score Requirement", $"{l_MapDifficulty.customData.minScoreRequirement} ({Math.Round((float)l_MapDifficulty.customData.minScoreRequirement / l_MapDifficulty.customData.maxScore * 100f)}%)", true);
 
                             if (l_MapDifficulty.customData.customPassText != null && l_Config.DisplayCustomPassTextInGetInfo) l_EmbedBuilder.AddField("Custom Pass Text", $"{l_MapDifficulty.customData.customPassText}", true);
 

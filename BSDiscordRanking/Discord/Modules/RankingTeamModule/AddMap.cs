@@ -100,10 +100,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                         if (l_DiffExist)
                         {
-                            LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, (int)(p_MinPercentageRequirement * l_MaxScore), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, p_AdminPingOnPass);
+                            LevelController.MapExistFormat l_MapExistCheck = LevelController.MapExist_Check(l_Map.versions[^1].hash, p_DifficultyName, p_Characteristic, (int)(l_MaxScore * p_MinPercentageRequirement/100f), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, p_AdminPingOnPass);
                             if (!l_MapExistCheck.MapExist && !l_MapExistCheck.DifferentMinScore)
                             {
-                                l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, (int)(p_MinPercentageRequirement * l_MaxScore), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_MaxScore, p_AdminPingOnPass);
+                                l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, (int)(l_MaxScore * p_MinPercentageRequirement/100f), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_MaxScore, p_AdminPingOnPass);
                                 if (l_Level.m_MapAdded)
                                 {
                                     EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
@@ -115,7 +115,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                     await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build());
 
                                     if (Math.Abs(p_MinPercentageRequirement - default(float)) > 0.01)
-                                        l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({(int)(p_MinPercentageRequirement * l_MaxScore)})");
+                                        l_EmbedBuilder.AddField("ScoreRequirement:", $"{p_MinPercentageRequirement}% ({(int)(l_MaxScore * p_MinPercentageRequirement/100f)})");
 
                                     if (p_Category != null)
                                         l_EmbedBuilder.AddField("Category:", p_Category);
@@ -147,7 +147,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             }
                             else if (l_MapExistCheck.MapExist && l_MapExistCheck.Level == p_Level && (l_MapExistCheck.DifferentMinScore || l_MapExistCheck.DifferentCategory || l_MapExistCheck.DifferentCustomCategoryInfo || l_MapExistCheck.DifferentInfoOnGGP || l_MapExistCheck.DifferentPassText || l_MapExistCheck.DifferentForceManualWeight || l_MapExistCheck.DifferentWeight))
                             {
-                                l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, (int)(p_MinPercentageRequirement * l_MaxScore), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_MaxScore, p_AdminPingOnPass);
+                                l_Level.AddMap(l_Map, p_DifficultyName, p_Characteristic, (int)(l_MaxScore * p_MinPercentageRequirement/100f), p_Category, p_CustomCategoryInfo, p_InfoOnGGP, p_CustomPassText, p_ForceManualWeight, p_Weight, l_MaxScore, p_AdminPingOnPass);
                                 EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
                                 l_EmbedBuilder.WithTitle("Maps infos changed on:");
                                 l_EmbedBuilder.WithDescription(l_Map.name);
@@ -155,7 +155,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                 l_EmbedBuilder.AddField("Level:", p_Level, true);
 
                                 if (l_MapExistCheck.DifferentMinScore)
-                                    l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({(int)(p_MinPercentageRequirement * l_MaxScore)})");
+                                    l_EmbedBuilder.AddField("New ScoreRequirement:", $"{p_MinPercentageRequirement}% ({(int)(l_MaxScore * p_MinPercentageRequirement/100f)})");
 
                                 if (l_MapExistCheck.DifferentCategory && p_Category != null)
                                     l_EmbedBuilder.AddField("New Category:", p_Category);
