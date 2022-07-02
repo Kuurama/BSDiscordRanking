@@ -14,7 +14,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
         [Summary("Scans all your scores & passes. Also update your rank.")]
         public async Task Scan_Scores()
         {
-            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()), true);
             if (l_Player.m_PlayerStats.IsScanBanned)
             {
                 await ReplyAsync($"> :x: Sorry, but you are Scan Banned.");

@@ -244,7 +244,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 return;
             }
 
-            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            Player l_Player = new Player(p_DiscordOrScoreSaberID, false);
             int l_GlobalPlayerLevel = l_Player.GetPlayerLevel();
             PlayerStatsFormat l_PlayerStats = l_Player.GetStats();
 

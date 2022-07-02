@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Formats.Player;
@@ -39,34 +40,51 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
 
             if (l_Player.GetPlayerLevel() == p_Level) await ReplyAsync($"> This player is already Level {p_Level} but we will still perform a role check/update.\n");
 
-            l_Player.ResetLevels();
-            for (int l_I = 0; l_I <= p_Level; l_I++)
+            foreach (int l_LevelID in  LevelController.GetLevelControllerCache().LevelID)
             {
-                int l_Index = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_I);
-                if (l_Index < 0)
-                    l_Player.m_PlayerStats.Levels.Add(new PassedLevel
-                    {
-                        LevelID = l_I,
-                        Passed = true,
-                        Trophy = new Trophy
-                        {
-                            Plastic = 0,
-                            Silver = 0,
-                            Gold = 0,
-                            Diamond = 0,
-                            Ruby = 0
-                        }
-                    });
-                else
-                    l_Player.m_PlayerStats.Levels[l_Index].Passed = true;
-            }
-
-            for (int l_I = 0; l_I <= p_Level; l_I++)
-                l_Player.m_PlayerStats.Levels.Add(new PassedLevel
+                if (l_LevelID <= p_Level)
                 {
-                    LevelID = l_I,
-                    Passed = true
-                });
+                    int l_Index = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_LevelID);
+                    if (l_Index < 0)
+                        l_Player.m_PlayerStats.Levels.Add(new PassedLevel
+                        {
+                            LevelID = l_LevelID,
+                            Passed = true,
+                            Trophy = new Trophy
+                            {
+                                Plastic = 0,
+                                Silver = 0,
+                                Gold = 0,
+                                Diamond = 0,
+                                Ruby = 0
+                            },
+                            TotalNumberOfMaps = new Level(l_LevelID).m_Level.songs.SelectMany(p_X => p_X.difficulties).Count()
+                        });
+                    else
+                        l_Player.m_PlayerStats.Levels[l_Index].Passed = true;
+                }
+                else
+                {
+                    int l_Index = l_Player.m_PlayerStats.Levels.FindIndex(p_X => p_X.LevelID == l_LevelID);
+                    if (l_Index < 0)
+                        l_Player.m_PlayerStats.Levels.Add(new PassedLevel
+                        {
+                            LevelID = l_LevelID,
+                            Passed = false,
+                            Trophy = new Trophy
+                            {
+                                Plastic = 0,
+                                Silver = 0,
+                                Gold = 0,
+                                Diamond = 0,
+                                Ruby = 0
+                            },
+                            TotalNumberOfMaps = new Level(l_LevelID).m_Level.songs.SelectMany(p_X => p_X.difficulties).Count()
+                        });
+                    else
+                        l_Player.m_PlayerStats.Levels[l_Index].Passed = false;
+                }
+            }
 
             l_Player.ReWriteStats();
             new PassLeaderboardController().ManagePlayer(l_Player.m_PlayerFull.name, p_DiscordOrScoreSaberID, -1, p_Level, null, false);

@@ -5,12 +5,15 @@ namespace BSDiscordRanking.Formats.Player
 {
     public class PlayerStatsFormat
     {
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string Country { get; set; }
+        public string ProfilePicture { get; set; }
+        public List<ApiBadge> Badges { get; set; }
         public List<PassedLevel> Levels { get; set; }
         public int TotalNumberOfPass { get; set; }
-
         public float PassPoints { get; set; }
         public float AccPoints { get; set; }
-        public List<ApiBadge> Badges { get; set; }
         public bool IsFirstScan { get; set; }
         public bool IsMapLeaderboardBanned { get; set; }
         public bool IsScanBanned { get; set; }

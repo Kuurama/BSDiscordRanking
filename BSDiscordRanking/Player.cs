@@ -22,7 +22,7 @@ namespace BSDiscordRanking
     public class Player
     {
         private static string m_FolderPath = @"./Players/";
-        private bool m_HavePlayerInfo;
+        private bool m_HaveSSFetchedPlayerInfo = false;
         private LevelControllerFormat m_LevelController;
         private string m_Path;
         public ApiPlayer m_PlayerFull;
@@ -31,7 +31,7 @@ namespace BSDiscordRanking
         public ApiPlayerScoreCollection m_PlayerScoreCollection;
         public PlayerStatsFormat m_PlayerStats;
 
-        public Player(string p_PlayerID)
+        public Player(string p_PlayerID, bool p_FetchScoreSaberInfo = false)
         {
             m_PlayerID = p_PlayerID;
             if (m_PlayerID != null)
@@ -46,11 +46,72 @@ namespace BSDiscordRanking
 
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
-            GetInfos(); ///< Get Full Player Info.
-
             LoadStats();
+            if (string.IsNullOrEmpty(m_PlayerStats.Name))
+            {
+                p_FetchScoreSaberInfo = true;
+            }
 
             JsonDataBaseController.CreateDirectory(m_Path); ///< Make the player's scores file's directory.
+
+            if (p_FetchScoreSaberInfo)
+            {
+                GetInfos(); ///< Get Full Player Info.
+                if (m_HaveSSFetchedPlayerInfo)
+                {
+                    bool l_ShouldRewriteStats = false;
+                    if (m_PlayerStats.Id != m_PlayerFull.id)
+                    {
+                        m_PlayerStats.Id = m_PlayerFull.id;
+                        l_ShouldRewriteStats = true;
+                    }
+                    if (m_PlayerStats.Name != m_PlayerFull.name)
+                    {
+                        m_PlayerStats.Name = m_PlayerFull.name;
+                        l_ShouldRewriteStats = true;
+                    }
+                    if (m_PlayerStats.Country != m_PlayerFull.country)
+                    {
+                        m_PlayerStats.Country = m_PlayerFull.country;
+                        l_ShouldRewriteStats = true;
+                    }
+
+                    if (m_PlayerStats.ProfilePicture != m_PlayerFull.profilePicture)
+                    {
+                        m_PlayerStats.ProfilePicture = m_PlayerFull.profilePicture;
+                        l_ShouldRewriteStats = true;
+                    }
+                    if (m_PlayerStats.Badges != m_PlayerFull.badges)
+                    {
+                        m_PlayerStats.Badges = m_PlayerFull.badges;
+                        l_ShouldRewriteStats = true;
+                    }
+
+                    if (l_ShouldRewriteStats) ReWriteStats();
+                }
+                else
+                {
+                    m_PlayerFull = new ApiPlayer
+                    {
+                        id = m_PlayerID,
+                        name = m_PlayerStats.Name,
+                        country = m_PlayerStats.Country,
+                        profilePicture = m_PlayerStats.ProfilePicture,
+                        badges = m_PlayerStats.Badges
+                    };
+                }
+            }
+            else
+            {
+                m_PlayerFull = new ApiPlayer
+                {
+                    id = m_PlayerID,
+                    name = m_PlayerStats.Name,
+                    country = m_PlayerStats.Country,
+                    profilePicture = m_PlayerStats.ProfilePicture,
+                    badges = m_PlayerStats.Badges
+                };
+            }
 
             LoadSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
 
@@ -222,7 +283,7 @@ namespace BSDiscordRanking
                         {
                             m_PlayerFull = JsonConvert.DeserializeObject<ApiPlayer>(
                                 l_WebClient.DownloadString(@$"https://scoresaber.com/api/player/{m_PlayerID}/full"));
-                            m_HavePlayerInfo = true;
+                            m_HaveSSFetchedPlayerInfo = true;
                         }
                         catch (WebException l_Exception)
                         {
@@ -329,7 +390,7 @@ namespace BSDiscordRanking
                 else
                     p_Context?.Channel.SendMessageAsync("> <:clock1:868188979411959808> Fetching player scores, this step can take a while! The bot will be unresponsive during the process.");
 
-                if (m_HavePlayerInfo) /// Check if Player have Player's Info
+                if (m_HaveSSFetchedPlayerInfo) /// Check if Player have Player's Info
                 {
                     if (m_PlayerScoreCollection != null)
                     {
@@ -1021,7 +1082,7 @@ namespace BSDiscordRanking
                                                                 l_PassWeightAlreadySet = true;
                                                             }
                                                         }
-                                                        
+
                                                         if (l_Config.PerPlaylistWeighting)
                                                         {
                                                             if (!l_Config.OnlyAutoWeightForAccLeaderboard && !l_AccWeightAlreadySet) l_TotalAccPoints += (float)l_Score.score.baseScore / l_Difficulty.customData.maxScore * 100f * l_Config.AccPointMultiplier * l_Level.value.m_Level.customData.weighting;
@@ -1254,7 +1315,10 @@ namespace BSDiscordRanking
                                 l_Embed = l_Builder.Build();
                                 if (p_Context != null)
                                 {
-                                    await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                    if (l_Config.AdminConfirmationChannel != 0)
+                                    {
+                                        await p_Context.Guild.GetTextChannel(l_Config.AdminConfirmationChannel).SendMessageAsync(null, embed: l_Embed).ConfigureAwait(false);
+                                    }
                                 }
                             }
 

@@ -157,10 +157,11 @@ namespace BSDiscordRanking.Controllers
         {
             int l_Count = m_Users.Count;
             m_Users.RemoveAll(p_X => p_X.DiscordID == p_DisID);
+            GenerateDB();
             return l_Count != m_Users.Count;
         }
 
-        public static async Task<UpdatePlayerRoleFormat> UpdatePlayerLevel(SocketCommandContext p_Context, ulong p_DiscordID, int p_Level)
+        public static async Task<UpdatePlayerRoleFormat> UpdatePlayerLevelRole(SocketCommandContext p_Context, ulong p_DiscordID, int p_Level)
         {
             if (!UserExist(p_DiscordID.ToString()))
                 return new UpdatePlayerRoleFormat
@@ -237,7 +238,7 @@ namespace BSDiscordRanking.Controllers
 
         public static async Task UpdateRoleAndSendMessage(SocketCommandContext p_Context, ulong p_UserID, int p_NewPlayerLevel)
         {
-            Task<UpdatePlayerRoleFormat> l_RoleUpdate = UpdatePlayerLevel(p_Context, p_UserID, p_NewPlayerLevel);
+            Task<UpdatePlayerRoleFormat> l_RoleUpdate = UpdatePlayerLevelRole(p_Context, p_UserID, p_NewPlayerLevel);
 
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
             Color l_Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, p_Context.Guild.Roles, p_NewPlayerLevel);

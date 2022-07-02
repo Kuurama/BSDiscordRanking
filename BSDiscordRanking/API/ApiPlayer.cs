@@ -24,7 +24,7 @@ namespace BSDiscordRanking.API
                 return null;
             }
 
-            Player l_Player = new Player(p_PlayerID);
+            Player l_Player = new Player(p_PlayerID, false);
 
             int l_PlayerLevel = l_Player.GetPlayerLevel();
             Trophy l_TotalTrophy = GetTotalTrophy(l_Player.m_PlayerStats.Levels);

@@ -57,7 +57,7 @@ namespace BSDiscordRanking.Discord.Modules.AdminModule
                 return;
             }
 
-            Player l_Player = new Player(p_DiscordOrScoreSaberID);
+            Player l_Player = new Player(p_DiscordOrScoreSaberID, true);
             if (l_Player.m_PlayerStats.IsScanBanned)
             {
                 await ReplyAsync($"> :x: Sorry, but this use is Scan Banned.");

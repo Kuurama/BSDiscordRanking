@@ -195,12 +195,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             await ReplyAsync(l_Message);
                         else
                             await ReplyAsync($"> :x: Sorry but there isn't any categories (stored in your stats) called {p_Category},\n+ there is too many categories in that level to send all of them in one message.");
+                        return;
                     }
                     else if (l_Builder.Fields.Count > 0)
                     {
                         await Context.Channel.SendMessageAsync(null, embed: l_Builder.Build()).ConfigureAwait(false);
+                        return;
                     }
                 }
+                await Context.Channel.SendMessageAsync("> Maybe you forgot to scan? Something went wrong.").ConfigureAwait(false);
             }
         }
     }
