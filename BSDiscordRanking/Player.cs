@@ -105,11 +105,20 @@ namespace BSDiscordRanking
                 else
                 {
                     m_PlayerFull = m_PlayerStats.ScoreSaberPlayerFull;
+
+                    if (m_PlayerFull is null)
+                    {
+                        m_PlayerFull = new ApiPlayer();
+                    }
+
+                    m_PlayerFull.id = m_PlayerID;
                 }
             }
             else
             {
                 m_PlayerFull = m_PlayerStats.ScoreSaberPlayerFull;
+                m_PlayerFull.id = m_PlayerID;
+                m_PlayerStats.ScoreSaberPlayerFull.id = m_PlayerID;
             }
 
             LoadSavedScore(); ///< Make the player's instance retrieve all the data from the json file.
@@ -520,14 +529,14 @@ namespace BSDiscordRanking
                             {
                                 Console.WriteLine("Seems Like you forgot to Get Player Info, Attempting to get player's info");
                                 GetInfos();
-                                ReWriteScore();
+                                ReWriteScore(p_TryLimit - 1);
                             }
                         }
                         else
                         {
                             Console.WriteLine("Seems like you forgot to load the Player's Scores, Attempting to load..");
                             LoadSavedScore();
-                            ReWriteScore();
+                            ReWriteScore(p_TryLimit - 1);
                         }
                     }
                     catch
