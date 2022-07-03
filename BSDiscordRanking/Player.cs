@@ -47,7 +47,7 @@ namespace BSDiscordRanking
             /////////////////////////////// Needed Setup Method ///////////////////////////////////
 
             LoadStats();
-            if (string.IsNullOrEmpty(m_PlayerStats.Name))
+            if (m_PlayerStats.ScoreSaberPlayerFull == null || string.IsNullOrEmpty(m_PlayerStats.ScoreSaberPlayerFull.name))
             {
                 p_FetchScoreSaberInfo = true;
             }
@@ -60,30 +60,43 @@ namespace BSDiscordRanking
                 if (m_HaveSSFetchedPlayerInfo)
                 {
                     bool l_ShouldRewriteStats = false;
-                    if (m_PlayerStats.Id != m_PlayerFull.id)
+                    if (m_PlayerStats.ScoreSaberPlayerFull is null)
                     {
-                        m_PlayerStats.Id = m_PlayerFull.id;
-                        l_ShouldRewriteStats = true;
-                    }
-                    if (m_PlayerStats.Name != m_PlayerFull.name)
-                    {
-                        m_PlayerStats.Name = m_PlayerFull.name;
-                        l_ShouldRewriteStats = true;
-                    }
-                    if (m_PlayerStats.Country != m_PlayerFull.country)
-                    {
-                        m_PlayerStats.Country = m_PlayerFull.country;
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
                         l_ShouldRewriteStats = true;
                     }
 
-                    if (m_PlayerStats.ProfilePicture != m_PlayerFull.profilePicture)
+                    if (m_PlayerStats.ScoreSaberPlayerFull.id != m_PlayerFull.id)
                     {
-                        m_PlayerStats.ProfilePicture = m_PlayerFull.profilePicture;
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
                         l_ShouldRewriteStats = true;
                     }
-                    if (m_PlayerStats.Badges != m_PlayerFull.badges)
+                    if (m_PlayerStats.ScoreSaberPlayerFull.name != m_PlayerFull.name)
                     {
-                        m_PlayerStats.Badges = m_PlayerFull.badges;
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
+                        l_ShouldRewriteStats = true;
+                    }
+                    if (m_PlayerStats.ScoreSaberPlayerFull.country != m_PlayerFull.country)
+                    {
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
+                        l_ShouldRewriteStats = true;
+                    }
+
+                    if (m_PlayerStats.ScoreSaberPlayerFull.profilePicture != m_PlayerFull.profilePicture)
+                    {
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
+                        l_ShouldRewriteStats = true;
+                    }
+
+                    if (m_PlayerStats.ScoreSaberPlayerFull.badges != m_PlayerFull.badges)
+                    {
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
+                        l_ShouldRewriteStats = true;
+                    }
+
+                    if (m_PlayerStats.ScoreSaberPlayerFull.rank != m_PlayerFull.rank)
+                    {
+                        m_PlayerStats.ScoreSaberPlayerFull = m_PlayerFull;
                         l_ShouldRewriteStats = true;
                     }
 
@@ -91,26 +104,12 @@ namespace BSDiscordRanking
                 }
                 else
                 {
-                    m_PlayerFull = new ApiPlayer
-                    {
-                        id = m_PlayerID,
-                        name = m_PlayerStats.Name,
-                        country = m_PlayerStats.Country,
-                        profilePicture = m_PlayerStats.ProfilePicture,
-                        badges = m_PlayerStats.Badges
-                    };
+                    m_PlayerFull = m_PlayerStats.ScoreSaberPlayerFull;
                 }
             }
             else
             {
-                m_PlayerFull = new ApiPlayer
-                {
-                    id = m_PlayerID,
-                    name = m_PlayerStats.Name,
-                    country = m_PlayerStats.Country,
-                    profilePicture = m_PlayerStats.ProfilePicture,
-                    badges = m_PlayerStats.Badges
-                };
+                m_PlayerFull = m_PlayerStats.ScoreSaberPlayerFull;
             }
 
             LoadSavedScore(); ///< Make the player's instance retrieve all the data from the json file.

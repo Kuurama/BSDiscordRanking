@@ -5,11 +5,7 @@ namespace BSDiscordRanking.Formats.Player
 {
     public class PlayerStatsFormat
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string Country { get; set; }
-        public string ProfilePicture { get; set; }
-        public List<ApiBadge> Badges { get; set; }
+        public ApiPlayer ScoreSaberPlayerFull { get; set; }
         public List<PassedLevel> Levels { get; set; }
         public int TotalNumberOfPass { get; set; }
         public float PassPoints { get; set; }

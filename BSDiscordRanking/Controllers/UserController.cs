@@ -181,36 +181,65 @@ namespace BSDiscordRanking.Controllers
 
                 if (GetConfig().GiveOldRoles)
                 {
+                    List<IRole> l_RoleToRemove = new List<IRole>();
+                    List<IRole> l_RoleToAdd = new List<IRole>();
                     foreach (RoleFormat l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID > p_Level))
                         if (l_MyUserRolesID.Contains(l_Role.RoleID)) // Also mean the guild role exist as he haves it.
                         {
-                            await l_User.RemoveRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                            l_RolesChanged = true;
+                            IRole l_GuildRole = l_GuildRolesList.Find(p_Role => p_Role.Id == l_Role.RoleID);
+                            l_RoleToRemove.Add(l_GuildRole);
+                            //await l_User.RemoveRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                         }
 
                     foreach (RoleFormat l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID <= p_Level))
                         if (!l_MyUserRolesID.Contains(l_Role.RoleID) && l_GuildRolesList.FindIndex(p_X => p_X.Id == l_Role.RoleID) >= 0) // Only gives a roles the guild have ofc.
                         {
-                            await l_User.AddRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                            l_RolesChanged = true;
+                            IRole l_GuildRole = l_GuildRolesList.Find(p_Role => p_Role.Id == l_Role.RoleID);
+                            l_RoleToAdd.Add(l_GuildRole);
+                            //await l_User.AddRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                         }
+
+                    if (l_RoleToAdd.Count > 0)
+                    {
+                        await l_User.AddRolesAsync(l_RoleToAdd);
+                        l_RolesChanged = true;
+                    }
+                    if (l_RoleToRemove.Count > 0)
+                    {
+                        await l_User.RemoveRolesAsync(l_RoleToRemove);
+                        l_RolesChanged = true;
+                    }
                 }
                 else
                 {
+                    List<IRole> l_RoleToRemove = new List<IRole>();
+                    List<IRole> l_RoleToAdd = new List<IRole>();
                     foreach (RoleFormat l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID != p_Level))
                         if (l_MyUserRolesID.Contains(l_Role.RoleID)) // Also mean the guild role exist as he haves it.
                         {
-                            await l_User.RemoveRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                            l_RolesChanged = true;
+                            IRole l_GuildRole = l_GuildRolesList.Find(p_Role => p_Role.Id == l_Role.RoleID);
+                            l_RoleToRemove.Add(l_GuildRole);
+                            //await l_User.RemoveRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                         }
 
                     foreach (RoleFormat l_Role in l_RolesDB.Where(p_Role => p_Role.LevelID == p_Level))
                         if (!l_MyUserRolesID.Contains(l_Role.RoleID))
                             if (!l_MyUserRolesID.Contains(l_Role.RoleID) && l_GuildRolesList.FindIndex(p_X => p_X.Id == l_Role.RoleID) >= 0) // Only gives a roles the guild have ofc.
                             {
-                                await l_User.AddRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
-                                l_RolesChanged = true;
+                                IRole l_GuildRole = l_GuildRolesList.Find(p_Role => p_Role.Id == l_Role.RoleID);
+                                l_RoleToAdd.Add(l_GuildRole);
+                                //await l_User.AddRoleAsync(l_GuildRoles.FirstOrDefault(p_X => p_X.Id == l_Role.RoleID));
                             }
+                    if (l_RoleToAdd.Count > 0)
+                    {
+                        await l_User.AddRolesAsync(l_RoleToAdd);
+                        l_RolesChanged = true;
+                    }
+                    if (l_RoleToRemove.Count > 0)
+                    {
+                        await l_User.RemoveRolesAsync(l_RoleToRemove);
+                        l_RolesChanged = true;
+                    }
                 }
 
                 if (l_RolesChanged)
