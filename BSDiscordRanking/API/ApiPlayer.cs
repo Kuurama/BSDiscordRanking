@@ -42,6 +42,7 @@ namespace BSDiscordRanking.API
                 Badges = l_Player.m_PlayerFull.badges, // ScoreSaber Badges for now.
                 Trophy = l_TotalTrophy,
                 Level = l_PlayerLevel,
+                PassCount = l_Player.m_PlayerStats.TotalNumberOfPass,
                 IsMapLeaderboardBanned = l_Player.m_PlayerStats.IsMapLeaderboardBanned,
                 IsScanBanned = l_Player.m_PlayerStats.IsScanBanned,
                 RankData = l_RankData,

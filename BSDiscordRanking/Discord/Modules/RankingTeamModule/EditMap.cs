@@ -30,7 +30,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                 return;
             }
 
-            if (Context != null) Program.m_TempGlobalGuildID = Context.Guild.Id;
+            if (Context != null) Program.TempGlobalGuildID = Context.Guild.Id;
 
             p_Characteristic = UserModule.UserModule.FirstCharacterToUpper(p_Characteristic);
             p_DifficultyName = UserModule.UserModule.FirstCharacterToUpper(p_DifficultyName);
@@ -105,8 +105,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         components: new ComponentBuilder()
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
                             .Build());
-                else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
-                    await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong))
+                    await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
                         components: new ComponentBuilder()
                             .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                             .Build());
@@ -252,7 +252,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
 
                                             await Context.Channel.SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
                                         }
-                                        else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                                        else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong))
                                         {
                                             ComponentBuilder l_ComponentBuilder = new ComponentBuilder();
                                             if (!l_MapDeleted && !l_MapHashChanged)
@@ -283,7 +283,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             }
 
                                             l_EmbedBuilder.WithFooter($"DiscordID_{p_UserID}");
-                                            await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
+                                            await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(), components: l_ComponentBuilder.Build());
                                         }
                                     }
 
@@ -292,7 +292,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         {
                                             if (Context != null)
                                                 await Context.Channel.SendMessageAsync(":warning: An error occured while changing the map's level.");
-                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while changing the map's level.");
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while changing the map's level.");
                                         }
 
                                     if (p_RemoveMap)
@@ -301,7 +301,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         {
                                             if (Context != null)
                                                 await Context.Channel.SendMessageAsync(":warning: An error occured while deleting the map.");
-                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while deleting the map.");
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while deleting the map.");
                                         }
                                         else
                                         {
@@ -338,10 +338,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                                 await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                             }
-                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong))
                                             {
                                                 l_EmbedBuilder.WithFooter("Operated by " + p_UserID);
-                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                                await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                             }
 
                                             return;
@@ -353,7 +353,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                         {
                                             if (Context != null)
                                                 await Context.Channel.SendMessageAsync(":warning: An error occured while updating the map hash.");
-                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while updating the map hash.");
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong)) await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync(":warning: An error occured while updating the map hash.");
                                         }
                                         else
                                         {
@@ -371,10 +371,10 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                                 l_EmbedBuilder.WithFooter("Operated by " + Context.User.Username);
                                                 await Context.Guild.GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                             }
-                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
+                                            else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong))
                                             {
                                                 l_EmbedBuilder.WithFooter("Operated by " + p_UserID);
-                                                await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
+                                                await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().LoggingChannel).SendMessageAsync("", false, l_EmbedBuilder.Build());
                                             }
 
                                             return;
@@ -452,7 +452,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                                             l_MapChangeEmbedBuilder.WithColor(Color.Blue);
 
                                             if (p_ChangeCategory && l_Config.DisplayCategoryEdit || p_ChangeCustomCategoryInfo && l_Config.DisplayCustomCategoryInfoEdit || p_ChangeCustomPassText && l_Config.DisplayCustomPassTextEdit || p_ChangeLevel || p_ChangeMinScoreRequirement || p_ChangeInfoOnGGP || p_ToggleManualWeight || p_ChangeWeight || p_ToggleAdminConfirmationOnPass)
-                                                foreach (SocketTextChannel l_TextChannel in BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).TextChannels)
+                                                foreach (SocketTextChannel l_TextChannel in BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).TextChannels)
                                                     if (l_TextChannel.Id == l_Config.LoggingChannel)
                                                     {
                                                         await l_TextChannel.SendMessageAsync("", false, l_MapChangeEmbedBuilder.Build());
@@ -472,8 +472,8 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                             components: new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{Context.User.Id}", ButtonStyle.Danger))
                                 .Build());
-                    else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.m_TempGlobalGuildID != default(ulong))
-                        await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
+                    else if (p_ChannelID != default(ulong) && p_UserID != default(ulong) && Program.TempGlobalGuildID != default(ulong))
+                        await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_ChannelID).SendMessageAsync("", false, l_EmbedBuilder.Build(),
                             components: new ComponentBuilder()
                                 .WithButton(new ButtonBuilder("Close Menu", $"ExitEditMap_{p_UserID}", ButtonStyle.Danger))
                                 .Build());
@@ -551,7 +551,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "CategoryChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -602,7 +602,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "CustomCategoryInfoChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -690,7 +690,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "MinPercentageRequirementChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -749,7 +749,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "InfoOnGGPChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -796,7 +796,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "ManualWeightChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -847,7 +847,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "CustomPassTextChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -894,7 +894,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "NameChangeValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -938,7 +938,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "RemoveMapValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)
@@ -955,7 +955,7 @@ namespace BSDiscordRanking.Discord.Modules.RankingTeamModule
                         break;
 
                     case "UpdateHashValidation":
-                        l_Messages = await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
+                        l_Messages = await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(p_MessageComponent.Channel.Id).GetMessagesAsync(20).FlattenAsync();
                         l_LastUserMessage = (from l_Message in l_Messages where l_Message.Author.Id == l_UserID select l_Message.Content).FirstOrDefault();
 
                         if (l_LastUserMessage != null)

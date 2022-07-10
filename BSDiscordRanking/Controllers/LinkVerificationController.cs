@@ -19,7 +19,7 @@ namespace BSDiscordRanking.Controllers
             if (p_Context is null) return;
 
             /// Ew but i need ya know
-            Program.m_TempGlobalGuildID = p_Context.Guild.Id;
+            Program.TempGlobalGuildID = p_Context.Guild.Id;
 
             EmbedBuilder l_EmbedBuilder = new EmbedBuilder();
             l_EmbedBuilder.WithTitle($"Link Verification: {p_Context.User.Username} => ScoreSaber: {p_PlayerFull.name}?");
@@ -68,7 +68,7 @@ namespace BSDiscordRanking.Controllers
                             .AddField("\u200B", "\u200B")
                             .AddField("Accepted", $"By <@{p_MessageComponent.User.Id}>").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
-                        await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request has been **accepted** by \"{p_MessageComponent.User.Username}\", use `{BotHandler.m_Prefix}getstarted` to learn how to use the bot, and do `{BotHandler.m_Prefix}scan` to scan your latest passes.");
+                        await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request has been **accepted** by \"{p_MessageComponent.User.Username}\", use `{BotHandler.m_Prefix}getstarted` to learn how to use the bot, and do `{BotHandler.m_Prefix}scan` to scan your latest passes.");
                     }
                     else
                     {
@@ -92,7 +92,7 @@ namespace BSDiscordRanking.Controllers
                             .AddField("Refused", $"By <@{p_MessageComponent.User.Id}>").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
-                        await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request has been **denied** by \"{p_MessageComponent.User.Username}\",\nthere might be some mandatory requirements to be registered, such as being high enough rank or linking to the correct account.\n You can still make an appeal to the moderators if needed.");
+                        await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request has been **denied** by \"{p_MessageComponent.User.Username}\",\nthere might be some mandatory requirements to be registered, such as being high enough rank or linking to the correct account.\n You can still make an appeal to the moderators if needed.");
                     }
                     else
                     {
@@ -116,7 +116,7 @@ namespace BSDiscordRanking.Controllers
                             .AddField("Banned", $"By <@{p_MessageComponent.User.Id}>").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
-                        await BotHandler.m_Client.GetGuild(Program.m_TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request got you link **banned** by \"{p_MessageComponent.User.Username}\",\n You can still make an appeal to the moderators if needed, they will have to manually link your DiscordID to your ScoreSaberID.");
+                        await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request got you link **banned** by \"{p_MessageComponent.User.Username}\",\n You can still make an appeal to the moderators if needed, they will have to manually link your DiscordID to your ScoreSaberID.");
                     }
                     else
                     {

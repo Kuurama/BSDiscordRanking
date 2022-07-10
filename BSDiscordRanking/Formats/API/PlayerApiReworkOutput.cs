@@ -12,19 +12,20 @@ namespace BSDiscordRanking.Formats.API
         public string Name { get; set; }
         public string Country { get; set; }
         public string ProfilePicture { get; set; }
-        
+
         [JsonConverter(typeof(DiscordColorConverter))]
         public Color ProfileColor { get; set; }
-        
+
         public List<ApiBadge> Badges { get; set; }
         public Trophy Trophy { get; set; }
         public int Level { get; set; }
+        public int PassCount { get; set; }
         public bool IsMapLeaderboardBanned { get; set; }
         public bool IsScanBanned { get; set; }
         // ReSharper disable once InconsistentNaming
         public List<RankData> RankData;
         public List<CustomApiPlayerCategory> CategoryData { get; set; }
-        
+
     }
 
     public class RankData
@@ -34,7 +35,7 @@ namespace BSDiscordRanking.Formats.API
         public float Points { get; set; }
         public int Rank { get; set; }
     }
-    
+
     public class CustomApiPlayerCategory
     {
         private string m_Category;
