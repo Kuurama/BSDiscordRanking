@@ -118,10 +118,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_LevelFormat.songs.Any()) /// Only create the file if it's not empty.
                         {
                             JsonDataBaseController.CreateDirectory(l_Path);
-                            if (p_Category is not null)
-                            {
-                                l_LevelFormat.customData.syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + l_LevelInt + "/" + p_Category;
-                            }
                             Level.ReWriteStaticPlaylist(l_LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
                         }
 
@@ -175,10 +171,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_LevelFormat.songs.Any()) /// Only create the file if it's not empty.
                         {
                             JsonDataBaseController.CreateDirectory(l_Path);
-                            if (p_Category is not null)
-                            {
-                                l_LevelFormat.customData.syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + l_LevelID + "/" + p_Category;
-                            }
                             Level.ReWriteStaticPlaylist(l_LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
                         }
                     }
