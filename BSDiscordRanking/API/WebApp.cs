@@ -93,7 +93,7 @@ namespace BSDiscordRanking.API
                     l_Response.Close();
                     return;
                 }
-                
+
                 List<Tuple<int, ApiAccessHandler>> l_TupleFoundHandlers = new List<Tuple<int, ApiAccessHandler>>();
                 foreach (KeyValuePair<string, ApiAccessHandler> l_Handler in ApiAccessHandler.s_Handlers)
                 {
@@ -128,7 +128,8 @@ namespace BSDiscordRanking.API
                     }
                 }
 
-                l_Response.ContentType = "application/json";
+                l_Response.ContentType ??= "application/json";
+
                 l_Response.ContentEncoding = Encoding.UTF8;
 
                 byte[] l_Data;

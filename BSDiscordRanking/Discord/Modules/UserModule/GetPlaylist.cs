@@ -23,8 +23,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     int l_LevelInt = int.Parse(p_Level);
                     string l_Path = Level.GetPath() + $"{l_LevelInt:D3}{Level.SUFFIX_NAME}.bplist";
                     if (File.Exists(l_Path))
-
+                    {
                         await Context.Channel.SendFileAsync(l_Path, "> :white_check_mark: Here's the complete playlist! (up to date).\n> All difficulties you need to do are highlighted and the playlist can be updated through you game using the sync button.");
+                        if (File.Exists(@"./public/SyncPlaylistMessage.png") == false)
+                        {
+                            await File.WriteAllBytesAsync(@"./public/SyncPlaylistMessage.png",Convert.FromBase64String(SYNC_PLAYLIST_MESSAGE_IMAGE_B64));
+                        }
+
+                        await Context.Channel.SendFileAsync(@"./public/SyncPlaylistMessage.png", "> Please note that the playlists can be **updated** through the game using the **sync** button.");
+                    }
                     else
 
                         await Context.Channel.SendMessageAsync("> :x: This level does not exist.");
@@ -37,6 +44,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                     {
                         ZipFile.CreateFromDirectory(Level.GetPath(), "levels.zip");
                         await Context.Channel.SendFileAsync("levels.zip", "> :white_check_mark: Here's a playlist folder containing all the playlist's pools! (up to date).\n> All difficulties you need to do are highlighted and the playlists can be updated through you game using the sync button.");
+                        if (File.Exists(@"./public/SyncPlaylistMessage.png") == false)
+                        {
+                            await File.WriteAllBytesAsync(@"./public/SyncPlaylistMessage.png",Convert.FromBase64String(SYNC_PLAYLIST_MESSAGE_IMAGE_B64));
+                        }
+
+                        await Context.Channel.SendFileAsync(@"./public/SyncPlaylistMessage.png", "> Please note that the playlists can be **updated** through the game using the **sync** button.");
                     }
                     catch
                     {
@@ -47,6 +60,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 {
                     await ReplyAsync("> :x: Wrong argument, please use \"1,2,3..\" or \"all\".");
                 }
+
             }
             else
             {
@@ -84,12 +98,22 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_LevelFormat.LevelFormat.songs.Any()) /// Only create the file if it's not empty.
                         {
                             JsonDataBaseController.CreateDirectory(l_Path);
+                            if (p_Category is not null)
+                            {
+                                l_LevelFormat.LevelFormat.customData.syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + l_LevelInt + "/" + p_Category;
+                            }
                             Level.ReWriteStaticPlaylist(l_LevelFormat.LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
                         }
 
                         if (File.Exists($"{l_PathFile}{Level.EXTENSION}"))
                         {
                             await Context.Channel.SendFileAsync($"{l_PathFile}{Level.EXTENSION}", $"> :white_check_mark: Here's the {p_Category}'s playlist! <@{Context.User.Id.ToString()}>");
+                            if (File.Exists(@"./public/SyncPlaylistMessage.png") == false)
+                            {
+                                await File.WriteAllBytesAsync(@"./public/SyncPlaylistMessage.png",Convert.FromBase64String(SYNC_PLAYLIST_MESSAGE_IMAGE_B64));
+                            }
+
+                            await Context.Channel.SendFileAsync(@"./public/SyncPlaylistMessage.png", "> Please note that the playlists can be **updated** through the game using the **sync** button.");
                         }
                         else
                         {
@@ -139,6 +163,10 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (l_LevelFormat.LevelFormat.songs.Count > 0) /// Only create the file if it's not empty.
                         {
                             JsonDataBaseController.CreateDirectory(l_Path);
+                            if (p_Category is not null)
+                            {
+                                l_LevelFormat.LevelFormat.customData.syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + l_LevelID + "/" + p_Category;
+                            }
                             Level.ReWriteStaticPlaylist(l_LevelFormat.LevelFormat, l_Path, l_PlaylistName); /// Write the personal playlist file in the PATH folder.
                         }
                     }
@@ -151,6 +179,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                             await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}.zip", $"> :white_check_mark: Here's the {p_Category}'s playlist folder!");
                             DeleteAllFolderAndFile(l_Path);
                             DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");
+                            if (File.Exists(@"./public/SyncPlaylistMessage.png") == false)
+                            {
+                                await File.WriteAllBytesAsync(@"./public/SyncPlaylistMessage.png",Convert.FromBase64String(SYNC_PLAYLIST_MESSAGE_IMAGE_B64));
+                            }
+
+                            await Context.Channel.SendFileAsync(@"./public/SyncPlaylistMessage.png", "> Please note that the playlists can be **updated** through the game using the **sync** button.");
                         }
                         else /// Shouldn't ever happen but actually, i prefer doing it.
                         {

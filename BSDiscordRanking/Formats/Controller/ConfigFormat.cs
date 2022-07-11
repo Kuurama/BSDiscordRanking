@@ -14,6 +14,7 @@ namespace BSDiscordRanking.Formats.Controller
         public bool FullEmbeddedGGP { get; set; } = false;
         public string RolePrefix { get; set; } = "";
         public string SyncURL { get; set; }
+        public string ApiURL { get; set; }
         public List<ulong> AuthorizedChannels { get; set; }
         public ulong LoggingChannel { get; set; }
         public ulong AdminConfirmationChannel { get; set; }
