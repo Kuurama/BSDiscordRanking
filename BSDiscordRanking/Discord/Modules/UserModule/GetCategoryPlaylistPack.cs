@@ -23,6 +23,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             DeleteFile($"{l_UserPath}CategoryPlaylistPack.zip"); /// Will attempt archive deletion if it already exist.
             JsonDataBaseController.CreateDirectory(l_UserPath); /// Will attempt folder creation if it doesn't exist.
 
+            await Context.Channel.SendMessageAsync("Sending playlists...");
             foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID)
             {
                 Level l_Level = new Level(l_LevelID);
