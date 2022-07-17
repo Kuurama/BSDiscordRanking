@@ -37,7 +37,7 @@ namespace BSDiscordRanking.API
                 if (p_ScoreSaberID == 0)
                 {
                     l_Level.m_Level.customData.syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + p_Level;
-                    return JsonConvert.SerializeObject(l_Level.m_Level.songs);
+                    return JsonConvert.SerializeObject(l_Level.m_Level);
                 }
 
                 if (UserController.SSIsAlreadyLinked(p_ScoreSaberID.ToString()))
