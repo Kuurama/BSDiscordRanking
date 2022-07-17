@@ -10,7 +10,6 @@ namespace BSDiscordRanking.API
     {
         [ApiAccessHandler("Leaderboards", @"\/leaderboards\/{0,1}", @"\/leaderboards\/", 0)]
         public static string GetLeaderboards(HttpListenerResponse p_Response, string p_LeaderboardType = null, string p_PageOrFull = null, int p_CountPerPage = default)
-
         {
             PlayerLeaderboardController l_LeaderboardController;
             switch (p_LeaderboardType)

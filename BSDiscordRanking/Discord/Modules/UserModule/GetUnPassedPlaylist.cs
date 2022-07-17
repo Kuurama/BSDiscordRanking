@@ -43,12 +43,12 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 string l_Path;
                 if (p_Category != null)
                 {
-                    l_FileName = $"Unpassed_{RemoveSpecialCharacters(p_Category)}_{RemoveSpecialCharacters(l_PlayerName)}";
+                    l_FileName = $"{ConfigController.GetConfig().GuildName}_Unpassed_{RemoveSpecialCharacters(p_Category)}_{RemoveSpecialCharacters(l_PlayerName)}";
                     l_Path = ORIGINAL_PATH + l_FileName + "/";
                 }
                 else
                 {
-                    l_FileName = "Unpassed_" + RemoveSpecialCharacters(l_PlayerName);
+                    l_FileName = $"{ConfigController.GetConfig().GuildName}_Unpassed_{RemoveSpecialCharacters(l_PlayerName)}";
                     l_Path = ORIGINAL_PATH + l_FileName + "/";
                 }
 
@@ -98,11 +98,11 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                                 return;
                             }
 
-                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_RemoveCategoriesFormat.LevelFormat);
+                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_RemoveCategoriesFormat.LevelFormat, p_Category, l_Player.GetPlayerID());
                         }
                         else
                         {
-                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
+                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level, null, l_Player.GetPlayerID());
                         }
 
 
@@ -154,7 +154,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         if (p_Category != null)
                         {
                             RemoveCategoriesFormat l_RemoveCategoriesFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, p_Category);
-                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_RemoveCategoriesFormat.LevelFormat);
+                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_RemoveCategoriesFormat.LevelFormat, p_Category, l_Player.GetPlayerID());
                             foreach (string l_Category in l_RemoveCategoriesFormat.Categories)
                             {
                                 int l_FindIndex = l_AvailableCategories.FindIndex(p_X => p_X == l_Category);
@@ -165,7 +165,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         }
                         else
                         {
-                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level);
+                            l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level, null, l_Player.GetPlayerID());
                         }
 
                         if (l_LevelFormat.songs.Any()) /// Only create the file if it's not empty.

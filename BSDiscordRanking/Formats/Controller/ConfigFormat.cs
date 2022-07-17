@@ -5,6 +5,7 @@ namespace BSDiscordRanking.Formats.Controller
     public class ConfigFormat
     {
         public const string SCORE_SABER_API_VERSION = "3.0.0";
+        public string GuildName = "";
         public string DiscordToken { get; set; } = "";
         public List<string> CommandPrefix { get; set; } = new List<string>();
         public string DiscordStatus { get; set; } = "Made by Kuurama (& Julien)";

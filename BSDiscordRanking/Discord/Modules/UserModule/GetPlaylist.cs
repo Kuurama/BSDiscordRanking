@@ -78,7 +78,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                         return;
                     }
 
-                string l_FileName = RemoveSpecialCharacters(p_Category);
+                string l_FileName = ConfigController.GetConfig().GuildName + "_" + RemoveSpecialCharacters(p_Category);
                 string l_Path = ORIGINAL_PATH + l_FileName + "/";
                 DeleteAllFolderAndFile(l_Path);
                 DeleteFile($"{ORIGINAL_PATH}{l_FileName}.zip");

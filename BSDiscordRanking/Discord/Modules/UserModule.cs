@@ -21,13 +21,15 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
     {
         private const int PERMISSION = 0;
 
-        private static LevelFormat RemovePassFromPlaylist(PlayerPassFormat p_PlayerPass, LevelFormat p_LevelFormat)
+        public static LevelFormat RemovePassFromPlaylist(PlayerPassFormat p_PlayerPass, LevelFormat p_LevelFormat,  string p_Category, string p_ScoreSaberID)
         {
+            if (string.IsNullOrEmpty(p_Category)) p_Category = "null";
+
             LevelFormat l_TempFormat = new LevelFormat
             {
                 customData = new MainCustomData
                 {
-                    syncURL = null,
+                    syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + p_LevelFormat.customData.level + "/" + p_Category + "/" + p_ScoreSaberID,
                     autoWeightDifficultyMultiplier = p_LevelFormat.customData.autoWeightDifficultyMultiplier,
                     customPassText = p_LevelFormat.customData.customPassText,
                     level = p_LevelFormat.customData.level,
@@ -78,7 +80,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
             {
                 customData = new MainCustomData
                 {
-                    syncURL = null,
+                    syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + p_LevelFormat.customData.level + "/" + p_Category,
                     autoWeightDifficultyMultiplier = p_LevelFormat.customData.autoWeightDifficultyMultiplier,
                     customPassText = p_LevelFormat.customData.customPassText,
                     level = p_LevelFormat.customData.level,

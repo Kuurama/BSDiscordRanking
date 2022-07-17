@@ -37,7 +37,6 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
 
                     l_Level.LoadLevel(); /// Reset the level.
                     l_LevelFormat = RemoveOtherCategoriesFromPlaylist(l_Level.m_Level, l_Category);
-                    l_LevelFormat.LevelFormat.customData.syncURL = ConfigController.GetConfig().ApiURL + "playlist/" + l_LevelID +"/"+ l_Category;
                     string l_FileName = RemoveSpecialCharacters(l_Category);
                     string l_Path = l_UserPath + l_FileName + "/";
                     string l_PlaylistName = $"{l_FileName}_{l_LevelID:D3}{Level.SUFFIX_NAME}";
