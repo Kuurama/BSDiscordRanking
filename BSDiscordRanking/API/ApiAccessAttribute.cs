@@ -96,7 +96,7 @@ namespace BSDiscordRanking.API
             p_ErrorMsg = "";
 
             if (p_StringParameters != null && p_StringParameters.Any() && p_StringParameters[0] != "")
-                
+
                 for (int l_I = 1; l_I < Parameters.Length; ++l_I)
                 {
                     var l_Parameter = Parameters[l_I];
@@ -115,6 +115,7 @@ namespace BSDiscordRanking.API
                     {
                         string l_RawParameter = p_StringParameters[l_I - 1];
 
+
                         if (l_Parameter.ParameterType == typeof(ulong))
                             if (ulong.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
                             else
@@ -129,12 +130,36 @@ namespace BSDiscordRanking.API
                                 p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be long";
                                 return false;
                             }
+                        else if (l_Parameter.ParameterType == typeof(ulong?))
+                            if (ulong.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
+                            else
+                            {
+                                if (l_RawParameter is null or "null" or "")
+                                    l_RawParameter = null;
+                                else
+                                {
+                                    p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be ulong?";
+                                    return false;
+                                }
+                            }
                         else if (l_Parameter.ParameterType == typeof(uint))
                             if (uint.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
                             else
                             {
                                 p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be uint";
                                 return false;
+                            }
+                        else if (l_Parameter.ParameterType == typeof(uint?))
+                            if (uint.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
+                            else
+                            {
+                                if (l_RawParameter is null or "null" or "")
+                                    l_RawParameter = null;
+                                else
+                                {
+                                    p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be uint?";
+                                    return false;
+                                }
                             }
                         else if (l_Parameter.ParameterType == typeof(int))
                             if (int.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
@@ -143,12 +168,36 @@ namespace BSDiscordRanking.API
                                 p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be int";
                                 return false;
                             }
+                        else if (l_Parameter.ParameterType == typeof(int?))
+                            if (int.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
+                            else
+                            {
+                                if (l_RawParameter is null or "null" or "")
+                                    l_RawParameter = null;
+                                else
+                                {
+                                    p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be int?";
+                                    return false;
+                                }
+                            }
                         else if (l_Parameter.ParameterType == typeof(ushort))
                             if (ushort.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
                             else
                             {
                                 p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be ushort";
                                 return false;
+                            }
+                        else if (l_Parameter.ParameterType == typeof(ushort?))
+                            if (ushort.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
+                            else
+                            {
+                                if (l_RawParameter is null or "null" or "")
+                                    l_RawParameter = null;
+                                else
+                                {
+                                    p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be ushort?";
+                                    return false;
+                                }
                             }
                         else if (l_Parameter.ParameterType == typeof(short))
                             if (short.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
@@ -164,12 +213,36 @@ namespace BSDiscordRanking.API
                                 p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be byte";
                                 return false;
                             }
+                        else if (l_Parameter.ParameterType == typeof(byte?))
+                            if (byte.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
+                            else
+                            {
+                                if (l_RawParameter is null or "null" or "")
+                                    l_RawParameter = null;
+                                else
+                                {
+                                    p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be byte?";
+                                    return false;
+                                }
+                            }
                         else if (l_Parameter.ParameterType == typeof(sbyte))
                             if (sbyte.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
                             else
                             {
                                 p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be sbyte";
                                 return false;
+                            }
+                        else if (l_Parameter.ParameterType == typeof(sbyte?))
+                            if (sbyte.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;
+                            else
+                            {
+                                if (l_RawParameter is null or "null" or "")
+                                    l_RawParameter = null;
+                                else
+                                {
+                                    p_ErrorMsg = "Parameter " + l_I.ToString() + " is expected to be sbyte?";
+                                    return false;
+                                }
                             }
                         else if (l_Parameter.ParameterType == typeof(bool))
                             if (bool.TryParse(l_RawParameter, out var l_Value)) l_Parameters[l_I] = l_Value;

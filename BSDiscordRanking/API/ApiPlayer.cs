@@ -28,7 +28,7 @@ namespace BSDiscordRanking.API
 
             int l_PlayerLevel = l_Player.GetPlayerLevel();
             Trophy l_TotalTrophy = GetTotalTrophy(l_Player.m_PlayerStats.Levels);
-            List<RankData> l_RankData = GetRankData(p_PlayerID, l_Player.m_PlayerStats);
+            List<RankData> l_RankData = GetRankData(p_PlayerID, l_Player.m_PlayerStats.PassPoints, l_Player.m_PlayerStats.PassPoints);
             List<CustomApiPlayerCategory> l_ApiPlayerCategories = GetPlayerCategoriesInfo(l_Player);
             Color l_PlayerColor = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_PlayerLevel);
 
@@ -114,7 +114,7 @@ namespace BSDiscordRanking.API
             return l_TotalTrophy;
         }
 
-        private static List<RankData> GetRankData(string p_PlayerID, PlayerStatsFormat p_PlayerStats)
+        private static List<RankData> GetRankData(string p_PlayerID, float p_PassPoints, float p_AccPoints)
         {
             List<RankData> l_RankData = new List<RankData>();
 
@@ -158,7 +158,7 @@ namespace BSDiscordRanking.API
                     {
                         PointsType = "pass",
                         PointsName = s_Config.PassPointsName,
-                        Points = p_PlayerStats.PassPoints,
+                        Points = p_PassPoints,
                         Rank = l_PassFindIndex + 1
                     });
                 }
@@ -182,7 +182,7 @@ namespace BSDiscordRanking.API
                     {
                         PointsType = "acc",
                         PointsName = s_Config.AccPointsName,
-                        Points = p_PlayerStats.AccPoints,
+                        Points = p_AccPoints,
                         Rank = l_AccFindIndex + 1
                     });
                 }

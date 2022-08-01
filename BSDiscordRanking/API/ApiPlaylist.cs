@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using BSDiscordRanking.Controllers;
 using BSDiscordRanking.Discord.Modules.UserModule;
-using BSDiscordRanking.Formats.Controller;
 using BSDiscordRanking.Formats.Level;
 using Newtonsoft.Json;
 

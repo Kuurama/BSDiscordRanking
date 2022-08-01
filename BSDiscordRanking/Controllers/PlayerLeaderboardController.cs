@@ -243,7 +243,7 @@ namespace BSDiscordRanking.Controllers
                         if (m_Leaderboard.Leaderboard.Count > 0)
                         {
                             m_Leaderboard.Leaderboard = m_Leaderboard.Leaderboard.OrderByDescending(p_X => p_X.Points).ToList();
-                            m_Leaderboard.MaxPage = m_Leaderboard.Leaderboard.Count / 10;
+                            m_Leaderboard.MaxPage = (int)Math.Ceiling((decimal)m_Leaderboard.Leaderboard.Count / 10);
                             if (m_Leaderboard.MaxPage == 0)
                             {
                                 m_Leaderboard.MaxPage = 1;
