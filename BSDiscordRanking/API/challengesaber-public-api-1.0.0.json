@@ -1,0 +1,537 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Challenge Saber's Public API\n\nPlease note this API is in constant development and is subject to change, so if there are any errors please dont hesitate to contact us.",
+    "version": "1.0.0",
+    "title": "Challenge Saber API"
+  },
+  "host": "api.bsdr.fdom.eu",
+  "tags": [
+    {
+      "name": "Players",
+      "description": "Player related queries"
+    },
+    {
+      "name": "Leaderboards",
+      "description": "Leaderboard related queries"
+    },
+    {
+      "name": "Maps",
+      "description": "Map related queries"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/player/data/{playerID}": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "Get a player's profile data",
+        "operationId": "GetPlayerData",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "playerID",
+            "in": "path",
+            "description": "Steam/Oculus user ID (obtainable from ScoreSaber or BeatLeader profile links), example: 76561198126131670",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerData"
+              }
+            }
+          },
+          "404": {
+            "description": "NotFound"
+          }
+        }
+      }
+    },
+    "/player/progress/{playerID}": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "Get a player's progress data",
+        "operationId": "GetPlayerProgress",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "playerID",
+            "in": "path",
+            "description": "Steam/Oculus user ID (obtainable from ScoreSaber or BeatLeader profile links), example: 76561198126131670",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerProgress"
+              }
+            }
+          },
+          "404": {
+            "description": "NotFound"
+          }
+        }
+      }
+    },
+    "/player/progress/{playerID}/{Category}": {
+      "get": {
+        "tags": [
+          "Players"
+        ],
+        "summary": "Get a player's progress data on a specific category",
+        "operationId": "GetPlayerProgressByCategory",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "playerID",
+            "in": "path",
+            "description": "Steam/Oculus user ID (obtainable from ScoreSaber or BeatLeader profile links), example: 76561198126131670",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "Category",
+            "in": "path",
+            "description": "The category name used to get specific progress details, example: tech",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PlayerProgress"
+              }
+            }
+          },
+          "404": {
+            "description": "NotFound"
+          }
+        }
+      }
+    },
+    "/mapleaderboard/{Hash}/{Difficulty}/{GameMode}/{Page}/{ScoreSaberID}/{Country}/{CountPerPage}": {
+      "get": {
+        "tags": [
+          "Leaderboards"
+        ],
+        "summary": "Get a map leaderboard, depending on specific queries",
+        "operationId": "GetMapLeaderboard",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "Hash",
+            "in": "path",
+            "description": "Map Hash",
+            "required": true,
+            "type": "string",
+            "default": "C4CCC41A43BB15F252B025F03BCE6F9C1DBBDBEB"
+          },
+          {
+            "name": "Difficulty",
+            "in": "path",
+            "description": "Difficulty number (easy = 1, Normal = 3, Hard = 5, Expert = 7, ExpertPlus = 9)",
+            "required": true,
+            "type": "integer",
+            "format": "byte",
+            "default": 9
+          },
+          {
+            "name": "GameMode",
+            "in": "path",
+            "description": "Map difficulty's gamemode (\"Standard\", \"Lawless\", \"360Degres\", etc.)",
+            "required": true,
+            "type": "string",
+            "default": "Standard"
+          },
+          {
+            "name": "Page",
+            "in": "path",
+            "description": "The page field doesn't apply with ScoreSaberID queries (type \"null\" to get the whole leaderboard)",
+            "required": true,
+            "type": "integer",
+            "default": 1,
+            "format": "int32"
+          },
+          {
+            "name": "ScoreSaberID",
+            "in": "path",
+            "description": "A player ScoreSaberID, use \"null\" or \"0\" to not force the query, ruturn 404 Not Found if the player isn't on the leaderboard",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          },
+          {
+            "name": "Country",
+            "in": "path",
+            "description": "Score Country (\"FR\", \"US\", etc.) \"null\" for no query",
+            "required": true,
+            "type": "string",
+            "default": "null"
+          },
+          {
+            "name": "CountPerPage",
+            "in": "path",
+            "description": "Set the ScorePerPage value, 10 by default (recommended)",
+            "required": true,
+            "type": "integer",
+            "format": "int64",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MapLeaderboardCollection"
+              }
+            }
+          },
+          "404": {
+            "description": "NotFound"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "PlayerData": {
+      "type": "object",
+      "properties": {
+        "Id": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Country": {
+          "type": "string"
+        },
+        "ProfilePicture": {
+          "type": "string"
+        },
+        "ProfileColor": {
+          "$ref": "#/definitions/Color"
+        },
+        "Badges": {
+          "$ref": "#/definitions/Badges"
+        },
+        "Trophy": {
+          "$ref": "#/definitions/Trophy"
+        },
+        "Level": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PassCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RankData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RankData"
+          }
+        },
+        "CategoryData": {
+          "$ref": "#/definitions/CategoryData"
+        }
+      }
+    },
+    "PlayerProgress": {
+      "type": "object",
+      "properties": {
+        "Levels": {
+          "type": "array",
+          "items": {
+            "properties": {
+              "LevelID": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "NumberOfPass": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "TotalNumberOfMaps": {
+                "type": "integer",
+                "format": "int32"
+              }
+            }
+          }
+        },
+        "AvailableCategories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "Badges": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        }
+      }
+    },
+    "Trophy": {
+      "type": "object",
+      "properties": {
+        "Plastic": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Silver": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Gold": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Diamond": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Ruby": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "RankData": {
+      "type": "object",
+      "properties": {
+        "PointsType": {
+          "type": "string"
+        },
+        "PointsName": {
+          "type": "string"
+        },
+        "Points": {
+          "type": "number",
+          "format": "float"
+        },
+        "Rank": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "CategoryData": {
+      "type": "object",
+      "properties": {
+        "Category": {
+          "type": "string"
+        },
+        "Level": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "IsMapLeaderboardBanned": {
+          "type": "boolean"
+        },
+        "IsScanBanned": {
+          "type": "boolean"
+        },
+        "MaxLevel": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "NumberOfPass": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "TotalNumberOfPass": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Trophy": {
+          "$ref": "#/definitions/Trophy"
+        }
+      }
+    },
+    "Color": {
+      "type": "object",
+      "properties": {
+        "R": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "G": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "B": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RawValue": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "MapLeaderboardCollection": {
+      "type": "object",
+      "properties": {
+        "Leaderboards": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MapLeaderboardContent"
+          }
+        },
+        "Metadata": {
+          "$ref": "#/definitions/PageMetaData"
+        },
+        "CustomData": {
+          "$ref": "#/definitions/MapLeaderboardCustomData"
+        }
+      }
+    },
+    "MapLeaderboardCustomData": {
+      "type": "object",
+      "properties": {
+        "Level": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Color": {
+          "$ref": "#/definitions/Color"
+        },
+        "Category": {
+          "type": "string"
+        }
+      }
+    },
+    "PageMetaData": {
+      "type": "object",
+      "properties": {
+        "Page": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "MaxPage": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CountPerPage": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "MapLeaderboardContent": {
+      "type": "object",
+      "properties": {
+        "ScoreSaberID": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "Rank": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Country": {
+          "type": "string"
+        },
+        "Avatar": {
+          "type": "string"
+        },
+        "RankData": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RankData"
+          }
+        },
+        "Weight": {
+          "type": "number",
+          "format": "float"
+        },
+        "BaseScore": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "ModifiedScore": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Modifiers": {
+          "type": "string"
+        },
+        "Multiplier": {
+          "type": "number",
+          "format": "float"
+        },
+        "BadCuts": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "MissedNotes": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "MaxCombo": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "FullCombo": {
+          "type": "boolean"
+        },
+        "HMD": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "TimeSet": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "externalDocs": {
+    "description": "Find out more about Swagger",
+    "url": "http://swagger.io"
+  }
+}

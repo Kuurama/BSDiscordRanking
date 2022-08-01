@@ -16,16 +16,16 @@ namespace BSDiscordRanking.API
     internal static partial class WebApp
     {
         [ApiAccessHandler("MapLeaderboard", @"\/mapleaderboard\/{0,1}", @"\/mapleaderboard\/", 0)]
-        public static string GetMapLeaderboard(HttpListenerResponse p_Response, string p_Hash, int p_Difficulty, string p_GameMode = null, int? p_Page = null, UInt64? p_ScoreSaberID = null, string p_Country = null, int p_CountPerPage = 10)
+        public static string GetMapLeaderboard(HttpListenerResponse p_Response, string p_Hash, byte p_Difficulty, string p_GameMode = null, int? p_Page = null, UInt64? p_ScoreSaberID = null, string p_Country = null, int p_CountPerPage = 10)
         {
-            if (p_GameMode is null or "null" or "") p_GameMode = "Standard";
+            if (string.IsNullOrEmpty(p_GameMode) || string.Equals(p_GameMode, "null", StringComparison.CurrentCultureIgnoreCase)) p_GameMode = "Standard";
 
             MapLeaderboardCacheStruct l_MapCache = Program.s_MapLeaderboardCache.FirstOrDefault(p_X => string.Equals(p_X.Hash, p_Hash, StringComparison.CurrentCultureIgnoreCase) && p_X.Difficulty == p_Difficulty && string.Equals(p_X.GameMode, p_GameMode, StringComparison.CurrentCultureIgnoreCase));
             int l_ScoreSaberLeaderboardID = l_MapCache.ScoreSaberLeaderboardID;
             MapLeaderboardFormat l_MapLeaderboard = new MapLeaderboardController(l_ScoreSaberLeaderboardID).m_MapLeaderboard;
-            if (l_MapLeaderboard is null || l_MapLeaderboard.scores is null) return null;
+            if (l_MapLeaderboard?.scores is null) return null;
 
-            if (p_Country is null)
+            if (p_Country is null || string.Equals(p_Country, "null", StringComparison.CurrentCultureIgnoreCase))
             {
                 l_MapLeaderboard.scores.RemoveAll(p_X => p_X.customData.isBanned == true || p_X.customData.isBotRegistered == false);
             }
@@ -45,7 +45,7 @@ namespace BSDiscordRanking.API
                 }
             };
 
-            if (p_ScoreSaberID is not null)
+            if (p_ScoreSaberID is not null && p_ScoreSaberID != 0)
             {
                 p_Page = l_MapLeaderboard.scores.FindIndex(p_X => p_X.score.leaderboardPlayerInfo.id == p_ScoreSaberID.ToString()) / 10 + 1;
             }
