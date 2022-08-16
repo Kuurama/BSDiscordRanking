@@ -28,7 +28,7 @@ namespace BSDiscordRanking.API
 
             int l_PlayerLevel = l_Player.GetPlayerLevel();
             Trophy l_TotalTrophy = GetTotalTrophy(l_Player.m_PlayerStats.Levels);
-            List<RankData> l_RankData = GetRankData(p_PlayerID, l_Player.m_PlayerStats.PassPoints, l_Player.m_PlayerStats.PassPoints);
+            List<RankData> l_RankData = GetRankData(p_PlayerID, l_Player.m_PlayerStats.PassPoints, l_Player.m_PlayerStats.AccPoints);
             List<CustomApiPlayerCategory> l_ApiPlayerCategories = GetPlayerCategoriesInfo(l_Player);
             Color l_PlayerColor = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_PlayerLevel);
 

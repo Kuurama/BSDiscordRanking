@@ -92,7 +92,7 @@ namespace BSDiscordRanking.Controllers
                             .AddField("Refused", $"By <@{p_MessageComponent.User.Id}>").Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
                         await p_MessageComponent.Message.ModifyAsync(p_MessageProperties => p_MessageProperties.Components = new ComponentBuilder().Build());
-                        await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request has been **denied** by \"{p_MessageComponent.User.Username}\",\nthere might be some mandatory requirements to be registered, such as being high enough rank or linking to the correct account.\n(On some ranking, you need to have **more** than **5000pp** and have a score saber account of **at least two month old**)\nYou can still make an appeal to the moderators if needed.");
+                        await BotHandler.m_Client.GetGuild(Program.TempGlobalGuildID).GetTextChannel(ConfigController.GetConfig().AuthorizedChannels.FirstOrDefault()).SendMessageAsync($"> <@{l_SplicedCustomID[1]}>, your bot link request has been **denied** by \"{p_MessageComponent.User.Username}\",\nthere might be some mandatory requirements to be registered, such as being high enough rank or linking to the correct account.\n(On some ranking, you need to have **more** than **4000pp** and have a score saber account of **at least two month old**)\nYou can still make an appeal to the moderators if needed.");
                     }
                     else
                     {

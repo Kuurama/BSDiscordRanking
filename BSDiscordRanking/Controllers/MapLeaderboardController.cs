@@ -22,11 +22,13 @@ namespace BSDiscordRanking.Controllers
 
         public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default(int), bool p_DoNotCreateLeaderboard = false)
         {
+            if (p_LeaderboardID == 0) return;
+
             m_LeaderboardID = p_LeaderboardID;
             m_Key = p_Key;
             LoadMapLeaderboard();
             if (p_DoNotCreateLeaderboard) return;
-            
+
 
             m_MapLeaderboard.info ??= GetInfos(m_LeaderboardID);
             if (m_MapLeaderboard.info != null)
@@ -365,31 +367,35 @@ namespace BSDiscordRanking.Controllers
             return false;
         }
 
-        public static float RecalculateAutoWeight(int p_LeaderboardID, float p_DifficultlyMultiplier)
+        public static float RecalculateAutoWeight(int p_LeaderboardID, float p_DifficultlyMultiplier, bool p_ForceReWeight = false)
         {
+
             float l_SumOfPercentage = 0;
             ConfigFormat l_ConfigFormat = ConfigController.GetConfig();
             MapLeaderboardController l_MapLeaderboard = new MapLeaderboardController(p_LeaderboardID);
-            if (l_MapLeaderboard.m_MapLeaderboard.scores.Count >= l_ConfigFormat.MinimumNumberOfScoreForAutoWeight)
-            {
-                for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
-                    if (l_MapLeaderboard.m_MapLeaderboard.info.maxScore > 0)
-                    {
-                        l_SumOfPercentage += (float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].score.baseScore / l_MapLeaderboard.m_MapLeaderboard.info.maxScore * 100;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Map MaxScore is negative/zero, can't recalculate weight.");
-                        return 0;
-                    }
+            if (l_MapLeaderboard.m_MapLeaderboard.scores.Count < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight) return 0;
 
-                float l_AveragePercentage = l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight;
-                float l_AverageNeededPercentage = 100f - l_AveragePercentage;
-                float l_NewWeight = l_AverageNeededPercentage * 0.66f * p_DifficultlyMultiplier / 32;
-                return l_NewWeight;
+            if (p_ForceReWeight)
+            {
+                l_MapLeaderboard.m_MapLeaderboard.forceAutoWeightRecalculation = true;
+                l_MapLeaderboard.ReWriteMapLeaderboard();
             }
 
-            return 0;
+            for (int l_Index = 0; l_Index < l_ConfigFormat.MinimumNumberOfScoreForAutoWeight; l_Index++)
+                if (l_MapLeaderboard.m_MapLeaderboard.info.maxScore > 0)
+                {
+                    l_SumOfPercentage += (float)l_MapLeaderboard.m_MapLeaderboard.scores[l_Index].score.baseScore * 100 / l_MapLeaderboard.m_MapLeaderboard.info.maxScore;
+                }
+                else
+                {
+                    Console.WriteLine("Map MaxScore is negative/zero, can't recalculate weight.");
+                    return 0;
+                }
+
+            float l_AveragePercentage = l_SumOfPercentage / l_ConfigFormat.MinimumNumberOfScoreForAutoWeight;
+            float l_AverageNeededPercentage = 100f - l_AveragePercentage;
+            float l_NewWeight = l_AverageNeededPercentage * 0.66f * p_DifficultlyMultiplier / 32;
+            return l_NewWeight;
         }
     }
 }

@@ -52,5 +52,6 @@ namespace BSDiscordRanking.Formats.API
         public Color Color { get; set; }
 
         public string Category { get; set; }
+        public UInt32 MaxScore { get; set; }
     }
 }

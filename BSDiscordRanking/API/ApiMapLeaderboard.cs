@@ -21,9 +21,61 @@ namespace BSDiscordRanking.API
             if (string.IsNullOrEmpty(p_GameMode) || string.Equals(p_GameMode, "null", StringComparison.CurrentCultureIgnoreCase)) p_GameMode = "Standard";
 
             MapLeaderboardCacheStruct l_MapCache = Program.s_MapLeaderboardCache.FirstOrDefault(p_X => string.Equals(p_X.Hash, p_Hash, StringComparison.CurrentCultureIgnoreCase) && p_X.Difficulty == p_Difficulty && string.Equals(p_X.GameMode, p_GameMode, StringComparison.CurrentCultureIgnoreCase));
+
+            /// If the map isn't in the cache (then it's not ranked so we return null).
+            if (l_MapCache.Equals(default(MapLeaderboardCacheStruct))) return null;
+
             int l_ScoreSaberLeaderboardID = l_MapCache.ScoreSaberLeaderboardID;
-            MapLeaderboardFormat l_MapLeaderboard = new MapLeaderboardController(l_ScoreSaberLeaderboardID).m_MapLeaderboard;
-            if (l_MapLeaderboard?.scores is null) return null;
+            ApiMapLeaderboardCollectionStruct l_MapLeaderboardCollection;
+            MapLeaderboardFormat l_MapLeaderboard;
+
+            if (l_MapCache.ScoreSaberLeaderboardID == 0)
+            {
+                l_MapLeaderboardCollection = new ApiMapLeaderboardCollectionStruct
+                {
+                    Leaderboards = new List<ApiMapLeaderboardContentStruct>(),
+                    Metadata = new ApiPageMetadataStruct
+                    {
+                        Page = 0,
+                        MaxPage = 0,
+                        CountPerPage = p_CountPerPage
+                    },
+                    CustomData = new ApiCustomDataStruct
+                    {
+                        Level = l_MapCache.CustomInfo.LevelID,
+                        Category = l_MapCache.CustomInfo.Category,
+                        Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_MapCache.CustomInfo.LevelID),
+                        MaxScore = (UInt32)l_MapCache.MaxScore
+                    }
+                };
+
+                return JsonConvert.SerializeObject(l_MapLeaderboardCollection);
+            }
+
+            l_MapLeaderboard = new MapLeaderboardController(l_ScoreSaberLeaderboardID, null, 0, true).m_MapLeaderboard;
+
+            if (l_MapLeaderboard is null)
+            {
+                l_MapLeaderboardCollection = new ApiMapLeaderboardCollectionStruct
+                {
+                    Leaderboards = new List<ApiMapLeaderboardContentStruct>(),
+                    Metadata = new ApiPageMetadataStruct
+                    {
+                        Page = 0,
+                        MaxPage = 0,
+                        CountPerPage = p_CountPerPage
+                    },
+                    CustomData = new ApiCustomDataStruct
+                    {
+                        Level = l_MapCache.CustomInfo.LevelID,
+                        Category = l_MapCache.CustomInfo.Category,
+                        Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_MapCache.CustomInfo.LevelID),
+                        MaxScore = (UInt32)l_MapCache.MaxScore
+                    }
+                };
+
+                return JsonConvert.SerializeObject(l_MapLeaderboardCollection);
+            }
 
             if (p_Country is null || string.Equals(p_Country, "null", StringComparison.CurrentCultureIgnoreCase))
             {
@@ -34,20 +86,23 @@ namespace BSDiscordRanking.API
                 l_MapLeaderboard.scores.RemoveAll(p_X => p_X.customData.isBanned == true || p_X.customData.isBotRegistered == false || string.Equals(p_X.score.leaderboardPlayerInfo.country, p_Country, StringComparison.CurrentCultureIgnoreCase) == false);
             }
 
-            ApiMapLeaderboardCollectionStruct l_MapLeaderboardCollection = new ApiMapLeaderboardCollectionStruct
+            l_MapLeaderboardCollection = new ApiMapLeaderboardCollectionStruct
             {
                 Leaderboards = new List<ApiMapLeaderboardContentStruct>(),
                 CustomData = new ApiCustomDataStruct
                 {
                     Level = l_MapCache.CustomInfo.LevelID,
                     Category = l_MapCache.CustomInfo.Category,
-                    Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_MapCache.CustomInfo.LevelID)
+                    Color = UserModule.GetRoleColor(RoleController.ReadRolesDB().Roles, null, l_MapCache.CustomInfo.LevelID),
+                    MaxScore = (UInt32)l_MapCache.MaxScore
                 }
             };
+            bool l_ShouldCheckScoreSaber = false;
 
             if (p_ScoreSaberID is not null && p_ScoreSaberID != 0)
             {
                 p_Page = l_MapLeaderboard.scores.FindIndex(p_X => p_X.score.leaderboardPlayerInfo.id == p_ScoreSaberID.ToString()) / 10 + 1;
+                l_ShouldCheckScoreSaber = true;
             }
 
             if (p_CountPerPage < 1)
@@ -69,8 +124,7 @@ namespace BSDiscordRanking.API
                 };
 
                 List<ApiMapLeaderboardContentStruct> l_LeaderboardContent = new List<ApiMapLeaderboardContentStruct>();
-                bool l_PageExist = false;
-
+                bool l_PlayerExist = false;
 
                 for (int l_Index = (p_Page.Value - 1) * l_MapLeaderboardCollection.Metadata.CountPerPage; l_Index < (p_Page.Value - 1) * l_MapLeaderboardCollection.Metadata.CountPerPage + l_MapLeaderboardCollection.Metadata.CountPerPage; l_Index++)
                     try
@@ -79,6 +133,8 @@ namespace BSDiscordRanking.API
 
                         MapPlayerScore l_MapScore = l_MapLeaderboard.scores[l_Index];
                         if (UInt64.TryParse(l_MapScore.score.leaderboardPlayerInfo.id, out UInt64 l_PlayerScoreSaberID) == false) continue;
+
+                        if (l_ShouldCheckScoreSaber && l_MapScore.score.leaderboardPlayerInfo.id == p_ScoreSaberID.ToString()) l_PlayerExist = true;
 
                         ////////////////////////////////
 
@@ -169,24 +225,22 @@ namespace BSDiscordRanking.API
                             HMD = l_MapScore.score.hmd,
                             TimeSet = l_MapScore.score.timeSet
                         });
-
-                        l_PageExist = true;
                     }
                     catch
                     {
                         // ignored
                     }
 
-                l_MapLeaderboardCollection.Leaderboards = l_LeaderboardContent;
+                if (l_ShouldCheckScoreSaber && l_PlayerExist == false)
+                    l_MapLeaderboardCollection.Leaderboards = new List<ApiMapLeaderboardContentStruct>();
+                else
+                    l_MapLeaderboardCollection.Leaderboards = l_LeaderboardContent;
 
-                return l_PageExist
-                    ? JsonConvert.SerializeObject(l_MapLeaderboardCollection)
-                    : null;
+                return JsonConvert.SerializeObject(l_MapLeaderboardCollection);
             }
             else
             {
                 List<ApiMapLeaderboardContentStruct> l_LeaderboardContent = new List<ApiMapLeaderboardContentStruct>();
-                bool l_PageExist = false;
 
                 l_MapLeaderboardCollection.Metadata = new ApiPageMetadataStruct
                 {
@@ -291,15 +345,12 @@ namespace BSDiscordRanking.API
                         HMD = l_MapScore.score.hmd,
                         TimeSet = l_MapScore.score.timeSet
                     });
-
-                    l_PageExist = true;
                 }
 
                 l_MapLeaderboardCollection.Leaderboards = l_LeaderboardContent;
 
-                return l_PageExist
-                    ? JsonConvert.SerializeObject(l_MapLeaderboardCollection)
-                    : null;
+                return JsonConvert.SerializeObject(l_MapLeaderboardCollection);
+
             }
         }
 
