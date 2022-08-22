@@ -22,7 +22,17 @@ namespace BSDiscordRanking.Controllers
 
         public MapLeaderboardController(int p_LeaderboardID, string p_Key = null, int p_MaxScore = default(int), bool p_DoNotCreateLeaderboard = false)
         {
-            if (p_LeaderboardID == 0) return;
+            if (p_LeaderboardID == 0)
+            {
+                m_MapLeaderboard = new MapLeaderboardFormat
+                {
+                    key = p_Key,
+                    forceAutoWeightRecalculation = false,
+                    info = null,
+                    scores = null
+                };
+                return;
+            }
 
             m_LeaderboardID = p_LeaderboardID;
             m_Key = p_Key;
