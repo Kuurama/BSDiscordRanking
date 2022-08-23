@@ -20,7 +20,7 @@ namespace BSDiscordRanking
             WebApp.LoadMapLeaderboardCache();
             new Thread(WebApp.Start).Start(); /// Starts the API
 
-            LevelController.GetLevelControllerCache();
+            LevelController.Init();
             UserController.ReadDB();
             BotHandler.StartBot(ConfigController.ReadConfig()); /// Starts the Discord Bot (on the main thread)
         }

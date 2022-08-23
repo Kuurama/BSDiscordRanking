@@ -12,12 +12,46 @@ namespace BSDiscordRanking.Controllers
     {
         private const string PATH = @"./";
         private const string FILENAME = "LevelController";
-
+        private static LevelControllerFormat Instance;
         static LevelController()
         {
             LevelControllerFormat l_LevelControllerFormat = FetchAndGetLevel(); /// Force the Fetch to instanciate m_LevelController.
             l_LevelControllerFormat.LevelID.Sort();
             ReWriteController(l_LevelControllerFormat);
+        }
+
+        public static void Init()
+        {
+            if (!File.Exists($"{PATH}{FILENAME}.json"))
+            {
+                Console.WriteLine($"{PATH}{FILENAME}.json");
+                Console.WriteLine("Seems like you forgot Fetch Levels (LevelController), please Fetch Them before using this command : LevelController's Cache is missing, Returning.");
+                Instance = new LevelControllerFormat();
+                return;
+            }
+
+            try
+            {
+                using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
+                {
+                    LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
+                    if (l_LevelController == null) /// json contain "null"
+                    {
+                        Console.WriteLine("Error LevelControllerCache contain null");
+                        Instance = new LevelControllerFormat();
+                        return;
+                    }
+
+                    l_LevelController.LevelID.Sort();
+                    Instance = l_LevelController;
+                }
+            }
+            catch (Exception) /// file format is wrong / there isn't any file.
+            {
+                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
+                Instance = new LevelControllerFormat();
+                return;
+            }
         }
 
         public static LevelControllerFormat FetchAndGetLevel()
@@ -73,6 +107,7 @@ namespace BSDiscordRanking.Controllers
                     {
                         p_LevelControllerFormat.LevelID.Sort();
                         File.WriteAllText($"{PATH}{FILENAME}.json", JsonSerializer.Serialize(p_LevelControllerFormat));
+                        Instance = p_LevelControllerFormat;
                         Console.WriteLine($"Updated LevelController Config File at {PATH}{FILENAME}.json ({p_LevelControllerFormat.LevelID.Count} Level)");
                     }
                     else
@@ -94,37 +129,12 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine("Too Many Errors => Method Locked, try finding the errors then use ResetRetryNumber()");
                 Console.WriteLine("Please Contact an Administrator.");
             }
+
         }
 
         public static LevelControllerFormat GetLevelControllerCache()
         {
-            if (!File.Exists($"{PATH}{FILENAME}.json"))
-            {
-                Console.WriteLine($"{PATH}{FILENAME}.json");
-                Console.WriteLine("Seems like you forgot Fetch Levels (LevelController), please Fetch Them before using this command : LevelController's Cache is missing, Returning.");
-                return null;
-            }
-
-            try
-            {
-                using (StreamReader l_SR = new StreamReader($"{PATH}{FILENAME}.json"))
-                {
-                    LevelControllerFormat l_LevelController = JsonSerializer.Deserialize<LevelControllerFormat>(l_SR.ReadToEnd());
-                    if (l_LevelController == null) /// json contain "null"
-                    {
-                        Console.WriteLine("Error LevelControllerCache contain null");
-                        return null;
-                    }
-
-                    l_LevelController.LevelID.Sort();
-                    return l_LevelController;
-                }
-            }
-            catch (Exception) /// file format is wrong / there isn't any file.
-            {
-                Console.WriteLine("Seems like you forgot to Fetch the Levels (LevelController), please Fetch Them before using this command, missing file/wrong file format");
-                return null;
-            }
+            return Instance;
         }
 
         public static string GetPath()
