@@ -150,12 +150,12 @@ namespace BSDiscordRanking
                                 if (l_Level.Categories != null)
                                 {
                                     int l_CategoryIndex = l_Level.Categories.FindIndex(p_X => p_X.Category == p_Category);
-                                    if (l_CategoryIndex >= 0)
+                                    if (l_CategoryIndex >= 0 || l_Level.LevelID == 9)
                                     {
                                         l_CategoryExist = true;
                                         if (!p_GetMaxLevel)
                                         {
-                                            if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 1 && l_Level.Categories[l_CategoryIndex].Passed)
+                                            if (l_CategoryIndex < 0  || l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 1 && l_Level.Categories[l_CategoryIndex].Passed)
                                             {
                                                 l_PlayerLevel = l_Level.LevelID;
                                                 l_LevelIndex++;
@@ -235,9 +235,9 @@ namespace BSDiscordRanking
                             if (l_Level.Categories != null)
                             {
                                 int l_CategoryIndex = l_Level.Categories.FindIndex(p_X => p_X.Category == p_Category);
-                                if (l_CategoryIndex >= 0)
+                                if (l_CategoryIndex >= 0 || l_Level.LevelID == 9)
                                 {
-                                    if (l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
+                                    if (l_CategoryIndex < 0 || l_LevelIndex == l_Level.LevelID && l_Level.Categories[l_CategoryIndex].Passed && l_Level.LevelID >= l_PlayerLevel || l_Level.LevelID == 0)
                                     {
                                         l_PlayerLevel = l_Level.LevelID;
                                         l_LevelIndex++;

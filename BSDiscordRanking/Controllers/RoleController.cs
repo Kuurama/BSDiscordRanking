@@ -8,6 +8,7 @@ using BSDiscordRanking.Formats;
 using Discord;
 using Discord.Commands;
 using Discord.Rest;
+using Discord.WebSocket;
 using Newtonsoft.Json;
 
 namespace BSDiscordRanking.Controllers
@@ -27,7 +28,7 @@ namespace BSDiscordRanking.Controllers
                 Console.WriteLine($"Error happened upon writing the roles.json: {l_Exception }");
             }
         }
-        
+
         public static void StaticWriteRolesDB(RolesFormat p_RolesFormat)
         {
             try
@@ -55,33 +56,68 @@ namespace BSDiscordRanking.Controllers
 
         public async Task CreateAllRoles(SocketCommandContext p_Context, bool p_Overwrite)
         {
-            ReadRolesDB();
-            foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID.Where(p_LevelID => p_LevelID > 0))
+            m_RoleController = ReadRolesDB();
+            foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID.Where(p_LevelID => p_LevelID is > 0 and < 40))
             {
-                if (!RoleExist($"Lv.{l_LevelID}") || p_Overwrite)
+                RoleFormat l_Role = m_RoleController.Roles.Find(p_X => p_X.LevelID == l_LevelID);
+                if (l_Role is null || p_Overwrite)
                 {
-                    RestRole l_Role = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
-                    m_RoleController.Roles.Add(new RoleFormat { RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = l_LevelID });
+                    RestRole l_RestRole = p_Context.Guild.CreateRoleAsync($"Lv.{l_LevelID}", GuildPermissions.None, Color.Green, false, false).Result;
+                    m_RoleController.Roles.Add(new RoleFormat { RoleID = l_RestRole.Id, RoleName = l_RestRole.Name, LevelID = l_LevelID });
+                }
+                else
+                {
+                    /// Update the role color:
+                    SocketRole l_SocketRole = p_Context.Guild.GetRole(l_Role.RoleID);
+                    if (l_SocketRole is not null)
+                    {
+                        l_Role.RoleColor = l_SocketRole.Color;
+                    }
                 }
 
                 Thread.Sleep(60);
             }
 
-            if (!RoleExist($"{ConfigController.GetConfig().RolePrefix} Ranked") || p_Overwrite)
+            RoleFormat l_RankedRole = m_RoleController.Roles.Find(p_X => p_X.LevelID == 0);
+            if (l_RankedRole is null || p_Overwrite)
             {
                 RestRole l_Role = p_Context.Guild.CreateRoleAsync($"{ConfigController.GetConfig().RolePrefix} Ranked", GuildPermissions.None, Color.Blue, false, false).Result;
                 await l_Role.ModifyAsync(p_Properties => p_Properties.Position = 0);
                 m_RoleController.Roles.Add(new RoleFormat { RoleID = l_Role.Id, RoleName = l_Role.Name, LevelID = 0 });
             }
+            else
+            {
+                /// Update the role color:
+                SocketRole l_SocketRole = p_Context.Guild.GetRole(l_RankedRole.RoleID);
+                if (l_SocketRole is not null)
+                {
+                    l_RankedRole.RoleColor = l_SocketRole.Color;
+                }
+            }
 
             WriteRolesDB();
         }
 
-        private bool RoleExist(string p_Name)
+        /// <summary>
+        /// Don't use it's garbage
+        /// </summary>
+        /// <param name="p_Name"></param>
+        /// <returns></returns>
+        private bool RoleExist_ByName(string p_Name)
         {
             if (m_RoleController == null) return false;
             foreach (RoleFormat l_Role in m_RoleController.Roles)
                 if (l_Role.RoleName == p_Name)
+                    return true;
+
+            return false;
+        }
+
+        private bool RoleExist_ByLevelID(int p_LevelID)
+        {
+            if (m_RoleController == null) return false;
+            foreach (RoleFormat l_Role in m_RoleController.Roles)
+                if (l_Role.LevelID == p_LevelID)
                     return true;
 
             return false;

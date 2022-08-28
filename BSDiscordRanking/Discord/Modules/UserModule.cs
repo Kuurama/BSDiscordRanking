@@ -377,7 +377,7 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 if (!l_GlobalLevelIsUseless) l_EmbedBuilder.AddField("Global Level", $":trophy: **{l_GlobalPlayerLevel}**", true);
 
                 double l_LevelEquilibriumPercentage;
-                if (l_LevelEquilibriumList.Any())
+                if (l_LevelEquilibriumList.Count > 1)
                     l_LevelEquilibriumPercentage = Math.Abs(100f - StandardDeviation(l_LevelEquilibriumList) * 100f / l_LevelEquilibriumList.Average());
                 else
                     l_LevelEquilibriumPercentage = 100f;
