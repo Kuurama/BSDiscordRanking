@@ -228,5 +228,74 @@ namespace BSDiscordRanking.Discord.Modules.UserModule
                 }
             }
         }
+
+
+        [Command("guplb")]
+        [Summary("Sends a big Playlist only containing the maps you didn't pass (get unpassed playlist big)")]
+        public async Task GetUnpassedPlaylistBig()
+        {
+            if (!UserController.UserExist(Context.User.Id.ToString()))
+            {
+                await Context.Channel.SendMessageAsync($"> :x: Sorry, you don't have any account linked. Please use `{BotHandler.m_Prefix}link <ScoreSaber link/id>` instead.\n> (Or to get started with the bot: use the `{BotHandler.m_Prefix}getstarted` command)");
+                return;
+            }
+            const string ORIGINAL_PATH = "./PersonalLevels/";
+
+            Player l_Player = new Player(UserController.GetPlayer(Context.User.Id.ToString()));
+            l_Player.LoadPass();
+            string l_PlayerName = l_Player.m_PlayerFull.name;
+            string l_FileName = $"{ConfigController.GetConfig().GuildName}_Unpassed_{RemoveSpecialCharacters(l_PlayerName)}";
+
+            if (!Directory.Exists(ORIGINAL_PATH))
+                try
+                {
+                    Directory.CreateDirectory(ORIGINAL_PATH);
+                }
+                catch
+                {
+                    Console.WriteLine($"Exception Occured creating directory : {ORIGINAL_PATH}");
+                    return;
+                }
+
+            LevelFormat l_TotalUnpassedLevelFormat = new LevelFormat()
+            {
+                playlistAuthor = "BSDR bot",
+                playlistTitle = $"Full playlist - {ConfigController.GetConfig().GuildName} - {l_PlayerName}'s Unpassed Playlist",
+                songs = new List<SongFormat>(),
+                customData = new MainCustomData()
+                {
+                    level = 0
+                }
+            };
+
+            foreach (int l_LevelID in LevelController.GetLevelControllerCache().LevelID)
+            {
+                Level l_Level = new Level(l_LevelID);
+                LevelFormat l_LevelFormat = RemovePassFromPlaylist(l_Player.ReturnPass(), l_Level.m_Level, null, l_Player.GetPlayerID());
+
+                if (l_LevelFormat.songs.Any())
+                    l_TotalUnpassedLevelFormat.songs.AddRange(l_LevelFormat.songs);
+            }
+
+            if (l_TotalUnpassedLevelFormat.songs.Any() == false)
+            {
+                await Context.Channel.SendMessageAsync("> :white_check_mark: Hayo? how, you already passed all the maps from all pools, good job!");
+                return;
+            }
+
+
+            if (File.Exists(ORIGINAL_PATH + l_FileName + Level.EXTENSION)) /// Mean there is already a personnal playlist file.
+                File.Delete(ORIGINAL_PATH + l_FileName + Level.EXTENSION);
+
+            Level.ReWriteStaticPlaylist(l_TotalUnpassedLevelFormat, ORIGINAL_PATH, l_FileName);
+            if (File.Exists(ORIGINAL_PATH + l_FileName + Level.EXTENSION))
+            {
+                await Context.Channel.SendFileAsync($"{ORIGINAL_PATH}{l_FileName}{Level.EXTENSION}", $"> :white_check_mark: Here's your **BIG** personal unpassed playlist! <@{Context.User.Id.ToString()}>");
+                File.Delete(ORIGINAL_PATH + l_FileName + Level.EXTENSION);
+                return;
+            }
+
+            await Context.Channel.SendMessageAsync("> :x: Something went wrong, please try again later.");
+        }
     }
 }
