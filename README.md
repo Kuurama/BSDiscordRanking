@@ -1,5 +1,20 @@
 # BSDiscordRanking
 
+## Notes
+
+This is the project that made me learn C# and drive upward my codding skills.
+For a first programming project, i think it gets the job done, and i think it's always okay to start somewhere.
+
+Since no bugs had been found in this very old, unmaintanable, beginner, nested hell and imperative giant piece of code, i can finally move on and archive this in hope to never work on it again.
+
+## Special Thanks
+
+Special thanks to BSCC for allowing me to test this bot. Then thanks to Saitei for allowing me to implement category leveling and therefore creating the new Challenge Saber sever.
+And finally thanks Jupilian for the initial help and for being a good friend.
+
+Also, as a final sidenote, thanks to NustyFrozen.
+The ogs only might remember why.
+
 ## Customisation
 
 The config file is in the same folder as the binaries and is named "config.json".
